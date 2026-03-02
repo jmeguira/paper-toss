@@ -13,6 +13,12 @@ export const GROUND_VERTICAL_COUNT = 8;
 export const PROJECTILE_RADIUS = 60;
 export const PROJECTILE_COLOR = 0xf5f5f5;
 
+// Swipe input
+export const SWIPE_CANCEL_THRESHOLD_PCT = 0.03;
+export const SWIPE_MIN_DISTANCE_PCT = 0.06;
+export const SWIPE_MIN_SPEED = 300;
+export const SWIPE_MAX_SAMPLES = 60;
+
 // Target texture
 export const TARGET_RADIUS = 360;
 export const TARGET_COLOR = 0xff4444;
