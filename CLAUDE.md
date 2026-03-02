@@ -2,7 +2,7 @@
 
 ## Git Workflow
 - Never commit directly to main. Always use a feature branch + PR.
-- Branch naming: short descriptive tags (e.g. `ground-plane-target`). Delete after merge.
+- Branch naming: `feature/short-desc`, `fix/short-desc`, `chore/short-desc`. Delete after merge.
 - Commits are code checkpoints — no doc updates required per commit.
 
 ## PR Workflow
