@@ -98,3 +98,100 @@
 ### fillCircle(x, y, radius) — why radius appears three times
 - The three params are: x center, y center, radius — not radius three times
 - With a texture sized `radius * 2`, the center is at `(radius, radius)` — one radius in from each edge. Same number, different meaning each time
+
+### Graphics game object
+- Phaser's freehand drawing tool — draw lines, circles, rectangles directly on screen
+- Different from sprites: sprites display a texture, Graphics draws shapes programmatically
+- Used for things like ground plane lines where there's no reusable "stamp" to make — just lines drawn in place
+
+### preload() vs create()
+- `preload()` loads external files (images, audio) from disk. Phaser pauses the scene and shows a loading bar while downloading
+- `create()` runs once after preload. Setup and procedural generation goes here
+- We skip preload entirely because we draw textures in code instead of loading image files
+
+## Fake 3D Projection
+
+### The core formula
+- `scale = focalLength / (focalLength + z)` — one line does all the perspective
+- z = distance from camera. Things far away (large z) get small scale, things close (z≈0) get scale≈1
+- Two separate steps: (1) compute scale from z, (2) map that scale onto actual screen pixel coordinates
+
+### Focal length
+- Not pixels — an arbitrary unit in our fake 3D coordinate system
+- Controls how "zoomed in" the camera feels: small = wide-angle GoPro, large = flat telephoto
+- Only meaningful relative to z values. 300 is a starting point — tune by feel
+- At z = focalLength, scale = 0.5 (half size). At z = 2x focalLength, scale = 0.33
+
+### Vanishing point
+- Where parallel lines converge at "infinity" — set at 35% from top of screen
+- "Up on screen" = "far away," not "above you." Correct perspective: horizon (vanishing point) is at eye level, ground stretches down from there to your feet
+- The farthest drawn lines may not reach the vanishing point (only z=∞ would). Solved by increasing GROUND_MAX_Z
+
+### Target distance
+- Target sits at a specific z-depth, NOT at the vanishing point (which is infinity)
+- Like a basketball hoop — far, but not at the horizon
+- Q: "Does it make sense for the target to be at the vanishing point?" → No. Vanishing point = infinity. Target is at a specific playable distance
+
+### draw() vs update()
+- `draw()` in GroundPlane runs once in the constructor — the lines are static shapes that just sit there
+- Only code inside a scene's `update()` runs every frame (60fps)
+- Static visuals: draw once. Animated/moving things: redraw in update()
+
+### Dynamic resizing
+- Phaser handles canvas resizing via `Scale.RESIZE`, but our objects calculate positions once in their constructors
+- Fine for mobile (viewport doesn't change mid-game), needs fix for desktop — tracked in TODO.md
+
+### Class properties — fire-and-forget vs stored
+- GroundPlane and Target are created with `new X(this)` and never referenced again — they draw themselves and sit
+- Projectile is stored as `private projectile!: Projectile` because other systems (swipe, flight, hit detection) need to manipulate it
+- The `!` is a "definite assignment assertion" — tells TS "this gets set in create(), not the constructor, trust me"
+
+### Event-driven input (Phaser pointer events)
+- `scene.input.on("pointerdown", callback, this)` — Phaser calls callback on touch/click. Third arg binds `this` context
+- `pointer` works for both touch and mouse — no separate handling needed
+- Click-drag-release = finger-down-move-up. Same events, same code
+
+### Callback pattern
+- `public onThrow: ((params: ThrowParams) => void) | null = null` — a property that holds a function or null
+- GameScene sets it: `swipe.onThrow = (params) => { ... }`
+- SwipeInput calls it: `this.onThrow?.(params)` — the `?.` is optional chaining (does nothing if null instead of crashing)
+- Python equivalent: `self.on_throw and self.on_throw(params)`
+
+### ThrowParams as abstraction boundary
+- `interface ThrowParams { angle: number }` — the contract between input and flight systems
+- Flight simulator consumes this interface, never knows whether it came from a swipe, slider, button, or keyboard
+- Adding new input methods later doesn't touch flight logic
+
+### Swipe → angle (radians)
+- A swipe is two points (start, end). The line between them is the vector
+- `Math.atan2(dx, -dy)` converts that vector to an angle: straight up = 0, right = positive, left = negative
+- Radians (not degrees) because every math function (`sin`, `cos`, `atan2`) expects radians natively
+- The `-dy` flips the y-axis: screen coordinates go down, but "up" should be zero angle
+
+### Screen-relative thresholds
+- Fixed pixel values (e.g., 30px) mean different things on different screens
+- Percentage of viewport height gives consistent physical feel across devices
+- e.g., `SWIPE_CANCEL_THRESHOLD_PCT = 0.03` → 27px on a 900px phone, 42px on a 1400px desktop
+
+### Swipe validation — distance vs speed
+- Distance alone is insufficient: a slow 200px drag and a fast 200px flick feel completely different
+- Speed = distance / time. Below a minimum speed threshold, the gesture is a drag, not a throw
+- Three cancel gates in order: (1) swiped down, (2) too short, (3) too slow
+
+## Git / Tooling
+
+### Pre-commit hooks
+- Shell script in `.git/hooks/pre-commit` — runs before every commit
+- `.git/hooks/` is NOT tracked by git (local only)
+- Solution: tracked `hooks/` directory + `setup.sh` that copies hooks into place. Run once per machine
+- `$?` = exit code of last command (0 = success). `-ne` = "not equal". `[ ... ]` = shell test syntax
+
+### Git hooks beyond pre-commit
+- commit-msg: validate commit message format
+- pre-push: run tests before sharing code (heavier than pre-commit)
+- post-merge: auto-run npm install after pull if deps changed
+- pre-rebase: prevent rebasing published branches
+
+### Branches after merge
+- Deleting a merged branch is safe — commit history is preserved on main via commit hashes
+- Branches are just movable labels pointing at commits. Deleting the label doesn't delete the history
