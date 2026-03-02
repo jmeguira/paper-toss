@@ -57,9 +57,9 @@ paper-toss/
 1. **Scaffold** — Create all project files, `npm install`, verify blank Phaser canvas renders ✅
 2. **Procedural textures** — Generate circle (projectile) and ring (target) textures in BootScene ✅
 3. **Ground plane + Target** — Perspective grid lines converging to vanishing point, target rings at distance ✅
-4. **Projectile at rest** — Place projectile sprite at bottom-center ← **UP NEXT**
-5. **SwipeInput** — Implement touch lifecycle, log ThrowParams to console, test with touch emulation
-6. **SwipeFeedback** — Wire swipe events to visual cues on projectile
+4. **Projectile at rest** — Place projectile sprite at bottom-center ✅
+5. **SwipeInput** — Implement touch lifecycle, log ThrowParams to console, test with touch emulation ✅ (angle only; power/spin deferred)
+6. **SwipeFeedback** — Wire swipe events to visual cues on projectile ← **UP NEXT**
 7. **FlightSimulator (gravity only)** — Basic ballistic arc with depth scaling, no wind/spin yet
 8. **Hit detection + score** — Check landing vs target, flash on hit, increment score, reset cycle
 9. **Wind** — WindSystem + WindIndicator UI, apply wind force in flight

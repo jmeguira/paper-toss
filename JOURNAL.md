@@ -29,3 +29,18 @@
 - Added `CLAUDE.md` for project instructions (commit workflow, branch/PR convention)
 - Added `TODO.md` for tracking polish/tech debt
 - First visually testable step — perspective grid and target visible in browser
+
+### Step 4: Projectile at Rest ✅
+- Created `src/game/objects/Projectile.ts` — ball sprite at bottom-center, scale 1 (z=0)
+- Added `resetPosition()` method for post-throw reset
+- Stored as class property on GameScene (unlike fire-and-forget GroundPlane/Target)
+- Added pre-commit hook (tsc --noEmit) with portable `setup.sh`
+- Added README
+
+### Step 5: Swipe Input ✅
+- Created `src/game/types.ts` — ThrowParams interface (angle only for MVP)
+- Created `src/game/systems/SwipeInput.ts` — touch/mouse event lifecycle
+- Three cancel gates: swipe down, insufficient distance, insufficient speed
+- Thresholds are screen-relative (percentage of viewport height)
+- Deferred power and spin from MVP — tracked in TODO
+- Wired into GameScene with console logging for testing
