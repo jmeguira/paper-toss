@@ -98,3 +98,45 @@
 ### fillCircle(x, y, radius) — why radius appears three times
 - The three params are: x center, y center, radius — not radius three times
 - With a texture sized `radius * 2`, the center is at `(radius, radius)` — one radius in from each edge. Same number, different meaning each time
+
+### Graphics game object
+- Phaser's freehand drawing tool — draw lines, circles, rectangles directly on screen
+- Different from sprites: sprites display a texture, Graphics draws shapes programmatically
+- Used for things like ground plane lines where there's no reusable "stamp" to make — just lines drawn in place
+
+### preload() vs create()
+- `preload()` loads external files (images, audio) from disk. Phaser pauses the scene and shows a loading bar while downloading
+- `create()` runs once after preload. Setup and procedural generation goes here
+- We skip preload entirely because we draw textures in code instead of loading image files
+
+## Fake 3D Projection
+
+### The core formula
+- `scale = focalLength / (focalLength + z)` — one line does all the perspective
+- z = distance from camera. Things far away (large z) get small scale, things close (z≈0) get scale≈1
+- Two separate steps: (1) compute scale from z, (2) map that scale onto actual screen pixel coordinates
+
+### Focal length
+- Not pixels — an arbitrary unit in our fake 3D coordinate system
+- Controls how "zoomed in" the camera feels: small = wide-angle GoPro, large = flat telephoto
+- Only meaningful relative to z values. 300 is a starting point — tune by feel
+- At z = focalLength, scale = 0.5 (half size). At z = 2x focalLength, scale = 0.33
+
+### Vanishing point
+- Where parallel lines converge at "infinity" — set at 35% from top of screen
+- "Up on screen" = "far away," not "above you." Correct perspective: horizon (vanishing point) is at eye level, ground stretches down from there to your feet
+- The farthest drawn lines may not reach the vanishing point (only z=∞ would). Solved by increasing GROUND_MAX_Z
+
+### Target distance
+- Target sits at a specific z-depth, NOT at the vanishing point (which is infinity)
+- Like a basketball hoop — far, but not at the horizon
+- Q: "Does it make sense for the target to be at the vanishing point?" → No. Vanishing point = infinity. Target is at a specific playable distance
+
+### draw() vs update()
+- `draw()` in GroundPlane runs once in the constructor — the lines are static shapes that just sit there
+- Only code inside a scene's `update()` runs every frame (60fps)
+- Static visuals: draw once. Animated/moving things: redraw in update()
+
+### Dynamic resizing
+- Phaser handles canvas resizing via `Scale.RESIZE`, but our objects calculate positions once in their constructors
+- Fine for mobile (viewport doesn't change mid-game), needs fix for desktop — tracked in TODO.md

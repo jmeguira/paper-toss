@@ -18,3 +18,14 @@
 - Created `src/game/scenes/GameScene.ts` (empty stub)
 - Registered both scenes in game config (BootScene first → auto-starts)
 - Not visually testable yet — textures in memory but nothing renders them
+
+### Step 3: Ground Plane + Target ✅
+- Added fake-3D projection constants (`FOCAL_LENGTH`, `TARGET_Z`, `GROUND_MAX_Z`)
+- Created `src/game/objects/GroundPlane.ts` — horizontal + vertical perspective grid lines converging to vanishing point
+- Created `src/game/objects/Target.ts` — places bullseye sprite at distance using projection formula
+- Wired both into GameScene
+- Fixed inverted perspective (ground was receding downward instead of upward)
+- Tuned target: pushed back to z=1200, tripled texture radius for crispness at distance
+- Added `CLAUDE.md` for project instructions (commit workflow, branch/PR convention)
+- Added `TODO.md` for tracking polish/tech debt
+- First visually testable step — perspective grid and target visible in browser

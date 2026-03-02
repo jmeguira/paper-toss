@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { GroundPlane } from "../objects/GroundPlane";
+import { Target } from "../objects/Target";
 
 export class GameScene extends Phaser.Scene {
   constructor() {
@@ -6,6 +8,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    // Scenes will be built out in subsequent steps
+    new GroundPlane(this);
+    new Target(this);
   }
 }
