@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { BootScene } from "./scenes/BootScene";
+import { GameScene } from "./scenes/GameScene";
 
 export function createGame(): Phaser.Game {
   return new Phaser.Game({
@@ -9,6 +11,6 @@ export function createGame(): Phaser.Game {
       height: window.innerHeight,
     },
     backgroundColor: "#1a1a2e",
-    scene: [],
+    scene: [BootScene, GameScene],
   });
 }
