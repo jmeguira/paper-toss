@@ -63,10 +63,10 @@ paper-toss/
 7. **FlightSimulator (gravity only)** — Basic ballistic arc with depth scaling, no wind/spin yet
 8. **Hit detection + score** — Check landing vs target, flash on hit, increment score, reset cycle
 9. **Wind** — WindSystem + WindIndicator UI, apply wind force in flight
-10. **Spin** — Enable spin in SwipeInput + FlightSimulator, verify curved swipes → curved flights
+10. ~~**Spin** — Enable spin in SwipeInput + FlightSimulator, verify curved swipes → curved flights~~ (deferred — see TODO)
 11. **Polish** — Tune constants, throw-reset flow, session score
 
-Steps 1–8 = core MVP. Steps 9–10 = skill-depth. Step 11 = playtest loop.
+Steps 1–8 = core MVP. Step 9 = skill-depth. Step 11 = playtest loop.
 
 ## Verification
 - `npm run dev` → game loads on mobile browser / Chrome DevTools touch emulation
