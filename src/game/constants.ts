@@ -10,10 +10,10 @@ export const GROUND_MAX_Z = 4000;
 export const GROUND_VERTICAL_COUNT = 8;
 
 // Projectile texture
-export const PROJECTILE_RADIUS = 20;
+export const PROJECTILE_RADIUS = 60;
 export const PROJECTILE_COLOR = 0xf5f5f5;
 
 // Target texture
-export const TARGET_RADIUS = 120;
+export const TARGET_RADIUS = 360;
 export const TARGET_COLOR = 0xff4444;
 export const TARGET_RING_WIDTH = 4;
