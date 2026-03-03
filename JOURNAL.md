@@ -44,3 +44,20 @@
 - Thresholds are screen-relative (percentage of viewport height)
 - Deferred power and spin from MVP — tracked in TODO
 - Wired into GameScene with console logging for testing
+
+## 2026-03-03
+
+### Step 6: Swipe Feedback — Ball-in-Hand + Mechanical Mode ✅
+- Expanded `ThrowParams` with `launchX`; added `InputModeType` union and `InputMode` interface
+- Added 17 new constants: shared launch bounds, ball pickup, throw line, mechanical mode, mode toggle
+- Upgraded `Projectile` with `pickup()`, `follow()`, `setX()`, `resetShot()` (tween snap-back), `isHeld` getter
+- Created `src/game/ui/ThrowLine.ts` — dashed line at 62% height as throw trigger
+- Reworked `SwipeInput` — touch-near-ball pickup, ball follows finger, throw-line crossing detection, release-below-line cancel. Implements `InputMode` interface with enable/disable lifecycle
+- Created `src/game/ui/TouchButton.ts` — reusable circular button with press/release tracking
+- Created `src/game/ui/AngleIndicator.ts` — sine-wave oscillating needle for mechanical mode
+- Created `src/game/systems/MechanicalInput.ts` — L/R arrow buttons, GO launch, reset button, angle oscillator. Implements `InputMode` interface
+- Created `src/game/ui/ModeToggle.ts` — S/M toggle in top-right corner
+- Wired both modes into `GameScene` with mode switching, shared update loop
+- Bug fixes: removed aggressive drag-down cancel (clamped Y instead), added ball reset after throw
+- Layout iteration: moved launch button below ball, added reset button, clustered ← GO → on one row, reset in bottom-right corner
+- Updated CLAUDE.md with implementation workflow guidelines (step-by-step, show code, interleave explanations)
