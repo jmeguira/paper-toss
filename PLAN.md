@@ -59,7 +59,7 @@ paper-toss/
 3. **Ground plane + Target** — Perspective grid lines converging to vanishing point, target rings at distance ✅
 4. **Projectile at rest** — Place projectile sprite at bottom-center ✅
 5. **SwipeInput** — Implement touch lifecycle, log ThrowParams to console, test with touch emulation ✅ (angle only; power/spin deferred)
-6. **SwipeFeedback** — Wire swipe events to visual cues on projectile ← **UP NEXT**
+6. **SwipeFeedback** — Ball-in-hand pickup, throw-line crossing, mechanical input mode, mode toggle ✅ (deviated from original plan: implemented full input rework with two modes instead of just visual cues)
 7. **FlightSimulator (gravity only)** — Basic ballistic arc with depth scaling, no wind/spin yet
 8. **Hit detection + score** — Check landing vs target, flash on hit, increment score, reset cycle
 9. **Wind** — WindSystem + WindIndicator UI, apply wind force in flight

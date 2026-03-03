@@ -195,3 +195,88 @@
 ### Branches after merge
 - Deleting a merged branch is safe — commit history is preserved on main via commit hashes
 - Branches are just movable labels pointing at commits. Deleting the label doesn't delete the history
+
+## Event-Driven Architecture (Step 6)
+
+### The "swimmy" feeling — backend vs game dev mental models
+- Backend Python: request → process → response. Linear, one entry point, one exit
+- Game code is event-driven: no `main()` that runs top to bottom. Objects *react* to things happening
+- Control flow feels scattered because it IS — multiple concurrent paths (pointer events, update loop, mode toggles) all touching the same objects
+- Think in three layers:
+  - **GameScene** (orchestrator): who exists, who's active, who talks to whom. Creates objects, wires callbacks, switches modes, calls update() each frame
+  - **Systems** (SwipeInput, MechanicalInput): listen for input, compute ThrowParams, hand them off. Know NOTHING about what happens after
+  - **Objects + UI** (Projectile, ThrowLine, etc.): dumb. No initiative. Only do what they're told
+- Data flows UP (input events → systems → GameScene via callbacks). Commands flow DOWN (GameScene → systems → objects)
+- Python analogy: GameScene = Django view (coordinates responses), Systems = service classes (business logic), Objects = models (state + methods, no initiative)
+
+### The `InputMode` interface — Strategy pattern
+- `interface InputMode { enable(); disable(); destroy() }` — a contract like a Python ABC
+- Both SwipeInput and MechanicalInput implement it, so GameScene can swap between them without caring which one it's talking to
+- `enable()` hooks up event listeners, `disable()` unhooks them (object stays alive but deaf), `destroy()` tears down Phaser game objects entirely
+- The throw logic doesn't live in any lifecycle method — it's in the `onThrow` callback, wired up by the consumer
+
+### Callback pattern (deeper)
+- Hand a function to an object: "call this when something happens." The object doesn't know what the function does
+- `onThrow?.()` — the `?.` is optional chaining. If nobody wired a callback, safely does nothing
+- Python equivalent: `button.config(command=my_function)` or `self.on_throw and self.on_throw(params)`
+- Keeps systems reusable: SwipeInput has zero knowledge of game rules beyond "compute angle and position"
+
+### Union types
+- `type InputModeType = "swipe" | "mechanical"` — only these two string values are valid
+- Python equivalent: `Literal["swipe", "mechanical"]`
+- TypeScript rejects any other string at compile time
+
+### Config interfaces with optional fields
+- `fillAlpha?: number` — the `?` makes the field optional. Python equivalent: `fill_alpha: float = 0.4`
+- Defaults applied via destructuring in constructor: `const { fillAlpha = 0.4 } = config`
+- Better than 8 positional constructor args — named, self-documenting, order-independent
+
+### Definite assignment assertion (`!`)
+- `private projectile!: Projectile` — tells TS "this gets set in create(), not the constructor, trust me"
+- Phaser's lifecycle means create() runs after construction. TS can't see that, so `!` suppresses the warning
+
+### Phaser tweens
+- `scene.tweens.add({ targets, x, y, duration, ease })` — Phaser's animation engine
+- Pass target object + property values to animate TO, Phaser interpolates from current values
+- `"Back.easeOut"` gives slight overshoot — slides past target, then settles. More physical than linear
+- Like CSS transitions but in code; Python analogy: pygame manual lerp, but Phaser does all per-frame interpolation
+
+### Phaser.Math.Clamp
+- `Phaser.Math.Clamp(value, min, max)` — constrains a value to a range
+- Python equivalent: `max(minimum, min(value, maximum))`
+
+### Delta-time scaling
+- `delta` (ms since last frame) is NOT constant — Phaser measures actual elapsed time via browser's requestAnimationFrame
+- ~16.67ms at 60fps, ~8.3ms at 120Hz, higher during GC hiccups
+- Always multiply by `delta / 1000` (convert to seconds) for consistent real-world speed regardless of frame rate
+- Without it: animation runs faster on 120Hz screens, slower on laggy phones
+- Phaser caps delta to prevent spiral-of-death (e.g. tab backgrounded → 500ms frame → teleportation)
+
+### Edge detection pattern
+- `if (prevY > lineY && pointer.y <= lineY)` — trigger on the *transition*, not while above
+- Only fires once when crossing, not every frame the condition is true
+- Same concept as hardware interrupts: react to the *change*, not the state
+
+### Sliding window trail
+- `trail.shift()` when at max size — removes oldest, keeps recent. Like Python's `deque(maxlen=60)`
+- Old approach: stop recording after 60 points. New: always has recent data, even on long drags
+- Speed computed from last 5 points (~83ms at 60fps) — measures instantaneous speed at crossing, not average over whole drag
+
+### setInteractive() — opt-in events
+- Phaser game objects ignore pointer events by default
+- Must call `setInteractive()` to make an object respond to pointerdown/up/over/out
+- Performance benefit: only objects that need input are checked against pointer position each frame
+
+### Event context binding (the `this` problem)
+- `scene.input.on("pointerdown", this.onPointerDown, this)` — third arg binds `this` context
+- Without it, `this` inside the handler would be undefined (JS doesn't auto-bind like Python's `self`)
+- `on` / `off` for subscribe/unsubscribe — Python equivalent: `signal.connect()` / `signal.disconnect()`
+
+### Phaser Graphics arc angles
+- Phaser measures angles from 3 o'clock position (standard math convention: 0 = right)
+- To center on 12 o'clock: offset by `-Math.PI / 2` (rotate 90° counterclockwise)
+- `cos`/`sin` convert angle + radius to x,y endpoint — basic trig for drawing needles, pointers, etc.
+
+### Underscore prefix for unused params
+- `_pointer` in `onPointerUp(_pointer)` — tells TypeScript "I know this exists, I'm not using it"
+- Python equivalent: `_` in `for _ in range(10)`
