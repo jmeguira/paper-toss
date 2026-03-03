@@ -5,18 +5,36 @@ Mobile-first projectile throwing game. Behind-the-thrower (first person) perspec
 
 ## Confirmed Decisions
 
-### Throw Mechanic (Pokemon Go style)
-- See the projectile only — no hand/arm visible
-- Single swipe gesture encodes direction, power, and spin
+### Input Modes
+Two input modes, both obeying identical launch bounds (±45° angle, 25-75% horizontal):
+
+**Swipe mode** (default):
+- Touch within pickup radius of ball to grab (scale bump feedback)
+- Ball follows finger while held, Y clamped (no dragging off-screen)
+- Horizontal position clamped to launch bounds (25–75% screen width)
+- Cross the throw line (dashed line at 62% height) with sufficient speed → throw fires
+- Release below throw line → cancel with tweened snap-back to rest position
+- Angle computed from last 5 trail points, launchX from pointer X at line crossing
+
+**Mechanical mode** (accessible alternative):
+- ← → arrow buttons nudge ball horizontally (step size per press, clamped to bounds)
+- Oscillating angle indicator (sine wave needle) sweeps ±45° continuously
+- GO button fires with current angle + current ball X position
+- RESET button (bottom-right corner) returns ball to center
+- Layout: ← GO → clustered on one row below the ball, RESET separate
+
+**Shared rules:**
 - **No trajectory/arc preview** — the skill IS reading the throw
-- Subtle feedback during swipe: scale pulse (power), tint shift (intensity), lateral offset (direction)
-- Swipe down = cancel/readjust
+- ThrowParams: `{ angle, launchX }` — both clamped to shared bounds
+- Both modes implement `InputMode` interface (enable/disable lifecycle)
+- Mode toggle (S/M) in top-right corner switches between modes
+- Power and spin deferred from MVP
 
 ### Visual Style
 - Abstract, minimal
-- Procedural graphics (no image assets for MVP)
+- Procedural graphics for now — visual polish is a priority but not yet scoped
 - Fake 3D: 2D canvas with depth scaling to simulate perspective
-- Ground plane with perspective grid lines, target rings in the distance
+- Ground plane with perspective grid lines — dev scaffold for spatial readability, not final art
 
 ### Physics
 - Hand-rolled Euler integration (no Phaser physics engine)
