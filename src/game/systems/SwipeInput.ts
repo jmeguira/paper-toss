@@ -97,7 +97,9 @@ export class SwipeInput implements InputMode {
       if (speed >= SWIPE_MIN_SPEED) {
         this.tracking = false;
         const params = this.computeThrow(pointer.x);
-        console.log("Throw!", params, `(${speed.toFixed(0)} px/s)`);
+        const recent = this.trail.slice(-5);
+        const rawAngle = Math.atan2(recent[recent.length - 1].x - recent[0].x, -(recent[recent.length - 1].y - recent[0].y));
+        console.log(`Throw! raw=${Phaser.Math.RadToDeg(rawAngle).toFixed(1)}° clamped=${Phaser.Math.RadToDeg(params.angle).toFixed(1)}° speed=${speed.toFixed(0)}px/s`);
         this.projectile.resetShot();
         this.onThrow?.(params);
         return;

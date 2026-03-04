@@ -61,3 +61,33 @@
 - Bug fixes: removed aggressive drag-down cancel (clamped Y instead), added ball reset after throw
 - Layout iteration: moved launch button below ball, added reset button, clustered ← GO → on one row, reset in bottom-right corner
 - Updated CLAUDE.md with implementation workflow guidelines (step-by-step, show code, interleave explanations)
+
+### Step 7: FlightSimulator ✅
+- Created `src/game/systems/FlightSimulator.ts` — Euler integration on 3D axes (x/y/z), projected to 2D via shared FOCAL_LENGTH perspective system
+- Extracted `VANISH_Y_PCT` constant from hardcoded 0.35 in GroundPlane and Target
+- Added flight constants: `FLIGHT_SPEED`, `FLIGHT_LAUNCH_VY`, `FLIGHT_GRAVITY`
+- Clamped ball Y to throw line in `Projectile.follow()` — prevents crossing throw line without launching
+- Ball launches from its actual screen position (mechanical starts from rest Y, swipe from throw line)
+- Wired into GameScene: input disabled during flight, re-enabled on landing
+- Switched default input mode to mechanical
+- Widened launch angle to ±60°
+- Added debug logging for raw vs clamped angle in degrees
+
+### Step 8: Hit Detection + Score ✅
+- Added `HIT_RADIUS` and `LANDING_PAUSE_MS` constants
+- Created `src/game/ui/ScoreDisplay.ts` — streak counter, increments on hit, resets on miss
+- Hit detection in world space: distance from landing (x, z) to target (0, TARGET_Z)
+- Updated target texture to filled circle matching HIT_RADIUS (removed decorative rings)
+- Added 600ms pause after landing before reset cycle
+- Fixed throw line showing on startup in mechanical mode (start hidden)
+
+### Step 9: Wind ✅
+- Created `src/game/systems/WindSystem.ts` — random lateral force per throw
+- Created `src/game/ui/WindIndicator.ts` — directional arrow + abstract 0–10 scale display
+- Wind applied as lateral acceleration during flight (same Euler pattern as gravity)
+- New wind generated after each landing
+- Tuned flight speed to 1100 for center target hits on straight throws
+
+### Session notes
+- Updated CLAUDE.md: refined implementation workflow to three-section format (Design / Noteworthy / Changes), dropped line-by-line narration, Python analogies only when clarifying
+- Design discussions: difficulty scaling via target distance, lateral target offset, play area aspect ratio, swipe feel vs mechanical mode, wind display as abstract units

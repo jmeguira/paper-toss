@@ -16,41 +16,43 @@ paper-toss/
     game/
       main.ts                      # Phaser.Game config (RESIZE scaling, single pointer)
       constants.ts                 # All tuning knobs in one file
-      types.ts                     # Shared interfaces
+      types.ts                     # Shared interfaces (ThrowParams, InputMode, etc.)
       scenes/
         BootScene.ts               # Procedural texture generation, then -> GameScene
-        GameScene.ts               # Main gameplay orchestrator
+        GameScene.ts               # Main gameplay orchestrator, mode switching
       systems/
-        SwipeInput.ts              # Touch capture, trail recording, power/angle/spin math
-        FlightSimulator.ts         # Ballistic arc + wind + spin, 3D→screen projection
-        WindSystem.ts              # Random wind generation per throw
+        SwipeInput.ts              # Ball pickup, drag-to-throw, throw-line crossing
+        MechanicalInput.ts         # Button-based input: ←/→ aim, GO launch, reset
+        FlightSimulator.ts         # (planned) Ballistic arc + wind, 3D→screen projection
+        WindSystem.ts              # (planned) Random wind generation per throw
       objects/
-        Projectile.ts              # Throwable object
+        Projectile.ts              # Throwable object with pickup/follow/snap-back
         Target.ts                  # Distant target rings
         GroundPlane.ts             # Perspective grid lines
       ui/
-        WindIndicator.ts           # Arrow + strength display
-        ScoreDisplay.ts            # Score counter
-        SwipeFeedback.ts           # Visual cues during swipe (scale pulse, tint, offset)
+        ThrowLine.ts               # Dashed line at 62% height — throw trigger boundary
+        TouchButton.ts             # Reusable circular button with press/release tracking
+        AngleIndicator.ts          # Oscillating needle for mechanical mode
+        ModeToggle.ts              # S/M toggle to switch input modes
+        WindIndicator.ts           # (planned) Arrow + strength display
+        ScoreDisplay.ts            # (planned) Score counter
 ```
 
-## Key Design Decisions
-- **No Phaser physics engine** — hand-rolled Euler integration (~30 lines) gives full control over the fake-3D ballistic arc
-- **Fake 3D**: Internal 3D coordinates (x/y/z) projected to 2D via `scale = focalLength / (focalLength + z)`
-- **Procedural graphics only** — no image assets for MVP, all drawn with Phaser Graphics
-- **Event-driven**: SwipeInput emits events → GameScene dispatches to FlightSimulator and SwipeFeedback
-- **All tuning constants in one file** for rapid playtesting iteration
+## Input Mechanic (the core)
+Two input modes sharing identical launch bounds (±45° angle, 25–75% horizontal):
 
-## Swipe Mechanic (the core)
-- Record full touch trail (position + timestamp, up to 60 samples)
-- **Power**: speed of final ~80ms of swipe
-- **Direction**: angle of overall swipe vector vs straight-up
-- **Spin**: accumulated signed curvature (cross-product of consecutive direction vectors along trail)
-- **Cancel**: swipe down past 30px threshold → snap projectile back to rest
-- **Feedback during swipe** (NOT a trajectory line):
-  - Scale pulse — ball swells with swipe speed
-  - Tint shift — color warms with power
-  - Lateral offset — ball drifts slightly in aim direction
+**Swipe mode** — touch near ball to pick up, drag upward, cross throw line to fire:
+- Touch within pickup radius → ball scales up, follows finger
+- Horizontal position clamped to launch bounds while dragging
+- Cross throw line (62% height) with sufficient speed → throw fires
+- Release below line → tweened snap-back to rest position
+- Angle computed from last 5 trail points; launchX from pointer X at crossing
+- Power and spin deferred from MVP
+
+**Mechanical mode** — button-based alternative:
+- ← → buttons nudge ball horizontally, GO fires, RESET returns to center
+- Oscillating angle indicator (sine wave) sweeps ±45°
+- GO captures current angle + ball X position as ThrowParams
 
 ## Implementation Steps (each produces a testable result)
 
@@ -60,13 +62,13 @@ paper-toss/
 4. **Projectile at rest** — Place projectile sprite at bottom-center ✅
 5. **SwipeInput** — Implement touch lifecycle, log ThrowParams to console, test with touch emulation ✅ (angle only; power/spin deferred)
 6. **SwipeFeedback** — Ball-in-hand pickup, throw-line crossing, mechanical input mode, mode toggle ✅ (deviated from original plan: implemented full input rework with two modes instead of just visual cues)
-7. **FlightSimulator (gravity only)** — Basic ballistic arc with depth scaling, no wind/spin yet
-8. **Hit detection + score** — Check landing vs target, flash on hit, increment score, reset cycle
-9. **Wind** — WindSystem + WindIndicator UI, apply wind force in flight
+7. **FlightSimulator (gravity only)** — Basic ballistic arc with depth scaling, no wind/spin yet ✅ (ball launches from actual position, Euler integration, perspective projection)
+8. **Hit detection + score** — Check landing vs target, flash on hit, increment score, reset cycle ✅ (world-space distance check, streak counter, filled target matching hit zone)
+9. **Wind** — WindSystem + WindIndicator UI, apply wind force in flight ✅ (lateral only, abstract 0–10 display scale, per-throw randomization)
 10. ~~**Spin** — Enable spin in SwipeInput + FlightSimulator, verify curved swipes → curved flights~~ (deferred — see TODO)
 11. **Polish** — Tune constants, throw-reset flow, session score
 
-Steps 1–8 = core MVP. Step 9 = skill-depth. Step 11 = playtest loop.
+Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop.
 
 ## Verification
 - `npm run dev` → game loads on mobile browser / Chrome DevTools touch emulation

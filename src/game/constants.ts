@@ -1,6 +1,20 @@
 // Camera / fake-3D projection
 export const FOCAL_LENGTH = 300;
+export const VANISH_Y_PCT = 0.35;
 export const TARGET_Z = 1200;
+
+// Flight physics
+export const FLIGHT_SPEED = 1100;
+export const FLIGHT_LAUNCH_VY = 900;
+export const FLIGHT_GRAVITY = 2000;
+
+// Hit detection
+export const HIT_RADIUS = 250;
+export const LANDING_PAUSE_MS = 600;
+
+// Wind
+export const WIND_MIN = 400;
+export const WIND_MAX = 2000;
 
 // Ground plane
 export const GROUND_LINE_COLOR = 0x3a3a5c;
@@ -25,7 +39,7 @@ export const TARGET_COLOR = 0xff4444;
 export const TARGET_RING_WIDTH = 4;
 
 // Shared launch bounds (both modes obey these)
-export const LAUNCH_ANGLE_MAX = Math.PI / 4; // ±45° from vertical
+export const LAUNCH_ANGLE_MAX = (60 * Math.PI) / 180; // ±60° from vertical
 export const LAUNCH_X_MIN_PCT = 0.25;
 export const LAUNCH_X_MAX_PCT = 0.75;
 

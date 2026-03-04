@@ -280,3 +280,34 @@
 ### Underscore prefix for unused params
 - `_pointer` in `onPointerUp(_pointer)` — tells TypeScript "I know this exists, I'm not using it"
 - Python equivalent: `_` in `for _ in range(10)`
+
+## Flight & Physics (Steps 7–9)
+
+### Euler integration
+- Simplest physics simulation: each frame, update velocity from acceleration, update position from velocity
+- `vy -= gravity * dt; y += vy * dt` — same pattern on each axis
+- Error per frame is proportional to dt² — at 60fps, negligible for a game
+- "Euler overshoot": ball may jump past y=0 in a single frame. Catch with `wy <= 0` check and clamp
+
+### 3D-to-2D projection
+- `scale = FOCAL_LENGTH / (FOCAL_LENGTH + z)` — same formula used by GroundPlane, Target, and FlightSimulator
+- `screenX = width/2 + wx * scale` — lateral offset shrinks with distance
+- `groundY = vanishY + (height - vanishY) * scale` — where the ground is at this depth
+- `screenY = groundY - wy * scale` — lift above ground by height, also scaled by perspective
+- At z=0 (camera): scale=1, full size. At z=FOCAL_LENGTH: scale=0.5, half size
+
+### World space vs screen space
+- Hit detection uses world coordinates, not screen pixels
+- Perspective distorts screen positions — things near the vanishing point look bunched together
+- A "near miss" on screen might be far off in world space, and vice versa
+- Checking in world space keeps the feel consistent regardless of where the ball lands
+
+### Wind as lateral acceleration
+- Same pattern as gravity but on the X axis: `vx += windForce * dt`
+- Wind is constant acceleration, so it compounds over time — longer flights get pushed more
+- Angled throws have lower forward speed (vz = speed * cos(angle)), so they're in the air longer and more affected by wind
+
+### cos(angle) effect on forward speed
+- `vz = FLIGHT_SPEED * cos(angle)` — angled throws travel forward slower
+- At 30°: 87% forward speed. At 60°: 50%. Compensating for wind inherently makes throws harder
+- This creates natural difficulty layering without any explicit difficulty code
