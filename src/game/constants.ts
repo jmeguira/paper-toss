@@ -8,6 +8,10 @@ export const FLIGHT_SPEED = 1000;
 export const FLIGHT_LAUNCH_VY = 900;
 export const FLIGHT_GRAVITY = 2000;
 
+// Hit detection
+export const HIT_RADIUS = 250;
+export const LANDING_PAUSE_MS = 600;
+
 // Ground plane
 export const GROUND_LINE_COLOR = 0x3a3a5c;
 export const GROUND_LINE_ALPHA = 0.4;

@@ -8,12 +8,15 @@ import { ModeToggle } from "../ui/ModeToggle";
 import { SwipeInput } from "../systems/SwipeInput";
 import { MechanicalInput } from "../systems/MechanicalInput";
 import { FlightSimulator } from "../systems/FlightSimulator";
+import { ScoreDisplay } from "../ui/ScoreDisplay";
+import { TARGET_Z, HIT_RADIUS, LANDING_PAUSE_MS } from "../constants";
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
   private swipeInput!: SwipeInput;
   private mechInput!: MechanicalInput;
   private flight!: FlightSimulator;
+  private score!: ScoreDisplay;
   private activeMode: InputModeType = "mechanical";
 
   constructor() {
@@ -30,11 +33,28 @@ export class GameScene extends Phaser.Scene {
     // Flight simulator
     this.flight = new FlightSimulator(this, this.projectile);
     this.flight.onLand = (result) => {
-      console.log("Landed at", result);
-      const { width, height } = this.scale;
-      this.projectile.resetPosition(width, height);
-      this.enableActiveMode();
+      const dz = result.z - TARGET_Z;
+      const dist = Math.sqrt(result.x * result.x + dz * dz);
+      const isHit = dist <= HIT_RADIUS;
+
+      console.log(`Landed: dist=${dist.toFixed(0)} ${isHit ? "HIT" : "MISS"}`);
+
+      if (isHit) {
+        this.score.hit();
+      } else {
+        this.score.miss();
+      }
+
+      // Brief pause before resetting
+      this.time.delayedCall(LANDING_PAUSE_MS, () => {
+        const { width, height } = this.scale;
+        this.projectile.resetPosition(width, height);
+        this.enableActiveMode();
+      });
     };
+
+    // Score display
+    this.score = new ScoreDisplay(this);
 
     // Input systems
     this.swipeInput = new SwipeInput(this, this.projectile, throwLine);

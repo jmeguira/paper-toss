@@ -5,6 +5,7 @@ import {
   TARGET_RADIUS,
   TARGET_COLOR,
   TARGET_RING_WIDTH,
+  HIT_RADIUS,
 } from "../constants";
 
 export class BootScene extends Phaser.Scene {
@@ -29,10 +30,13 @@ export class BootScene extends Phaser.Scene {
   private generateTargetTexture(): void {
     const size = TARGET_RADIUS * 2;
     const gfx = this.add.graphics();
+
+    // Filled circle matching the hit zone
+    gfx.fillStyle(TARGET_COLOR, 0.4);
+    gfx.fillCircle(TARGET_RADIUS, TARGET_RADIUS, HIT_RADIUS);
     gfx.lineStyle(TARGET_RING_WIDTH, TARGET_COLOR);
-    gfx.strokeCircle(TARGET_RADIUS, TARGET_RADIUS, TARGET_RADIUS);
-    gfx.strokeCircle(TARGET_RADIUS, TARGET_RADIUS, TARGET_RADIUS * 0.6);
-    gfx.strokeCircle(TARGET_RADIUS, TARGET_RADIUS, TARGET_RADIUS * 0.3);
+    gfx.strokeCircle(TARGET_RADIUS, TARGET_RADIUS, HIT_RADIUS);
+
     gfx.generateTexture("target", size, size);
     gfx.destroy();
   }

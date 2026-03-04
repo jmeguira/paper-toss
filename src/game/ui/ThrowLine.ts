@@ -15,6 +15,7 @@ export class ThrowLine {
     this.scene = scene;
     this.graphics = scene.add.graphics();
     this.draw();
+    this.graphics.setVisible(false);
   }
 
   /** The y coordinate of the throw line in screen space */
