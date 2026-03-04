@@ -5,6 +5,7 @@ import {
   BALL_RESET_DURATION_MS,
   LAUNCH_X_MIN_PCT,
   LAUNCH_X_MAX_PCT,
+  THROW_LINE_Y_PCT,
 } from "../constants";
 
 export class Projectile {
@@ -40,7 +41,9 @@ export class Projectile {
       width * LAUNCH_X_MIN_PCT,
       width * LAUNCH_X_MAX_PCT,
     );
-    const clampedY = Math.min(y, this.restY);
+    const { height } = this.scene.scale;
+    const minY = height * THROW_LINE_Y_PCT;
+    const clampedY = Phaser.Math.Clamp(y, minY, this.restY);
     this.sprite.setPosition(clampedX, clampedY);
   }
 

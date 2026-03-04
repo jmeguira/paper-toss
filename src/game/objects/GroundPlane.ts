@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import {
   FOCAL_LENGTH,
+  VANISH_Y_PCT,
   GROUND_LINE_COLOR,
   GROUND_LINE_ALPHA,
   GROUND_LINE_COUNT,
@@ -21,7 +22,7 @@ export class GroundPlane {
   draw(): void {
     const { width, height } = this.scene.scale;
     const vanishX = width / 2;
-    const vanishY = height * 0.35;
+    const vanishY = height * VANISH_Y_PCT;
 
     this.graphics.clear();
     this.graphics.lineStyle(1, GROUND_LINE_COLOR, GROUND_LINE_ALPHA);
