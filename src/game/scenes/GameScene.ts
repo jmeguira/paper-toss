@@ -8,7 +8,9 @@ import { ModeToggle } from "../ui/ModeToggle";
 import { SwipeInput } from "../systems/SwipeInput";
 import { MechanicalInput } from "../systems/MechanicalInput";
 import { FlightSimulator } from "../systems/FlightSimulator";
+import { WindSystem } from "../systems/WindSystem";
 import { ScoreDisplay } from "../ui/ScoreDisplay";
+import { WindIndicator } from "../ui/WindIndicator";
 import { TARGET_Z, HIT_RADIUS, LANDING_PAUSE_MS } from "../constants";
 
 export class GameScene extends Phaser.Scene {
@@ -16,7 +18,9 @@ export class GameScene extends Phaser.Scene {
   private swipeInput!: SwipeInput;
   private mechInput!: MechanicalInput;
   private flight!: FlightSimulator;
+  private wind!: WindSystem;
   private score!: ScoreDisplay;
+  private windIndicator!: WindIndicator;
   private activeMode: InputModeType = "mechanical";
 
   constructor() {
@@ -45,13 +49,21 @@ export class GameScene extends Phaser.Scene {
         this.score.miss();
       }
 
-      // Brief pause before resetting
+      // Brief pause, then reset with new wind
       this.time.delayedCall(LANDING_PAUSE_MS, () => {
         const { width, height } = this.scale;
         this.projectile.resetPosition(width, height);
+        this.wind.generate();
+        this.windIndicator.update(this.wind.force);
         this.enableActiveMode();
       });
     };
+
+    // Wind
+    this.wind = new WindSystem();
+    this.windIndicator = new WindIndicator(this);
+    this.wind.generate();
+    this.windIndicator.update(this.wind.force);
 
     // Score display
     this.score = new ScoreDisplay(this);
@@ -86,7 +98,7 @@ export class GameScene extends Phaser.Scene {
 
   private handleThrow(params: ThrowParams): void {
     this.disableActiveMode();
-    this.flight.launch(params);
+    this.flight.launch(params, this.wind.force);
   }
 
   private enableActiveMode(): void {

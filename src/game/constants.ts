@@ -4,13 +4,17 @@ export const VANISH_Y_PCT = 0.35;
 export const TARGET_Z = 1200;
 
 // Flight physics
-export const FLIGHT_SPEED = 1000;
+export const FLIGHT_SPEED = 1100;
 export const FLIGHT_LAUNCH_VY = 900;
 export const FLIGHT_GRAVITY = 2000;
 
 // Hit detection
 export const HIT_RADIUS = 250;
 export const LANDING_PAUSE_MS = 600;
+
+// Wind
+export const WIND_MIN = 400;
+export const WIND_MAX = 2000;
 
 // Ground plane
 export const GROUND_LINE_COLOR = 0x3a3a5c;

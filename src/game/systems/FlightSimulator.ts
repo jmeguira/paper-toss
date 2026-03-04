@@ -26,6 +26,7 @@ export class FlightSimulator {
   private vy = 0;
   private vz = 0;
 
+  private windForce = 0;
   private flying = false;
 
   public onLand: ((result: LandingResult) => void) | null = null;
@@ -35,7 +36,8 @@ export class FlightSimulator {
     this.projectile = projectile;
   }
 
-  launch(params: ThrowParams): void {
+  launch(params: ThrowParams, windForce: number = 0): void {
+    this.windForce = windForce;
     const { width, height } = this.scene.scale;
     const vanishY = height * VANISH_Y_PCT;
 
@@ -63,8 +65,9 @@ export class FlightSimulator {
 
     const dt = delta / 1000;
 
-    // Euler integration
+    // Euler integration — gravity on y, wind on x
     this.vy -= FLIGHT_GRAVITY * dt;
+    this.vx += this.windForce * dt;
     this.wx += this.vx * dt;
     this.wy += this.vy * dt;
     this.wz += this.vz * dt;
