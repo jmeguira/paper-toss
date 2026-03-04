@@ -1,26 +1,16 @@
-import { ThrowParams } from "../types";
 import { Projectile } from "../objects/Projectile";
+import { ShotResult } from "./ShotResolver";
 import {
   FOCAL_LENGTH,
   VANISH_Y_PCT,
-  FLIGHT_SPEED,
-  FLIGHT_LATERAL_MULT,
-  FLIGHT_LAUNCH_VY,
   FLIGHT_GRAVITY,
-  TARGET_Z,
-  flightTime,
 } from "../constants";
 
-export interface LandingResult {
-  x: number; // world x at landing
-  z: number; // world z at landing
-}
-
-export class FlightSimulator {
+export class FlightAnimator {
   private scene: Phaser.Scene;
   private projectile: Projectile;
 
-  // Path parameters (set at launch, immutable during flight)
+  // Path parameters (set by play(), immutable during flight)
   private wx0 = 0;
   private wy0 = 0;
   private vx0 = 0;
@@ -33,32 +23,26 @@ export class FlightSimulator {
   private elapsed = 0;
   private flying = false;
 
-  // Pre-computed landing result (known at launch time)
-  private landingX = 0;
+  // The result we're animating — passed through to onComplete
+  private result: ShotResult | null = null;
 
-  public onLand: ((result: LandingResult) => void) | null = null;
+  public onComplete: ((result: ShotResult) => void) | null = null;
 
   constructor(scene: Phaser.Scene, projectile: Projectile) {
     this.scene = scene;
     this.projectile = projectile;
   }
 
-  launch(params: ThrowParams, windForce: number = 0): void {
-    const { width, height } = this.scene.scale;
-
-    // Starting world position (z=0, x from center, y from sprite height)
-    this.wx0 = params.launchX - width / 2;
-    this.wy0 = height - this.projectile.sprite.y;
-
-    // Flight duration and velocities
-    this.duration = flightTime(this.wy0);
-    this.vx0 = FLIGHT_SPEED * FLIGHT_LATERAL_MULT * Math.sin(params.angle);
-    this.vy0 = FLIGHT_LAUNCH_VY;
-    this.vz = TARGET_Z / this.duration;
-    this.wind = windForce;
-
-    // Landing result — known now, delivered when animation finishes
-    this.landingX = this.vx0 * this.duration + 0.5 * windForce * this.duration ** 2;
+  play(result: ShotResult): void {
+    const { wx0, wy0, vx0, vy0, vz, wind, duration } = result.path;
+    this.wx0 = wx0;
+    this.wy0 = wy0;
+    this.vx0 = vx0;
+    this.vy0 = vy0;
+    this.vz = vz;
+    this.wind = wind;
+    this.duration = duration;
+    this.result = result;
 
     this.elapsed = 0;
     this.flying = true;
@@ -73,11 +57,10 @@ export class FlightSimulator {
     this.elapsed += delta / 1000;
 
     if (this.elapsed >= this.duration) {
-      // Animation complete — snap to landing position
       this.elapsed = this.duration;
       this.flying = false;
       this.evaluate(this.duration);
-      this.onLand?.({ x: this.landingX, z: TARGET_Z });
+      this.onComplete?.(this.result!);
       return;
     }
 

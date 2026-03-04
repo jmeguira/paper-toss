@@ -19,13 +19,37 @@ export function flightTime(startHeight: number): number {
   );
 }
 
-// Hit detection — five landing tiers (perfect ⊂ hit ⊂ near-hit ⊂ near-miss ⊂ miss)
+// Hit detection — landing tiers ordered innermost → outermost
+// Single source of truth: add/remove/rename tiers here, everything else derives.
 export const TARGET_RADIUS = 250;
-export const PERFECT_PCT = 0.05; // perfect = dead-center 5% of target
-export const HIT_PCT = 0.6; // clean hit = inner 60% of target
-export const PERFECT_RADIUS = TARGET_RADIUS * PERFECT_PCT;
-export const HIT_RADIUS = TARGET_RADIUS * HIT_PCT;
-export const NEAR_MISS_RADIUS = TARGET_RADIUS * (2 - HIT_PCT); // mirrors near-hit band outward
+export const LANDING_TIERS = [
+  { id: "PERFECT",   label: "PERFECT",   pct: 0.05, scores: true },
+  { id: "HIT",       label: "HIT",       pct: 0.60, scores: true },
+  { id: "NEAR_HIT",  label: "NEAR HIT",  pct: 1.00, scores: true },
+  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.40, scores: false },
+  { id: "MISS",      label: "MISS",      pct: Infinity, scores: false },
+] as const;
+export type LandingTier = (typeof LANDING_TIERS)[number]["id"];
+export function tierInfo(tier: LandingTier) {
+  return LANDING_TIERS.find(t => t.id === tier)!;
+}
+
+// Sanity check — runs once at module load, costs nothing in prod
+(function validateTiers() {
+  for (let i = 1; i < LANDING_TIERS.length; i++) {
+    const prev = LANDING_TIERS[i - 1];
+    const curr = LANDING_TIERS[i];
+    if (curr.pct <= prev.pct) {
+      throw new Error(
+        `LANDING_TIERS: "${curr.id}" pct (${curr.pct}) must be > "${prev.id}" pct (${prev.pct})`,
+      );
+    }
+  }
+  if (isFinite(LANDING_TIERS[LANDING_TIERS.length - 1].pct)) {
+    throw new Error("LANDING_TIERS: last tier must have pct = Infinity (catch-all)");
+  }
+})();
+
 export const LANDING_PAUSE_MS = 600;
 
 // Wind

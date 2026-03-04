@@ -47,9 +47,9 @@ export class MechanicalInput implements InputMode {
       this.onThrow?.(params);
     };
 
-    // Angle indicator — above ball
+    // Angle indicator — centered on ball
     this.indicator = new AngleIndicator(scene, MECH_ANGLE_SWEEP_SPEED);
-    this.indicator.setPosition(width / 2, ballY - 20);
+    this.indicator.setPosition(width / 2, ballY);
 
     // Start hidden
     this.setVisible(false);

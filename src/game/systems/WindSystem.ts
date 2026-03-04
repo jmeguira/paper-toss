@@ -1,13 +1,18 @@
 import {
   WIND_MIN,
+  BALL_REST_Y_PCT,
   MISS_BUFFER,
   FLIGHT_SPEED,
   FLIGHT_LATERAL_MULT,
-  BALL_REST_Y_PCT,
   LAUNCH_ANGLE_MAX,
-  NEAR_MISS_RADIUS,
+  LANDING_TIERS,
+  TARGET_RADIUS,
   flightTime,
 } from "../constants";
+
+/** Outermost finite tier radius — wind cap keeps this + buffer inside the cone. */
+const finiteTiers = LANDING_TIERS.filter(t => isFinite(t.pct));
+const OUTER_RADIUS = TARGET_RADIUS * finiteTiers[finiteTiers.length - 1].pct;
 
 export class WindSystem {
   /** Current wind force — positive = right, negative = left */
@@ -18,9 +23,7 @@ export class WindSystem {
     this.screenHeight = screenHeight;
   }
 
-  /** Max wind where the full near-miss zone + miss buffer fits within
-   *  LAUNCH_ANGLE_MAX. Guarantees clear miss space on both flanks — the
-   *  player can't hug the angle boundary for a free hit. */
+  /** Max wind that guarantees solvability (clear miss space on both flanks). */
   get maxWind(): number {
     const wy0 = this.screenHeight * (1 - BALL_REST_Y_PCT);
     const ft = flightTime(wy0);
@@ -28,7 +31,7 @@ export class WindSystem {
       FLIGHT_SPEED * FLIGHT_LATERAL_MULT * Math.sin(LAUNCH_ANGLE_MAX);
     const maxPlayerDrift = maxPlayerVx * ft;
     const windDriftPerForce = 0.5 * ft * ft;
-    return (maxPlayerDrift - (NEAR_MISS_RADIUS + MISS_BUFFER)) / windDriftPerForce;
+    return (maxPlayerDrift - (OUTER_RADIUS + MISS_BUFFER)) / windDriftPerForce;
   }
 
   /** Generate a new random wind for the next throw.
