@@ -23,7 +23,6 @@ Opens a local dev server with hot reload. Use Chrome DevTools device emulation f
 - `DESIGN.md` — confirmed and open design decisions
 - `JOURNAL.md` — build log, what was done and when
 - `LEARNING.md` — concepts and Q&A from the build process
-- `TODO.md` — polish items and tech debt
 - `CLAUDE.md` — AI assistant instructions (persona, workflow, conventions)
 
 ## Build

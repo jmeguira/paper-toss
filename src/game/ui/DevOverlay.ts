@@ -3,45 +3,9 @@ import {
   DEV_MODE,
   BALL_REST_Y_PCT,
   ANGLE_BOUNDS_LENGTH_PCT,
-  FLIGHT_SPEED,
-  FLIGHT_LATERAL_MULT,
-  PERFECT_RADIUS,
-  HIT_RADIUS,
-  TARGET_RADIUS,
-  NEAR_MISS_RADIUS,
-  MISS_BUFFER,
   LAUNCH_ANGLE_MAX,
-  flightTime,
 } from "../constants";
-
-/**
- * Compute the left/right throw angles that land exactly ±radius from
- * the wind-adjusted center. Clamps to LAUNCH_ANGLE_MAX when the edge
- * falls outside the reachable cone.
- */
-function channelEdges(
-  radius: number,
-  windDrift: number,
-  flightTime: number,
-  maxVx: number,
-): [number, number] {
-  const vxLeft = (-radius - windDrift) / flightTime;
-  const vxRight = (radius - windDrift) / flightTime;
-
-  const rawLeft = vxLeft / maxVx;
-  const rawRight = vxRight / maxVx;
-
-  const angleLeft =
-    Math.abs(rawLeft) <= 1
-      ? Math.asin(rawLeft)
-      : Math.sign(rawLeft) * LAUNCH_ANGLE_MAX;
-  const angleRight =
-    Math.abs(rawRight) <= 1
-      ? Math.asin(rawRight)
-      : Math.sign(rawRight) * LAUNCH_ANGLE_MAX;
-
-  return [angleLeft, angleRight];
-}
+import { resolveZones } from "../systems/ShotResolver";
 
 /** Convert our angle convention (0 = up, + = right) to canvas (0 = right, + = CW) */
 function toCanvas(angle: number): number {
@@ -77,7 +41,7 @@ export class DevOverlay {
     });
   }
 
-  update(windForce: number): void {
+  update(windForce: number, targetZ: number): void {
     if (!this.graphics) return;
 
     const { width, height } = this.scene.scale;
@@ -85,21 +49,13 @@ export class DevOverlay {
     const originY = height * BALL_REST_Y_PCT;
     const arcRadius = height * ANGLE_BOUNDS_LENGTH_PCT * 0.8;
 
-    const wy0 = height * (1 - BALL_REST_Y_PCT);
-    const ft = flightTime(wy0);
-    const windDrift = 0.5 * windForce * ft * ft;
-    const maxVx = FLIGHT_SPEED * FLIGHT_LATERAL_MULT;
+    const zones = resolveZones(targetZ, windForce);
+    this.solvedAngle = zones.solvedAngle;
 
-    // Solved angle — dead center hit (stored for perfect throw button)
-    this.solvedAngle = Math.asin(
-      Phaser.Math.Clamp(-windDrift / ft / maxVx, -1, 1),
-    ) as number;
-
-    // Edge angles for each zone
-    const [perfL, perfR] = channelEdges(PERFECT_RADIUS, windDrift, ft, maxVx);
-    const [hitL, hitR] = channelEdges(HIT_RADIUS, windDrift, ft, maxVx);
-    const [targetL, targetR] = channelEdges(TARGET_RADIUS, windDrift, ft, maxVx);
-    const [nmL, nmR] = channelEdges(NEAR_MISS_RADIUS, windDrift, ft, maxVx);
+    const [perfL, perfR] = zones.edges.get("PERFECT")!;
+    const [hitL, hitR] = zones.edges.get("HIT")!;
+    const [targetL, targetR] = zones.edges.get("NEAR_HIT")!;
+    const [nmL, nmR] = zones.edges.get("NEAR_MISS")!;
 
     const MIN_ARC = 0.005;
     const fillSector = (from: number, to: number) => {
@@ -116,14 +72,9 @@ export class DevOverlay {
     fillSector(nmR, LAUNCH_ANGLE_MAX);
 
     // --- Buffer indicators (blue, fixed-width slivers flush to boundaries) ---
-    // Angular width of MISS_BUFFER is wind-independent — purely a function of
-    // flight physics. Shows exactly how much padding the wind cap buys us.
-    const bufAngleWidth = LAUNCH_ANGLE_MAX - Math.asin(
-      Math.sin(LAUNCH_ANGLE_MAX) - MISS_BUFFER / (maxVx * ft),
-    );
     this.graphics.fillStyle(0x4488ff, 0.15);
-    fillSector(-LAUNCH_ANGLE_MAX, -LAUNCH_ANGLE_MAX + bufAngleWidth);
-    fillSector(LAUNCH_ANGLE_MAX - bufAngleWidth, LAUNCH_ANGLE_MAX);
+    fillSector(-LAUNCH_ANGLE_MAX, -LAUNCH_ANGLE_MAX + zones.bufferAngleWidth);
+    fillSector(LAUNCH_ANGLE_MAX - zones.bufferAngleWidth, LAUNCH_ANGLE_MAX);
 
     // --- Near-miss (red/amber) ---
     this.graphics.fillStyle(0xff6644, 0.18);

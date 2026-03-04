@@ -117,3 +117,22 @@
 - **Analytical flight conversion** — Replaced Euler integration with parametric path evaluation. Flight result computed at launch time; `update()` evaluates `wx(t), wy(t), wz(t)` as pure functions of elapsed time. Zero drift, frame-rate independent, solver and flight use identical equations
 - **Flight time fix** — Added shared `flightTime(startHeight)` function (quadratic formula). Fixed systematic error where ball started above ground but flight time assumed ground-level start. Applied to FlightSimulator, DevOverlay, and WindSystem
 - **WindSystem refactor** — Now takes `screenHeight` in constructor for correct flight time. `maxWind` derived from physics + buffer constraint
+
+### Difficulty Levels (Distance-Driven Flight Time) ✅
+- **Flight model rework** — Replaced gravity-based `flightTime(startHeight)` with distance-based `flightTime(targetZ) = targetZ / FORWARD_SPEED`. Duration now scales with distance, so wind drift scales with distance squared
+- **Per-shot launch velocity** — `vy0` computed per-shot from kinematics (`0.5·g·t − wy0/t`) instead of hardcoded constant. Easy = flat toss (~725), Medium = current feel (~1400), Hard = high arc (~2168)
+- **Difficulty presets** — Three levels defined by `targetZ` alone: Easy (700), Medium (1200), Hard (1800). Everything else derives from physics
+- **Removed constants** — `TARGET_Z` (now per-difficulty), `FLIGHT_LAUNCH_VY` (now per-shot). Added `FORWARD_SPEED = 810`, `DIFFICULTIES` array, `DEFAULT_DIFFICULTY`
+- **Updated all consumers** — ShotResolver, WindSystem, WindIndicator, DevOverlay, Target, GameScene all take `targetZ` as parameter instead of using hardcoded values
+- **Target repositioning** — `Target.setDistance(z)` method for runtime difficulty changes. Projection scale varies naturally (closer = bigger)
+- **WindSystem simplified** — Dropped constructor, `screenHeight` field, `BALL_REST_Y_PCT` dependency. `maxWind(targetZ)` and `generate(targetZ)` take distance directly
+- **Difficulty cycle button** — Top-left at (16, 80), cycles Easy→Medium→Hard→Easy. Repositions target, regenerates wind, updates all indicators
+
+### Code Cleanup Pass ✅
+- Deleted `ThrowLine.ts` — no longer used after flick gesture rework
+- Stripped `Projectile.ts` — removed ball-in-hand methods (pickup, follow, setX, resetShot, isHeld). Now just sprite + resetPosition
+- Stripped `MechanicalInput.ts` — removed L/R arrow buttons, RESET button, commented lateral movement code. Now just GO button + angle oscillator
+- Removed 11 unused constants from `constants.ts` (SWIPE_CANCEL_*, LAUNCH_X_*, BALL_PICKUP_SCALE, BALL_RESET_*, THROW_LINE_*, MECH_BUTTON_SIZE, MECH_MOVE_SPEED)
+- Removed commented ThrowLine import from `GameScene.ts`
+- Removed redundant `as number` cast from `DevOverlay.ts`
+- Updated DESIGN.md, PLAN.md, LEARNING.md — cleared stale references to ball-in-hand, Euler integration, ThrowLine, specific wind values, "swish" naming

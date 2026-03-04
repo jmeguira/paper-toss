@@ -3,35 +3,30 @@ import { InputModeType, ThrowParams } from "../types";
 import { GroundPlane } from "../objects/GroundPlane";
 import { Target } from "../objects/Target";
 import { Projectile } from "../objects/Projectile";
-// v1: ThrowLine disabled — kept on disk for v2 ball-in-hand mode
-// import { ThrowLine } from "../ui/ThrowLine";
 import { AngleBounds } from "../ui/AngleBounds";
 import { ModeToggle } from "../ui/ModeToggle";
 import { SwipeInput } from "../systems/SwipeInput";
 import { MechanicalInput } from "../systems/MechanicalInput";
-import { FlightSimulator } from "../systems/FlightSimulator";
+import { FlightAnimator } from "../systems/FlightAnimator";
 import { WindSystem } from "../systems/WindSystem";
 import { ScoreDisplay } from "../ui/ScoreDisplay";
 import { WindIndicator } from "../ui/WindIndicator";
 import { DevOverlay } from "../ui/DevOverlay";
-import {
-  TARGET_Z,
-  PERFECT_RADIUS,
-  HIT_RADIUS,
-  TARGET_RADIUS,
-  NEAR_MISS_RADIUS,
-  LANDING_PAUSE_MS,
-} from "../constants";
+import { resolveShot } from "../systems/ShotResolver";
+import { LANDING_PAUSE_MS, DIFFICULTIES, DEFAULT_DIFFICULTY, tierInfo } from "../constants";
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
   private swipeInput!: SwipeInput;
   private mechInput!: MechanicalInput;
-  private flight!: FlightSimulator;
+  private flight!: FlightAnimator;
   private wind!: WindSystem;
   private score!: ScoreDisplay;
   private windIndicator!: WindIndicator;
   private devOverlay!: DevOverlay;
+  private target!: Target;
+  private difficulty: (typeof DIFFICULTIES)[number] = DEFAULT_DIFFICULTY;
+  private diffLabel!: Phaser.GameObjects.Text;
   private activeMode: InputModeType = "swipe";
 
   constructor() {
@@ -41,57 +36,43 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     // Background layers (z-order: GroundPlane → Target → AngleBounds → Projectile → UI)
     new GroundPlane(this);
-    new Target(this);
+    this.target = new Target(this, this.difficulty.targetZ);
     new AngleBounds(this);
     this.projectile = new Projectile(this);
 
-    // Flight simulator
-    this.flight = new FlightSimulator(this, this.projectile);
-    this.flight.onLand = (result) => {
-      const dz = result.z - TARGET_Z;
-      const dist = Math.sqrt(result.x * result.x + dz * dz);
-
-      let tier: string;
-      if (dist <= PERFECT_RADIUS) {
-        tier = "PERFECT";
+    // Flight animator
+    this.flight = new FlightAnimator(this, this.projectile);
+    this.flight.onComplete = (result) => {
+      const info = tierInfo(result.tier);
+      if (info.scores) {
         this.score.hit();
-      } else if (dist <= HIT_RADIUS) {
-        tier = "HIT";
-        this.score.hit();
-      } else if (dist <= TARGET_RADIUS) {
-        tier = "NEAR HIT";
-        this.score.hit();
-      } else if (dist <= NEAR_MISS_RADIUS) {
-        tier = "NEAR MISS";
-        this.score.miss();
       } else {
-        tier = "MISS";
         this.score.miss();
       }
 
-      console.log(`Landed: dist=${dist.toFixed(0)} ${tier}`);
+      console.log(`Landed: dist=${result.distance.toFixed(0)} ${info.label}`);
 
       // Brief pause, then reset with new wind
       this.time.delayedCall(LANDING_PAUSE_MS, () => {
         const { width, height } = this.scale;
         this.projectile.resetPosition(width, height);
-        this.wind.generate();
-        this.windIndicator.update(this.wind.force);
-        this.devOverlay.update(this.wind.force);
+        this.wind.generate(this.difficulty.targetZ);
+        this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
+        this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
         this.enableActiveMode();
       });
     };
 
     // Wind
-    this.wind = new WindSystem(this.scale.height);
-    this.windIndicator = new WindIndicator(this, this.wind.maxWind);
+    this.wind = new WindSystem();
+    this.windIndicator = new WindIndicator(this);
     this.devOverlay = new DevOverlay(this);
     this.devOverlay.onPerfectThrow = (angle) => {
       this.handleThrow({ angle, launchX: this.scale.width / 2 });
     };
-    this.wind.generate();
-    this.windIndicator.update(this.wind.force);
-    this.devOverlay.update(this.wind.force);
+    this.wind.generate(this.difficulty.targetZ);
+    this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
+    this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
 
     // Score display
     this.score = new ScoreDisplay(this);
@@ -111,6 +92,18 @@ export class GameScene extends Phaser.Scene {
     toggle.onToggle = (mode) => {
       this.setMode(mode);
     };
+
+    // Difficulty cycle button
+    this.diffLabel = this.add.text(16, 80, this.difficulty.label, {
+      fontFamily: "monospace",
+      fontSize: "16px",
+      color: "#aaaaff",
+      backgroundColor: "#00000066",
+      padding: { x: 6, y: 4 },
+    });
+    this.diffLabel.setDepth(300);
+    this.diffLabel.setInteractive({ useHandCursor: true });
+    this.diffLabel.on("pointerdown", () => this.cycleDifficulty());
   }
 
   update(time: number, delta: number): void {
@@ -122,8 +115,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleThrow(params: ThrowParams): void {
+    const { width, height } = this.scale;
+    const wx0 = params.launchX - width / 2;
+    const wy0 = height - this.projectile.sprite.y;
+
+    const result = resolveShot(params.angle, wx0, wy0, this.wind.force, this.difficulty.targetZ);
+
     this.disableActiveMode();
-    this.flight.launch(params, this.wind.force);
+    this.flight.play(result);
   }
 
   private enableActiveMode(): void {
@@ -140,6 +139,16 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.mechInput.disable();
     }
+  }
+
+  private cycleDifficulty(): void {
+    const idx = DIFFICULTIES.indexOf(this.difficulty);
+    this.difficulty = DIFFICULTIES[(idx + 1) % DIFFICULTIES.length];
+    this.diffLabel.setText(this.difficulty.label);
+    this.target.setDistance(this.difficulty.targetZ);
+    this.wind.generate(this.difficulty.targetZ);
+    this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
+    this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
   }
 
   private setMode(mode: InputModeType): void {

@@ -1,31 +1,59 @@
 // Camera / fake-3D projection
 export const FOCAL_LENGTH = 300;
 export const VANISH_Y_PCT = 0.35;
-export const TARGET_Z = 1200;
 
 // Flight physics
+export const FORWARD_SPEED = 810;
 export const FLIGHT_SPEED = 1100;
 export const FLIGHT_LATERAL_MULT = 2.0;
-export const FLIGHT_LAUNCH_VY = 1400;
 export const FLIGHT_GRAVITY = 2000;
 
-/** Actual flight time accounting for starting height above ground.
- *  Solves: 0 = startHeight + vy·t − ½g·t² for the positive root. */
-export function flightTime(startHeight: number): number {
-  return (
-    (FLIGHT_LAUNCH_VY +
-      Math.sqrt(FLIGHT_LAUNCH_VY ** 2 + 2 * FLIGHT_GRAVITY * startHeight)) /
-    FLIGHT_GRAVITY
-  );
+/** Flight duration for a given target distance.
+ *  Distance is the single difficulty knob — everything else derives. */
+export function flightTime(targetZ: number): number {
+  return targetZ / FORWARD_SPEED;
 }
 
-// Hit detection — five landing tiers (perfect ⊂ hit ⊂ near-hit ⊂ near-miss ⊂ miss)
+// Difficulty presets — targetZ is the only knob
+export const DIFFICULTIES = [
+  { id: "EASY",   label: "Easy",   targetZ: 700 },
+  { id: "MEDIUM", label: "Medium", targetZ: 1200 },
+  { id: "HARD",   label: "Hard",   targetZ: 1800 },
+] as const;
+export type DifficultyId = (typeof DIFFICULTIES)[number]["id"];
+export const DEFAULT_DIFFICULTY = DIFFICULTIES[1]; // Medium
+
+// Hit detection — landing tiers ordered innermost → outermost
+// Single source of truth: add/remove/rename tiers here, everything else derives.
 export const TARGET_RADIUS = 250;
-export const PERFECT_PCT = 0.05; // perfect = dead-center 5% of target
-export const HIT_PCT = 0.6; // clean hit = inner 60% of target
-export const PERFECT_RADIUS = TARGET_RADIUS * PERFECT_PCT;
-export const HIT_RADIUS = TARGET_RADIUS * HIT_PCT;
-export const NEAR_MISS_RADIUS = TARGET_RADIUS * (2 - HIT_PCT); // mirrors near-hit band outward
+export const LANDING_TIERS = [
+  { id: "PERFECT",   label: "PERFECT",   pct: 0.05, scores: true },
+  { id: "HIT",       label: "HIT",       pct: 0.60, scores: true },
+  { id: "NEAR_HIT",  label: "NEAR HIT",  pct: 1.00, scores: true },
+  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.40, scores: false },
+  { id: "MISS",      label: "MISS",      pct: Infinity, scores: false },
+] as const;
+export type LandingTier = (typeof LANDING_TIERS)[number]["id"];
+export function tierInfo(tier: LandingTier) {
+  return LANDING_TIERS.find(t => t.id === tier)!;
+}
+
+// Sanity check — runs once at module load, costs nothing in prod
+(function validateTiers() {
+  for (let i = 1; i < LANDING_TIERS.length; i++) {
+    const prev = LANDING_TIERS[i - 1];
+    const curr = LANDING_TIERS[i];
+    if (curr.pct <= prev.pct) {
+      throw new Error(
+        `LANDING_TIERS: "${curr.id}" pct (${curr.pct}) must be > "${prev.id}" pct (${prev.pct})`,
+      );
+    }
+  }
+  if (isFinite(LANDING_TIERS[LANDING_TIERS.length - 1].pct)) {
+    throw new Error("LANDING_TIERS: last tier must have pct = Infinity (catch-all)");
+  }
+})();
+
 export const LANDING_PAUSE_MS = 600;
 
 // Wind
@@ -47,8 +75,6 @@ export const PROJECTILE_RADIUS = 45;
 export const PROJECTILE_COLOR = 0xf5f5f5;
 
 // Swipe input
-export const SWIPE_CANCEL_THRESHOLD_PCT = 0.03;
-export const SWIPE_MIN_DISTANCE_PCT = 0.06;
 export const SWIPE_MIN_SPEED = 300;
 export const SWIPE_MAX_SAMPLES = 60;
 
@@ -57,16 +83,12 @@ export const TARGET_TEXTURE_RADIUS = 360;
 export const TARGET_COLOR = 0xff4444;
 export const TARGET_RING_WIDTH = 4;
 
-// Shared launch bounds (both modes obey these)
+// Shared launch bounds
 export const LAUNCH_ANGLE_MAX = (60 * Math.PI) / 180; // ±60° from vertical
-export const LAUNCH_X_MIN_PCT = 0.25;
-export const LAUNCH_X_MAX_PCT = 0.75;
 
-// Ball pickup / hold
+// Ball
 export const BALL_PICKUP_RADIUS_PCT = 0.15;
-export const BALL_PICKUP_SCALE = 1.15;
 export const BALL_REST_Y_PCT = 0.85;
-export const BALL_RESET_DURATION_MS = 250;
 
 // Flick pulse feedback (v1 swipe mode)
 export const BALL_TOUCH_SCALE = 1.08;
@@ -77,17 +99,8 @@ export const ANGLE_BOUNDS_LENGTH_PCT = 0.35;
 export const ANGLE_BOUNDS_COLOR = 0xffffff;
 export const ANGLE_BOUNDS_ALPHA = 0.08;
 
-// Throw line
-export const THROW_LINE_Y_PCT = 0.62;
-export const THROW_LINE_COLOR = 0xffffff;
-export const THROW_LINE_ALPHA = 0.15;
-export const THROW_LINE_DASH = 12;
-export const THROW_LINE_GAP = 8;
-
 // Mechanical mode
-export const MECH_BUTTON_SIZE = 64;
 export const MECH_LAUNCH_SIZE = 80;
-export const MECH_MOVE_SPEED = 4;
 export const MECH_ANGLE_SWEEP_SPEED = 2.0;
 export const MECH_INDICATOR_RADIUS = 80;
 
