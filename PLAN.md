@@ -78,10 +78,11 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 
 ### Next up
 - **Code cleanup pass** — Review all files for dead code, stale comments, unused imports, and artifacts from walked-back decisions. Several refactors this session (Euler→analytical, binary→five-tier, flight time fix) likely left cruft behind. Tidy before adding new features.
+- **Dev settings panel** — Live sliders for targetZ, wind range, TARGET_RADIUS, tier percentages, etc. for feel-based tuning without recompiling
 - **Wind curve ramp** — Ramp wind force 30%→100% over flight for dramatic late-flight bending.
 - **Sound + haptics**
 - **Start screen + high score persistence**
-- **Difficulty levels** (target distance)
+- ~~**Difficulty levels** (target distance)~~ ✅ — Distance-driven flight time, three presets (Easy/Medium/Hard), cycle button
 
 ### v2 parking lot
 - Skins (baseball, paper toss aesthetic)

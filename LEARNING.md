@@ -356,6 +356,24 @@
 - This affects vz (forward speed), wind drift, solved angle — everything that depends on flight duration
 - Original code used zero-height time everywhere, causing z-overshoot and incorrect solver predictions
 
+### Distance-driven flight time — the difficulty insight
+- Old model: `flightTime(startHeight)` used a gravity quadratic. Duration was ~1.48s regardless of target distance
+- Problem: changing `targetZ` was cosmetic — wind drift was identical at all distances
+- Fix: `flightTime = targetZ / FORWARD_SPEED`. Now distance IS duration. Wind drift `= ½·wind·t²` scales with distance squared
+- `FORWARD_SPEED = 810` chosen to preserve Medium feel exactly: `1200 / 810 ≈ 1.48s`
+
+### Per-shot computed values vs constants
+- `vy0` was a hardcoded constant (`FLIGHT_LAUNCH_VY = 1400`). Works fine for one distance
+- With variable distance, the arc must fit the flight time: `vy0 = ½g·t − wy0/t` (solve kinematic equation for launch velocity)
+- Easy: ~725 (flat toss), Medium: ~1400 (current), Hard: ~2168 (high arc). Physics creates the right feel automatically
+
+### `as const` narrowing trap
+- `DIFFICULTIES = [...] as const` narrows each element to its literal type
+- `difficulty = DEFAULT_DIFFICULTY` infers `{ id: "MEDIUM", label: "Medium", targetZ: 1200 }` — not the union
+- Assigning a different element (`DIFFICULTIES[0]`) fails because `"EASY"` isn't assignable to `"MEDIUM"`
+- Fix: explicitly type as the union: `difficulty: (typeof DIFFICULTIES)[number] = DEFAULT_DIFFICULTY`
+- Python analogy: like `Literal["MEDIUM"]` vs `Literal["EASY", "MEDIUM", "HARD"]` — TS infers the narrowest type from the initializer
+
 ### Derived constants pattern
 - Landing tiers derived from two knobs: `TARGET_RADIUS` and `HIT_PCT`
 - `HIT_RADIUS = TARGET_RADIUS × HIT_PCT`, `NEAR_MISS_RADIUS = TARGET_RADIUS × (2 - HIT_PCT)`

@@ -41,7 +41,7 @@ export class DevOverlay {
     });
   }
 
-  update(windForce: number): void {
+  update(windForce: number, targetZ: number): void {
     if (!this.graphics) return;
 
     const { width, height } = this.scene.scale;
@@ -49,8 +49,7 @@ export class DevOverlay {
     const originY = height * BALL_REST_Y_PCT;
     const arcRadius = height * ANGLE_BOUNDS_LENGTH_PCT * 0.8;
 
-    const wy0 = height * (1 - BALL_REST_Y_PCT);
-    const zones = resolveZones(wy0, windForce);
+    const zones = resolveZones(targetZ, windForce);
     this.solvedAngle = zones.solvedAngle;
 
     const [perfL, perfR] = zones.edges.get("PERFECT")!;

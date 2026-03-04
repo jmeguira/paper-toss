@@ -4,8 +4,7 @@ import {
   TARGET_RADIUS,
   FLIGHT_SPEED,
   FLIGHT_LATERAL_MULT,
-  FLIGHT_LAUNCH_VY,
-  TARGET_Z,
+  FLIGHT_GRAVITY,
   MISS_BUFFER,
   LAUNCH_ANGLE_MAX,
   flightTime,
@@ -92,14 +91,15 @@ export function resolveShot(
   wx0: number,
   wy0: number,
   windForce: number,
+  targetZ: number,
 ): ShotResult {
-  const duration = flightTime(wy0);
+  const duration = flightTime(targetZ);
   const vx0 = FLIGHT_SPEED * FLIGHT_LATERAL_MULT * Math.sin(angle);
-  const vy0 = FLIGHT_LAUNCH_VY;
-  const vz = TARGET_Z / duration;
+  const vy0 = 0.5 * FLIGHT_GRAVITY * duration - wy0 / duration;
+  const vz = targetZ / duration;
 
   const landingX = vx0 * duration + 0.5 * windForce * duration ** 2;
-  const landingZ = TARGET_Z;
+  const landingZ = targetZ;
   const distance = Math.abs(landingX);
   const tier = classifyTier(distance);
 
@@ -113,8 +113,8 @@ export function resolveShot(
 }
 
 /** Compute angle boundaries for every finite-radius landing tier. */
-export function resolveZones(wy0: number, windForce: number): ZoneInfo {
-  const ft = flightTime(wy0);
+export function resolveZones(targetZ: number, windForce: number): ZoneInfo {
+  const ft = flightTime(targetZ);
   const maxVx = FLIGHT_SPEED * FLIGHT_LATERAL_MULT;
   const windDrift = 0.5 * windForce * ft * ft;
 

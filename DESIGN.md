@@ -55,9 +55,14 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 - Tiers derived from two knobs: `TARGET_RADIUS` and `HIT_PCT`. Near-miss mirrors near-hit band outside the target
 - PERFECT, HIT, and NEAR HIT all count as hits (score). NEAR MISS and MISS reset streak
 
-### Difficulty (future)
-- Target distance controls difficulty: closer = shorter flight, less wind effect, bigger apparent target
-- Lateral target offset adds further complexity (not straight ahead)
+### Difficulty
+- Distance is the single difficulty knob: `targetZ` controls flight time, wind drift, and visual target size
+- `flightTime = targetZ / FORWARD_SPEED` — duration scales linearly with distance, wind drift scales quadratically
+- `vy0` computed per-shot from kinematics so the arc fits the flight time (not a constant)
+- Three presets: Easy (700), Medium (1200), Hard (1800). `FORWARD_SPEED = 810` preserves current Medium feel
+- Wind range auto-scales via physics: shorter flight → higher maxWind allowed but less actual drift
+- Visual target size scales naturally via depth projection (closer = bigger)
+- Lateral target offset adds further complexity (not straight ahead — v2)
 - Play area aspect ratio should be locked for universal feel across devices
 
 ### Swipe Input (v1 rework)
@@ -72,12 +77,13 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 
 ### Flight Tuning (v1)
 - Lateral multiplier (2.0x) decouples sideways speed from forward speed for dramatic banana arcs
-- FLIGHT_LAUNCH_VY bumped to 1400 (from 900) — ball launches from rest position (85%) not throw line (62%)
+- Launch velocity (`vy0`) computed per-shot from kinematics — adapts to difficulty distance automatically
 - Wind range derived from physics — high floor ensures every throw has wind, cap guarantees solvability
 
 ### Flight Model
 - Analytical (parametric path), not Euler simulation. Landing result computed at throw time; animation is cosmetic
-- `flightTime(startHeight)` shared helper — quadratic formula accounting for ball starting above ground
+- `flightTime(targetZ)` = `targetZ / FORWARD_SPEED` — distance-based, not gravity-based
+- `vy0 = 0.5·g·duration − wy0/duration` — computed per-shot so arc fits flight time
 - Flight path: `wx(t) = wx0 + vx0·t + ½·wind·t²`, `wy(t) = wy0 + vy0·t - ½·g·t²`, `wz(t) = vz·t`
 - Enables future presentation tricks (exaggerated arcs, slow-mo, screen shake) without affecting outcomes
 
