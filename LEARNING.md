@@ -329,3 +329,35 @@
 - `yoyo: true` in a tween config makes it animate to the target value then back to the start
 - Used for the flick pulse: scale 1→1.08→1 in 80ms — quick visual acknowledgment without moving the ball
 - Like a CSS keyframe that goes 0% → 50% → 100% automatically
+
+## Analytical vs Simulation Flight (Session 4)
+
+### Why analytical beats Euler for deterministic games
+- Euler integration accumulates error each frame — the ball drifts from where math says it should land
+- The error is proportional to `windForce × dt × flightTime` — small per frame, significant over a full flight
+- Analytical: compute exact landing position at throw time, animate the path as a parametric curve
+- Result: solver, overlay, wind cap, and flight all use the same equations — single source of truth
+- Frame-rate independent: same path at 30fps or 144fps. No accumulated state, no drift
+
+### Parametric path evaluation
+- Store path parameters at launch: `wx0, wy0, vx0, vy0, vz, wind, duration`
+- Each frame: `wx(t) = wx0 + vx0·t + ½·wind·t²`, `wy(t) = wy0 + vy0·t - ½·g·t²`, `wz(t) = vz·t`
+- Pure function of elapsed time — no mutable velocity state, no integration loop
+- Landing result known at launch, just delayed until animation finishes
+
+### Decoupling physics from presentation
+- When flight result is pre-computed, the animation is "just a movie"
+- Can exaggerate arcs, add slow-mo near target, screen shake — without affecting outcomes
+- Future mid-flight mechanics (gusts, obstacles) = split the analytical path into segments at event boundaries, or compute ray-curve intersections
+
+### Flight time with starting height
+- Ball starts above ground (`wy0 = height × 0.15`), so actual flight time is longer than `2·vy/g`
+- Correct formula: `T = (vy + √(vy² + 2·g·h)) / g` (positive root of the quadratic)
+- This affects vz (forward speed), wind drift, solved angle — everything that depends on flight duration
+- Original code used zero-height time everywhere, causing z-overshoot and incorrect solver predictions
+
+### Derived constants pattern
+- Landing tiers derived from two knobs: `TARGET_RADIUS` and `HIT_PCT`
+- `HIT_RADIUS = TARGET_RADIUS × HIT_PCT`, `NEAR_MISS_RADIUS = TARGET_RADIUS × (2 - HIT_PCT)`
+- Change one value, all zones scale proportionally. Near-miss mirrors the near-hit band outward
+- Same principle as CSS variables or Python dataclass computed fields

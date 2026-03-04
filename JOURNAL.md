@@ -105,3 +105,15 @@
 - **Solvability** — At max wind, some shots may be unsolvable. Need to compute max solvable wind or cap dynamically.
 - **Second-half curve acceleration** — Wind ramp during flight (30%→100%) for more dramatic late-flight bending.
 - **Three-tier landing animations** — Swish (clean hit), rim shot (near miss, ball deflects), wide miss (sails past). Replaces binary hit/miss.
+
+## 2026-03-04
+
+### Dev Overlay + Landing Tiers + Analytical Flight ✅
+- **Ball rest position** — Lowered from 80% to 85% of viewport height for better flick ergonomics
+- **Five-tier landing zones** — PERFECT (5% of target) / HIT (60%) / NEAR HIT (100%) / NEAR MISS (mirrored outward) / MISS. Tiers derived from two tuning knobs: `TARGET_RADIUS` and `HIT_PCT`
+- **Dev overlay** — Created `DevOverlay` component with arc-sector visualization of all landing zones: gold (perfect), bright green (swish), subtle green (hit), red/amber (near-miss), light red (miss), blue buffer slivers at boundaries. Uses `channelEdges()` helper for angle math
+- **Wind cap with miss buffer** — Added `MISS_BUFFER` constant (150 world units). Wind cap formula uses `NEAR_MISS_RADIUS + MISS_BUFFER` to guarantee missable space on both flanks. Buffer visualized as fixed-width blue slivers at angle boundaries
+- **Perfect throw button** — Dev-mode "▶ Perfect" button fires mathematically solved angle. Wired via callback to `handleThrow()`
+- **Analytical flight conversion** — Replaced Euler integration with parametric path evaluation. Flight result computed at launch time; `update()` evaluates `wx(t), wy(t), wz(t)` as pure functions of elapsed time. Zero drift, frame-rate independent, solver and flight use identical equations
+- **Flight time fix** — Added shared `flightTime(startHeight)` function (quadratic formula). Fixed systematic error where ball started above ground but flight time assumed ground-level start. Applied to FlightSimulator, DevOverlay, and WindSystem
+- **WindSystem refactor** — Now takes `screenHeight` in constructor for correct flight time. `maxWind` derived from physics + buffer constraint

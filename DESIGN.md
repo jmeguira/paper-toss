@@ -56,7 +56,9 @@ Two input modes, both obeying identical launch bounds (±60° angle, 25-75% hori
 
 ### Scoring
 - Streak-based: consecutive hits increment counter, any miss resets to 0
-- Binary hit/miss — no accuracy tiers for now
+- Five landing tiers: PERFECT (5% of hit channel), SWISH (60%), NEAR HIT (100%), NEAR MISS (mirrored outward), MISS
+- Tiers derived from two knobs: `TARGET_RADIUS` and `HIT_PCT`. Near-miss mirrors near-hit band outside the target
+- PERFECT, HIT, and NEAR HIT all count as hits (score). NEAR MISS and MISS reset streak
 
 ### Difficulty (future)
 - Target distance controls difficulty: closer = shorter flight, less wind effect, bigger apparent target
@@ -80,9 +82,22 @@ Two input modes, both obeying identical launch bounds (±60° angle, 25-75% hori
 - Wind range: 1000–2500 (high floor = every throw has wind, high ceiling = challenging)
 - Known issue: max wind may produce unsolvable shots — needs dynamic capping
 
-### Landing (planned)
-- Three tiers: swish (clean hit), rim (near miss, deflection animation), wide miss
-- Replaces current binary hit/miss
+### Flight Model
+- Analytical (parametric path), not Euler simulation. Landing result computed at throw time; animation is cosmetic
+- `flightTime(startHeight)` shared helper — quadratic formula accounting for ball starting above ground
+- Flight path: `wx(t) = wx0 + vx0·t + ½·wind·t²`, `wy(t) = wy0 + vy0·t - ½·g·t²`, `wz(t) = vz·t`
+- Enables future presentation tricks (exaggerated arcs, slow-mo, screen shake) without affecting outcomes
+
+### Wind Solvability
+- Wind cap derived from `NEAR_MISS_RADIUS + MISS_BUFFER` — guarantees missable space on both flanks
+- `MISS_BUFFER` = 150 world units of clear space beyond near-miss zone at each angle boundary
+- At max wind, near-miss zone runs right up to buffer line but never crosses it
+- Every shot is solvable: there's always an angle that hits, and always room to miss on both sides
+
+### Dev Overlay
+- Arc-sector visualization of all landing zones: gold (perfect), green (swish/hit), red (near-miss), light red (miss), blue (buffer)
+- Perfect throw button fires the solved angle — PERFECT hit every time
+- Only visible when `DEV_MODE = true`
 
 ## Open Decisions (for later)
 - Play area aspect ratio (9:16? 9:19.5?)

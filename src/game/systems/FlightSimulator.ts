@@ -1,4 +1,3 @@
-import Phaser from "phaser";
 import { ThrowParams } from "../types";
 import { Projectile } from "../objects/Projectile";
 import {
@@ -8,6 +7,8 @@ import {
   FLIGHT_LATERAL_MULT,
   FLIGHT_LAUNCH_VY,
   FLIGHT_GRAVITY,
+  TARGET_Z,
+  flightTime,
 } from "../constants";
 
 export interface LandingResult {
@@ -19,16 +20,21 @@ export class FlightSimulator {
   private scene: Phaser.Scene;
   private projectile: Projectile;
 
-  // 3D world state
-  private wx = 0;
-  private wy = 0;
-  private wz = 0;
-  private vx = 0;
-  private vy = 0;
+  // Path parameters (set at launch, immutable during flight)
+  private wx0 = 0;
+  private wy0 = 0;
+  private vx0 = 0;
+  private vy0 = 0;
   private vz = 0;
+  private wind = 0;
+  private duration = 0;
 
-  private windForce = 0;
+  // Animation state
+  private elapsed = 0;
   private flying = false;
+
+  // Pre-computed landing result (known at launch time)
+  private landingX = 0;
 
   public onLand: ((result: LandingResult) => void) | null = null;
 
@@ -38,25 +44,25 @@ export class FlightSimulator {
   }
 
   launch(params: ThrowParams, windForce: number = 0): void {
-    this.windForce = windForce;
     const { width, height } = this.scene.scale;
-    const vanishY = height * VANISH_Y_PCT;
 
-    // Derive world y from sprite's current screen position
-    // At z=0: screenY = groundY - wy, groundY = vanishY + (height - vanishY) = height
-    // So: wy = height - spriteY
-    this.wx = params.launchX - width / 2;
-    this.wy = height - this.projectile.sprite.y;
-    this.wz = 0;
+    // Starting world position (z=0, x from center, y from sprite height)
+    this.wx0 = params.launchX - width / 2;
+    this.wy0 = height - this.projectile.sprite.y;
 
-    // Initial velocity from angle — lateral multiplied for dramatic arcs
-    this.vx = FLIGHT_SPEED * FLIGHT_LATERAL_MULT * Math.sin(params.angle);
-    this.vz = FLIGHT_SPEED * Math.cos(params.angle);
-    this.vy = FLIGHT_LAUNCH_VY;
+    // Flight duration and velocities
+    this.duration = flightTime(this.wy0);
+    this.vx0 = FLIGHT_SPEED * FLIGHT_LATERAL_MULT * Math.sin(params.angle);
+    this.vy0 = FLIGHT_LAUNCH_VY;
+    this.vz = TARGET_Z / this.duration;
+    this.wind = windForce;
 
+    // Landing result — known now, delivered when animation finishes
+    this.landingX = this.vx0 * this.duration + 0.5 * windForce * this.duration ** 2;
+
+    this.elapsed = 0;
     this.flying = true;
 
-    // Hide the ball sprite — we'll reposition it each frame
     this.projectile.sprite.setScale(1);
     this.projectile.sprite.setVisible(true);
   }
@@ -64,35 +70,33 @@ export class FlightSimulator {
   update(delta: number): void {
     if (!this.flying) return;
 
-    const dt = delta / 1000;
+    this.elapsed += delta / 1000;
 
-    // Euler integration — gravity on y, wind on x
-    this.vy -= FLIGHT_GRAVITY * dt;
-    this.vx += this.windForce * dt;
-    this.wx += this.vx * dt;
-    this.wy += this.vy * dt;
-    this.wz += this.vz * dt;
-
-    // Landing check
-    if (this.wy <= 0 && this.wz > 0) {
-      this.wy = 0;
+    if (this.elapsed >= this.duration) {
+      // Animation complete — snap to landing position
+      this.elapsed = this.duration;
       this.flying = false;
-      this.project();
-      this.onLand?.({ x: this.wx, z: this.wz });
+      this.evaluate(this.duration);
+      this.onLand?.({ x: this.landingX, z: TARGET_Z });
       return;
     }
 
-    this.project();
+    this.evaluate(this.elapsed);
   }
 
-  private project(): void {
+  /** Evaluate the parametric path at time t and project to screen. */
+  private evaluate(t: number): void {
+    const wx = this.wx0 + this.vx0 * t + 0.5 * this.wind * t * t;
+    const wy = this.wy0 + this.vy0 * t - 0.5 * FLIGHT_GRAVITY * t * t;
+    const wz = this.vz * t;
+
     const { width, height } = this.scene.scale;
     const vanishY = height * VANISH_Y_PCT;
 
-    const scale = FOCAL_LENGTH / (FOCAL_LENGTH + this.wz);
-    const screenX = width / 2 + this.wx * scale;
+    const scale = FOCAL_LENGTH / (FOCAL_LENGTH + wz);
+    const screenX = width / 2 + wx * scale;
     const groundY = vanishY + (height - vanishY) * scale;
-    const screenY = groundY - this.wy * scale;
+    const screenY = groundY - wy * scale;
 
     this.projectile.sprite.setPosition(screenX, screenY);
     this.projectile.sprite.setScale(scale);
