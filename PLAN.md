@@ -62,13 +62,13 @@ Two input modes sharing identical launch bounds (±45° angle, 25–75% horizont
 4. **Projectile at rest** — Place projectile sprite at bottom-center ✅
 5. **SwipeInput** — Implement touch lifecycle, log ThrowParams to console, test with touch emulation ✅ (angle only; power/spin deferred)
 6. **SwipeFeedback** — Ball-in-hand pickup, throw-line crossing, mechanical input mode, mode toggle ✅ (deviated from original plan: implemented full input rework with two modes instead of just visual cues)
-7. **FlightSimulator (gravity only)** — Basic ballistic arc with depth scaling, no wind/spin yet
-8. **Hit detection + score** — Check landing vs target, flash on hit, increment score, reset cycle
-9. **Wind** — WindSystem + WindIndicator UI, apply wind force in flight
+7. **FlightSimulator (gravity only)** — Basic ballistic arc with depth scaling, no wind/spin yet ✅ (ball launches from actual position, Euler integration, perspective projection)
+8. **Hit detection + score** — Check landing vs target, flash on hit, increment score, reset cycle ✅ (world-space distance check, streak counter, filled target matching hit zone)
+9. **Wind** — WindSystem + WindIndicator UI, apply wind force in flight ✅ (lateral only, abstract 0–10 display scale, per-throw randomization)
 10. ~~**Spin** — Enable spin in SwipeInput + FlightSimulator, verify curved swipes → curved flights~~ (deferred — see TODO)
 11. **Polish** — Tune constants, throw-reset flow, session score
 
-Steps 1–8 = core MVP. Step 9 = skill-depth. Step 11 = playtest loop.
+Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop.
 
 ## Verification
 - `npm run dev` → game loads on mobile browser / Chrome DevTools touch emulation
