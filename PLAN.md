@@ -89,6 +89,13 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 - Alternative game modes
 - Lateral launch point (re-enable L/R buttons)
 - Moving targets
+- Power mechanic (swipe speed, separate UI, or fixed)
+- Spin mechanic (curved swipe → curved flight)
+- Projectile types (Heavy/Balanced/Flippy) with unlock system
+- Swipe sensitivity settings (user-adjustable thresholds)
+- Accessibility options (mechanical angle/power input alternatives)
+- Dynamic window resizing (reposition objects on viewport change — desktop only)
+- Overall complexity tuning (how many mechanics is the right amount)
 
 ## Verification
 - `npm run dev` → game loads on mobile browser / Chrome DevTools touch emulation
