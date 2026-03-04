@@ -1,12 +1,13 @@
 import Phaser from "phaser";
-import { WIND_MAX } from "../constants";
 
 export class WindIndicator {
   private arrow: Phaser.GameObjects.Graphics;
   private label: Phaser.GameObjects.Text;
   private scene: Phaser.Scene;
+  private maxWind: number;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, maxWind: number) {
+    this.maxWind = maxWind;
     this.scene = scene;
     this.arrow = scene.add.graphics();
     this.arrow.setDepth(100);
@@ -29,7 +30,7 @@ export class WindIndicator {
 
     // Arrow length proportional to force strength
     const maxLength = 60;
-    const length = (Math.abs(force) / WIND_MAX) * maxLength;
+    const length = (Math.abs(force) / this.maxWind) * maxLength;
     const dir = Math.sign(force);
 
     this.arrow.clear();
@@ -50,7 +51,7 @@ export class WindIndicator {
     this.arrow.lineBetween(tipX, y, tipX - headSize * dir, y + headSize);
 
     // Display as abstract 0.00–10.00 scale
-    const display = (Math.abs(force) / WIND_MAX) * 10;
+    const display = (Math.abs(force) / this.maxWind) * 10;
     this.label.setPosition(centerX, y + 14);
     this.label.setText(display.toFixed(2));
   }

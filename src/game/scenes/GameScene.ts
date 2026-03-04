@@ -13,7 +13,15 @@ import { FlightSimulator } from "../systems/FlightSimulator";
 import { WindSystem } from "../systems/WindSystem";
 import { ScoreDisplay } from "../ui/ScoreDisplay";
 import { WindIndicator } from "../ui/WindIndicator";
-import { TARGET_Z, HIT_RADIUS, LANDING_PAUSE_MS } from "../constants";
+import { DevOverlay } from "../ui/DevOverlay";
+import {
+  TARGET_Z,
+  PERFECT_RADIUS,
+  SWISH_RADIUS,
+  HIT_RADIUS,
+  NEAR_MISS_RADIUS,
+  LANDING_PAUSE_MS,
+} from "../constants";
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
@@ -23,6 +31,7 @@ export class GameScene extends Phaser.Scene {
   private wind!: WindSystem;
   private score!: ScoreDisplay;
   private windIndicator!: WindIndicator;
+  private devOverlay!: DevOverlay;
   private activeMode: InputModeType = "swipe";
 
   constructor() {
@@ -41,15 +50,26 @@ export class GameScene extends Phaser.Scene {
     this.flight.onLand = (result) => {
       const dz = result.z - TARGET_Z;
       const dist = Math.sqrt(result.x * result.x + dz * dz);
-      const isHit = dist <= HIT_RADIUS;
 
-      console.log(`Landed: dist=${dist.toFixed(0)} ${isHit ? "HIT" : "MISS"}`);
-
-      if (isHit) {
+      let tier: string;
+      if (dist <= PERFECT_RADIUS) {
+        tier = "PERFECT";
         this.score.hit();
+      } else if (dist <= SWISH_RADIUS) {
+        tier = "SWISH";
+        this.score.hit();
+      } else if (dist <= HIT_RADIUS) {
+        tier = "NEAR HIT";
+        this.score.hit();
+      } else if (dist <= NEAR_MISS_RADIUS) {
+        tier = "NEAR MISS";
+        this.score.miss();
       } else {
+        tier = "MISS";
         this.score.miss();
       }
+
+      console.log(`Landed: dist=${dist.toFixed(0)} ${tier}`);
 
       // Brief pause, then reset with new wind
       this.time.delayedCall(LANDING_PAUSE_MS, () => {
@@ -57,15 +77,21 @@ export class GameScene extends Phaser.Scene {
         this.projectile.resetPosition(width, height);
         this.wind.generate();
         this.windIndicator.update(this.wind.force);
+        this.devOverlay.update(this.wind.force);
         this.enableActiveMode();
       });
     };
 
     // Wind
-    this.wind = new WindSystem();
-    this.windIndicator = new WindIndicator(this);
+    this.wind = new WindSystem(this.scale.height);
+    this.windIndicator = new WindIndicator(this, this.wind.maxWind);
+    this.devOverlay = new DevOverlay(this);
+    this.devOverlay.onPerfectThrow = (angle) => {
+      this.handleThrow({ angle, launchX: this.scale.width / 2 });
+    };
     this.wind.generate();
     this.windIndicator.update(this.wind.force);
+    this.devOverlay.update(this.wind.force);
 
     // Score display
     this.score = new ScoreDisplay(this);

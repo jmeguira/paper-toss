@@ -9,13 +9,28 @@ export const FLIGHT_LATERAL_MULT = 2.0;
 export const FLIGHT_LAUNCH_VY = 1400;
 export const FLIGHT_GRAVITY = 2000;
 
-// Hit detection
+/** Actual flight time accounting for starting height above ground.
+ *  Solves: 0 = startHeight + vy·t − ½g·t² for the positive root. */
+export function flightTime(startHeight: number): number {
+  return (
+    (FLIGHT_LAUNCH_VY +
+      Math.sqrt(FLIGHT_LAUNCH_VY ** 2 + 2 * FLIGHT_GRAVITY * startHeight)) /
+    FLIGHT_GRAVITY
+  );
+}
+
+// Hit detection — four landing tiers (swish ⊂ hit ⊂ near-miss ⊂ miss)
 export const HIT_RADIUS = 250;
+export const PERFECT_PCT = 0.05; // perfect = dead-center 5% of hit channel
+export const SWISH_PCT = 0.6; // swish = inner 60% of hit channel
+export const PERFECT_RADIUS = HIT_RADIUS * PERFECT_PCT;
+export const SWISH_RADIUS = HIT_RADIUS * SWISH_PCT;
+export const NEAR_MISS_RADIUS = HIT_RADIUS * (2 - SWISH_PCT); // mirrors near-hit band outward
 export const LANDING_PAUSE_MS = 600;
 
 // Wind
-export const WIND_MIN = 1000;
-export const WIND_MAX = 2500;
+export const WIND_MIN = 1250;
+export const MISS_BUFFER = 150; // clear-miss space beyond near-miss zone, both sides
 
 // Ground plane
 export const GROUND_LINE_COLOR = 0x3a3a5c;
@@ -24,8 +39,11 @@ export const GROUND_LINE_COUNT = 12;
 export const GROUND_MAX_Z = 4000;
 export const GROUND_VERTICAL_COUNT = 8;
 
+// Dev mode
+export const DEV_MODE = true;
+
 // Projectile texture
-export const PROJECTILE_RADIUS = 60;
+export const PROJECTILE_RADIUS = 45;
 export const PROJECTILE_COLOR = 0xf5f5f5;
 
 // Swipe input
@@ -47,7 +65,7 @@ export const LAUNCH_X_MAX_PCT = 0.75;
 // Ball pickup / hold
 export const BALL_PICKUP_RADIUS_PCT = 0.15;
 export const BALL_PICKUP_SCALE = 1.15;
-export const BALL_REST_Y_PCT = 0.8;
+export const BALL_REST_Y_PCT = 0.85;
 export const BALL_RESET_DURATION_MS = 250;
 
 // Flick pulse feedback (v1 swipe mode)
