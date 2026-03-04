@@ -3,8 +3,6 @@ import { InputModeType, ThrowParams } from "../types";
 import { GroundPlane } from "../objects/GroundPlane";
 import { Target } from "../objects/Target";
 import { Projectile } from "../objects/Projectile";
-// v1: ThrowLine disabled — kept on disk for v2 ball-in-hand mode
-// import { ThrowLine } from "../ui/ThrowLine";
 import { AngleBounds } from "../ui/AngleBounds";
 import { ModeToggle } from "../ui/ModeToggle";
 import { SwipeInput } from "../systems/SwipeInput";

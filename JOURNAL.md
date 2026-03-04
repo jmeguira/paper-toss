@@ -117,3 +117,12 @@
 - **Analytical flight conversion** — Replaced Euler integration with parametric path evaluation. Flight result computed at launch time; `update()` evaluates `wx(t), wy(t), wz(t)` as pure functions of elapsed time. Zero drift, frame-rate independent, solver and flight use identical equations
 - **Flight time fix** — Added shared `flightTime(startHeight)` function (quadratic formula). Fixed systematic error where ball started above ground but flight time assumed ground-level start. Applied to FlightSimulator, DevOverlay, and WindSystem
 - **WindSystem refactor** — Now takes `screenHeight` in constructor for correct flight time. `maxWind` derived from physics + buffer constraint
+
+### Code Cleanup Pass ✅
+- Deleted `ThrowLine.ts` — no longer used after flick gesture rework
+- Stripped `Projectile.ts` — removed ball-in-hand methods (pickup, follow, setX, resetShot, isHeld). Now just sprite + resetPosition
+- Stripped `MechanicalInput.ts` — removed L/R arrow buttons, RESET button, commented lateral movement code. Now just GO button + angle oscillator
+- Removed 11 unused constants from `constants.ts` (SWIPE_CANCEL_*, LAUNCH_X_*, BALL_PICKUP_SCALE, BALL_RESET_*, THROW_LINE_*, MECH_BUTTON_SIZE, MECH_MOVE_SPEED)
+- Removed commented ThrowLine import from `GameScene.ts`
+- Removed redundant `as number` cast from `DevOverlay.ts`
+- Updated DESIGN.md, PLAN.md, LEARNING.md — cleared stale references to ball-in-hand, Euler integration, ThrowLine, specific wind values, "swish" naming

@@ -21,21 +21,21 @@ paper-toss/
         BootScene.ts               # Procedural texture generation, then -> GameScene
         GameScene.ts               # Main gameplay orchestrator, mode switching
       systems/
-        SwipeInput.ts              # Ball pickup, drag-to-throw, throw-line crossing
-        MechanicalInput.ts         # Button-based input: ←/→ aim, GO launch, reset
-        FlightSimulator.ts         # (planned) Ballistic arc + wind, 3D→screen projection
-        WindSystem.ts              # (planned) Random wind generation per throw
+        SwipeInput.ts              # Flick gesture input — touch near ball, flick upward
+        MechanicalInput.ts         # Button-based input: oscillating angle + GO launch
+        FlightSimulator.ts         # Analytical parametric flight + wind, 3D→screen projection
+        WindSystem.ts              # Per-throw wind with solvability cap
       objects/
-        Projectile.ts              # Throwable object with pickup/follow/snap-back
+        Projectile.ts              # Throwable object — sprite + reset
         Target.ts                  # Distant target rings
         GroundPlane.ts             # Perspective grid lines
       ui/
-        ThrowLine.ts               # Dashed line at 62% height — throw trigger boundary
         TouchButton.ts             # Reusable circular button with press/release tracking
         AngleIndicator.ts          # Oscillating needle for mechanical mode
         ModeToggle.ts              # S/M toggle to switch input modes
-        WindIndicator.ts           # (planned) Arrow + strength display
-        ScoreDisplay.ts            # (planned) Score counter
+        DevOverlay.ts              # Dev-mode zone visualization + perfect throw button
+        WindIndicator.ts           # Arrow + strength display
+        ScoreDisplay.ts            # Streak counter
 ```
 
 ## Input Mechanic (the core)
@@ -74,7 +74,7 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 
 ### Completed
 - **Swipe rework (A–C)** ✅ — Flick gesture replaces ball-in-hand drag. Fixed center launch. Angle bounds cone. Flight tuning (lateral multiplier, higher arc, wind rebalance). Swipe as default mode.
-- **Dev overlay + landing tiers + analytical flight** ✅ — Five-tier landing zones (PERFECT/SWISH/NEAR HIT/NEAR MISS/MISS) with derived radii. Dev overlay with arc-sector zone visualization. Wind cap with miss buffer guarantee. Perfect throw button. Analytical flight (parametric path replaces Euler integration). Shared `flightTime()` helper fixes starting-height bug.
+- **Dev overlay + landing tiers + analytical flight** ✅ — Five-tier landing zones (PERFECT/HIT/NEAR HIT/NEAR MISS/MISS) with derived radii. Dev overlay with arc-sector zone visualization. Wind cap with miss buffer guarantee. Perfect throw button. Analytical flight (parametric path replaces Euler integration). Shared `flightTime()` helper fixes starting-height bug.
 
 ### Next up
 - **Code cleanup pass** — Review all files for dead code, stale comments, unused imports, and artifacts from walked-back decisions. Several refactors this session (Euler→analytical, binary→five-tier, flight time fix) likely left cruft behind. Tidy before adding new features.

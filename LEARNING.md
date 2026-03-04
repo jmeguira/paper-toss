@@ -171,7 +171,7 @@
 ### Screen-relative thresholds
 - Fixed pixel values (e.g., 30px) mean different things on different screens
 - Percentage of viewport height gives consistent physical feel across devices
-- e.g., `SWIPE_CANCEL_THRESHOLD_PCT = 0.03` → 27px on a 900px phone, 42px on a 1400px desktop
+- e.g., `BALL_REST_Y_PCT = 0.85` → ball position adapts to any screen height
 
 ### Swipe validation — distance vs speed
 - Distance alone is insufficient: a slow 200px drag and a fast 200px flick feel completely different

@@ -47,8 +47,6 @@ export const PROJECTILE_RADIUS = 45;
 export const PROJECTILE_COLOR = 0xf5f5f5;
 
 // Swipe input
-export const SWIPE_CANCEL_THRESHOLD_PCT = 0.03;
-export const SWIPE_MIN_DISTANCE_PCT = 0.06;
 export const SWIPE_MIN_SPEED = 300;
 export const SWIPE_MAX_SAMPLES = 60;
 
@@ -57,16 +55,12 @@ export const TARGET_TEXTURE_RADIUS = 360;
 export const TARGET_COLOR = 0xff4444;
 export const TARGET_RING_WIDTH = 4;
 
-// Shared launch bounds (both modes obey these)
+// Shared launch bounds
 export const LAUNCH_ANGLE_MAX = (60 * Math.PI) / 180; // ±60° from vertical
-export const LAUNCH_X_MIN_PCT = 0.25;
-export const LAUNCH_X_MAX_PCT = 0.75;
 
-// Ball pickup / hold
+// Ball
 export const BALL_PICKUP_RADIUS_PCT = 0.15;
-export const BALL_PICKUP_SCALE = 1.15;
 export const BALL_REST_Y_PCT = 0.85;
-export const BALL_RESET_DURATION_MS = 250;
 
 // Flick pulse feedback (v1 swipe mode)
 export const BALL_TOUCH_SCALE = 1.08;
@@ -77,17 +71,8 @@ export const ANGLE_BOUNDS_LENGTH_PCT = 0.35;
 export const ANGLE_BOUNDS_COLOR = 0xffffff;
 export const ANGLE_BOUNDS_ALPHA = 0.08;
 
-// Throw line
-export const THROW_LINE_Y_PCT = 0.62;
-export const THROW_LINE_COLOR = 0xffffff;
-export const THROW_LINE_ALPHA = 0.15;
-export const THROW_LINE_DASH = 12;
-export const THROW_LINE_GAP = 8;
-
 // Mechanical mode
-export const MECH_BUTTON_SIZE = 64;
 export const MECH_LAUNCH_SIZE = 80;
-export const MECH_MOVE_SPEED = 4;
 export const MECH_ANGLE_SWEEP_SPEED = 2.0;
 export const MECH_INDICATOR_RADIUS = 80;
 

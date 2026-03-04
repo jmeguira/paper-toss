@@ -93,7 +93,7 @@ export class DevOverlay {
     // Solved angle — dead center hit (stored for perfect throw button)
     this.solvedAngle = Math.asin(
       Phaser.Math.Clamp(-windDrift / ft / maxVx, -1, 1),
-    ) as number;
+    );
 
     // Edge angles for each zone
     const [perfL, perfR] = channelEdges(PERFECT_RADIUS, windDrift, ft, maxVx);
