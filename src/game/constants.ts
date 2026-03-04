@@ -5,7 +5,8 @@ export const TARGET_Z = 1200;
 
 // Flight physics
 export const FLIGHT_SPEED = 1100;
-export const FLIGHT_LAUNCH_VY = 900;
+export const FLIGHT_LATERAL_MULT = 2.0;
+export const FLIGHT_LAUNCH_VY = 1400;
 export const FLIGHT_GRAVITY = 2000;
 
 // Hit detection
@@ -13,8 +14,8 @@ export const HIT_RADIUS = 250;
 export const LANDING_PAUSE_MS = 600;
 
 // Wind
-export const WIND_MIN = 400;
-export const WIND_MAX = 2000;
+export const WIND_MIN = 1000;
+export const WIND_MAX = 2500;
 
 // Ground plane
 export const GROUND_LINE_COLOR = 0x3a3a5c;
@@ -48,6 +49,15 @@ export const BALL_PICKUP_RADIUS_PCT = 0.15;
 export const BALL_PICKUP_SCALE = 1.15;
 export const BALL_REST_Y_PCT = 0.8;
 export const BALL_RESET_DURATION_MS = 250;
+
+// Flick pulse feedback (v1 swipe mode)
+export const BALL_TOUCH_SCALE = 1.08;
+export const BALL_TOUCH_PULSE_MS = 80;
+
+// Angle bounds cone
+export const ANGLE_BOUNDS_LENGTH_PCT = 0.35;
+export const ANGLE_BOUNDS_COLOR = 0xffffff;
+export const ANGLE_BOUNDS_ALPHA = 0.08;
 
 // Throw line
 export const THROW_LINE_Y_PCT = 0.62;

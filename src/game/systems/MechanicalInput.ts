@@ -59,7 +59,7 @@ export class MechanicalInput implements InputMode {
       if (!this.enabled) return;
       const params: ThrowParams = {
         angle: this.indicator.angle,
-        launchX: this.projectile.sprite.x,
+        launchX: this.scene.scale.width / 2, // v1: fixed center launch
       };
       console.log("Throw! (mechanical)", params);
       this.onThrow?.(params);
@@ -122,31 +122,31 @@ export class MechanicalInput implements InputMode {
     this.indicator.destroy();
   }
 
-  /** Call from scene update() — handles held-button movement + indicator sweep */
+  /** Call from scene update() — advance angle oscillator */
   update(_time: number, delta: number): void {
     if (!this.enabled) return;
 
-    // Move ball while L/R held
-    if (this.leftBtn.isDown) {
-      this.projectile.setX(this.projectile.sprite.x - MECH_MOVE_SPEED);
-    }
-    if (this.rightBtn.isDown) {
-      this.projectile.setX(this.projectile.sprite.x + MECH_MOVE_SPEED);
-    }
+    // v1: lateral movement disabled — L/R buttons hidden, ball stays center
+    // To re-enable for v2, uncomment below and show L/R in setVisible()
+    // if (this.leftBtn.isDown) {
+    //   this.projectile.setX(this.projectile.sprite.x - MECH_MOVE_SPEED);
+    // }
+    // if (this.rightBtn.isDown) {
+    //   this.projectile.setX(this.projectile.sprite.x + MECH_MOVE_SPEED);
+    // }
+    // const ballY = this.scene.scale.height * BALL_REST_Y_PCT;
+    // this.indicator.setPosition(this.projectile.sprite.x, ballY - 20);
 
-    // Update indicator position to follow ball x
-    const ballY = this.scene.scale.height * BALL_REST_Y_PCT;
-    this.indicator.setPosition(this.projectile.sprite.x, ballY - 20);
-
-    // Advance angle oscillator
     this.indicator.update(delta);
   }
 
   private setVisible(visible: boolean): void {
-    this.leftBtn.setVisible(visible);
-    this.rightBtn.setVisible(visible);
+    // v1: L/R and RESET always hidden — lateral movement disabled
+    // To re-enable for v2: change these to follow `visible` param
+    this.leftBtn.setVisible(false);
+    this.rightBtn.setVisible(false);
+    this.resetBtn.setVisible(false);
     this.launchBtn.setVisible(visible);
-    this.resetBtn.setVisible(visible);
     if (visible) {
       this.indicator.show();
     } else {
