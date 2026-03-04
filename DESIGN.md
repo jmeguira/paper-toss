@@ -63,6 +63,27 @@ Two input modes, both obeying identical launch bounds (±60° angle, 25-75% hori
 - Lateral target offset adds further complexity (not straight ahead)
 - Play area aspect ratio should be locked for universal feel across devices
 
+### Swipe Input (v1 rework)
+- Flick gesture replaces ball-in-hand drag: touch near ball → pulse feedback, flick upward → throw
+- Ball does NOT follow finger. No throw line. No cancel flow.
+- Ball-in-hand code preserved in Projectile/MechanicalInput for potential v2 lateral movement
+- Fixed center launch: ball always at width/2 for v1. Lateral launch is v2.
+- Default input mode: swipe (was mechanical)
+
+### Angle Bounds
+- Two faint lines from ball at ±60° showing valid throw angle range
+- Visible in both input modes (oscillator sweeps within the cone in mechanical mode)
+
+### Flight Tuning (v1)
+- Lateral multiplier (2.0x) decouples sideways speed from forward speed for dramatic banana arcs
+- FLIGHT_LAUNCH_VY bumped to 1400 (from 900) — ball launches from rest position (80%) not throw line (62%)
+- Wind range: 1000–2500 (high floor = every throw has wind, high ceiling = challenging)
+- Known issue: max wind may produce unsolvable shots — needs dynamic capping
+
+### Landing (planned)
+- Three tiers: swish (clean hit), rim (near miss, deflection animation), wide miss
+- Replaces current binary hit/miss
+
 ## Open Decisions (for later)
 - Play area aspect ratio (9:16? 9:19.5?)
 - Obstacle design and placement
@@ -70,4 +91,3 @@ Two input modes, both obeying identical launch bounds (±60° angle, 25-75% hori
 - Visual polish direction (colors, effects, juice)
 - Sound design
 - Haptic feedback on throw/hit
-- Swipe mode: may be binned if feel can't be tuned right. Mechanical mode is primary

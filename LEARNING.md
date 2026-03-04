@@ -311,3 +311,21 @@
 - `vz = FLIGHT_SPEED * cos(angle)` — angled throws travel forward slower
 - At 30°: 87% forward speed. At 60°: 50%. Compensating for wind inherently makes throws harder
 - This creates natural difficulty layering without any explicit difficulty code
+
+### Decoupling lateral and forward speed
+- Problem: single FLIGHT_SPEED controls both sideways (sin) and forward (cos) velocity
+- Increasing FLIGHT_SPEED for bigger lateral arcs also shortens flight time (faster forward), reducing wind effect
+- Solution: separate lateral multiplier — `vx = SPEED * MULT * sin(angle)`, `vz = SPEED * cos(angle)`
+- This lets angle displacement be dramatic without changing how long the ball is in the air
+
+### Wind acceleration vs angle velocity — the solvability trap
+- Launch angle gives a one-time initial velocity (linear displacement: v×t)
+- Wind is constant acceleration (quadratic displacement: ½at²). Over time, wind always wins
+- Worse: steeper angles to compensate slow forward speed (cos drops), giving wind MORE flight time
+- Diminishing returns — there's a mathematical ceiling on how much wind angle can counteract
+- Need to either cap wind dynamically or change the wind model to keep every shot solvable
+
+### Phaser tweens — yoyo
+- `yoyo: true` in a tween config makes it animate to the target value then back to the start
+- Used for the flick pulse: scale 1→1.08→1 in 80ms — quick visual acknowledgment without moving the ball
+- Like a CSS keyframe that goes 0% → 50% → 100% automatically

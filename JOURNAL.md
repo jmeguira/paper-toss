@@ -91,3 +91,17 @@
 ### Session notes
 - Updated CLAUDE.md: refined implementation workflow to three-section format (Design / Noteworthy / Changes), dropped line-by-line narration, Python analogies only when clarifying
 - Design discussions: difficulty scaling via target distance, lateral target offset, play area aspect ratio, swipe feel vs mechanical mode, wind display as abstract units
+
+## 2026-03-03 (session 2)
+
+### v1 Ship: Swipe Rework (Steps A–C) ✅
+- **Step A: Fixed center launch** — Ball always launches from screen center. MechanicalInput: L/R arrow buttons and RESET button hidden (code preserved for v2 lateral movement). launchX hardcoded to width/2. Indicator pinned to center. SwipeInput: launchX hardcoded to center.
+- **Step B: Flick gesture rewrite** — Replaced ball-in-hand drag with flick gesture. Touch near ball → brief pulse tween (scale 1→1.08→1). Ball does NOT follow finger. Flick upward with sufficient speed → throw fires. Invalid gesture → silent no-op. Removed ThrowLine dependency (file kept on disk). Removed onCancel callback. Projectile ball-in-hand methods (pickup/follow/setX/resetShot) preserved but unused.
+- **Step C: Angle bounds visualization** — New AngleBounds component: two faint lines from ball center at ±60°, white at 8% alpha. Visible in both input modes.
+- **Flight tuning** — FLIGHT_LAUNCH_VY bumped 900→1400 for dramatic arc from rest position (ball now launches from 80% height instead of 62% throw line). Added FLIGHT_LATERAL_MULT=2.0 to decouple lateral speed from forward speed — angle displacement doubled for banana-curve feel. Wind range tuned to 1000–2500 (higher floor, higher ceiling).
+- **Default mode** — Switched from mechanical to swipe as default input mode.
+
+### Parked for next session
+- **Solvability** — At max wind, some shots may be unsolvable. Need to compute max solvable wind or cap dynamically.
+- **Second-half curve acceleration** — Wind ramp during flight (30%→100%) for more dramatic late-flight bending.
+- **Three-tier landing animations** — Swish (clean hit), rim shot (near miss, ball deflects), wide miss (sails past). Replaces binary hit/miss.

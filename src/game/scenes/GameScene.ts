@@ -3,7 +3,9 @@ import { InputModeType, ThrowParams } from "../types";
 import { GroundPlane } from "../objects/GroundPlane";
 import { Target } from "../objects/Target";
 import { Projectile } from "../objects/Projectile";
-import { ThrowLine } from "../ui/ThrowLine";
+// v1: ThrowLine disabled — kept on disk for v2 ball-in-hand mode
+// import { ThrowLine } from "../ui/ThrowLine";
+import { AngleBounds } from "../ui/AngleBounds";
 import { ModeToggle } from "../ui/ModeToggle";
 import { SwipeInput } from "../systems/SwipeInput";
 import { MechanicalInput } from "../systems/MechanicalInput";
@@ -21,17 +23,17 @@ export class GameScene extends Phaser.Scene {
   private wind!: WindSystem;
   private score!: ScoreDisplay;
   private windIndicator!: WindIndicator;
-  private activeMode: InputModeType = "mechanical";
+  private activeMode: InputModeType = "swipe";
 
   constructor() {
     super("Game");
   }
 
   create(): void {
-    // Background layers (z-order: GroundPlane → Target → ThrowLine → Projectile → UI)
+    // Background layers (z-order: GroundPlane → Target → AngleBounds → Projectile → UI)
     new GroundPlane(this);
     new Target(this);
-    const throwLine = new ThrowLine(this);
+    new AngleBounds(this);
     this.projectile = new Projectile(this);
 
     // Flight simulator
@@ -69,20 +71,17 @@ export class GameScene extends Phaser.Scene {
     this.score = new ScoreDisplay(this);
 
     // Input systems
-    this.swipeInput = new SwipeInput(this, this.projectile, throwLine);
+    this.swipeInput = new SwipeInput(this, this.projectile);
     this.swipeInput.onThrow = (params) => this.handleThrow(params);
-    this.swipeInput.onCancel = () => {
-      console.log("Cancelled");
-    };
 
     this.mechInput = new MechanicalInput(this, this.projectile);
     this.mechInput.onThrow = (params) => this.handleThrow(params);
 
-    // Start in mechanical mode
-    this.mechInput.enable();
+    // Start in swipe mode
+    this.swipeInput.enable();
 
     // Mode toggle (top-right, highest z)
-    const toggle = new ModeToggle(this, "mechanical");
+    const toggle = new ModeToggle(this, "swipe");
     toggle.onToggle = (mode) => {
       this.setMode(mode);
     };

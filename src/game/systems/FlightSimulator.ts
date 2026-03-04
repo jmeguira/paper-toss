@@ -5,6 +5,7 @@ import {
   FOCAL_LENGTH,
   VANISH_Y_PCT,
   FLIGHT_SPEED,
+  FLIGHT_LATERAL_MULT,
   FLIGHT_LAUNCH_VY,
   FLIGHT_GRAVITY,
 } from "../constants";
@@ -48,8 +49,8 @@ export class FlightSimulator {
     this.wy = height - this.projectile.sprite.y;
     this.wz = 0;
 
-    // Initial velocity from angle
-    this.vx = FLIGHT_SPEED * Math.sin(params.angle);
+    // Initial velocity from angle — lateral multiplied for dramatic arcs
+    this.vx = FLIGHT_SPEED * FLIGHT_LATERAL_MULT * Math.sin(params.angle);
     this.vz = FLIGHT_SPEED * Math.cos(params.angle);
     this.vy = FLIGHT_LAUNCH_VY;
 

@@ -70,6 +70,25 @@ Two input modes sharing identical launch bounds (±45° angle, 25–75% horizont
 
 Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop.
 
+## v1 Ship
+
+### Completed
+- **Swipe rework (A–C)** ✅ — Flick gesture replaces ball-in-hand drag. Fixed center launch. Angle bounds cone. Flight tuning (lateral multiplier, higher arc, wind rebalance). Swipe as default mode.
+
+### Next up
+- **Solvability** — Ensure every wind value is beatable at some angle. Compute max solvable wind or cap dynamically.
+- **Wind curve ramp** — Ramp wind force 30%→100% over flight for dramatic late-flight bending.
+- **Three-tier landing** — Swish (clean hit), rim (near miss deflection), wide miss. Replace binary hit/miss.
+- **Sound + haptics**
+- **Start screen + high score persistence**
+- **Difficulty levels** (target distance)
+
+### v2 parking lot
+- Skins (baseball, paper toss aesthetic)
+- Alternative game modes
+- Lateral launch point (re-enable L/R buttons)
+- Moving targets
+
 ## Verification
 - `npm run dev` → game loads on mobile browser / Chrome DevTools touch emulation
 - Swipe up → projectile flies toward target with depth scaling

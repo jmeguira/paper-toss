@@ -26,6 +26,8 @@ export class Projectile {
     this.sprite.setScale(1);
   }
 
+  // ── v1: ball-in-hand methods disabled (kept for v2 lateral movement) ──
+
   /** Visually "pick up" the ball — bump scale to indicate grab */
   pickup(): void {
     this.held = true;
@@ -71,6 +73,8 @@ export class Projectile {
       ease: "Back.easeOut",
     });
   }
+
+  // ── end v1-disabled section ──
 
   /** Hard reset — no animation, used on resize or mode switch */
   resetPosition(width: number, height: number): void {

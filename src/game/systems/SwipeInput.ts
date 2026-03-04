@@ -1,12 +1,11 @@
 import Phaser from "phaser";
 import { ThrowParams, InputMode } from "../types";
 import { Projectile } from "../objects/Projectile";
-import { ThrowLine } from "../ui/ThrowLine";
 import {
   BALL_PICKUP_RADIUS_PCT,
+  BALL_TOUCH_SCALE,
+  BALL_TOUCH_PULSE_MS,
   LAUNCH_ANGLE_MAX,
-  LAUNCH_X_MIN_PCT,
-  LAUNCH_X_MAX_PCT,
   SWIPE_MIN_SPEED,
   SWIPE_MAX_SAMPLES,
 } from "../constants";
@@ -20,29 +19,21 @@ interface TrailPoint {
 export class SwipeInput implements InputMode {
   private scene: Phaser.Scene;
   private projectile: Projectile;
-  private throwLine: ThrowLine;
   private trail: TrailPoint[] = [];
   private tracking = false;
   private enabled = false;
-  private prevY = 0;
+  private pulseTween: Phaser.Tweens.Tween | null = null;
 
   public onThrow: ((params: ThrowParams) => void) | null = null;
-  public onCancel: (() => void) | null = null;
 
-  constructor(
-    scene: Phaser.Scene,
-    projectile: Projectile,
-    throwLine: ThrowLine,
-  ) {
+  constructor(scene: Phaser.Scene, projectile: Projectile) {
     this.scene = scene;
     this.projectile = projectile;
-    this.throwLine = throwLine;
   }
 
   enable(): void {
     if (this.enabled) return;
     this.enabled = true;
-    this.throwLine.show();
 
     this.scene.input.on("pointerdown", this.onPointerDown, this);
     this.scene.input.on("pointermove", this.onPointerMove, this);
@@ -53,7 +44,6 @@ export class SwipeInput implements InputMode {
     if (!this.enabled) return;
     this.enabled = false;
     this.tracking = false;
-    this.throwLine.hide();
 
     this.scene.input.off("pointerdown", this.onPointerDown, this);
     this.scene.input.off("pointermove", this.onPointerMove, this);
@@ -67,56 +57,62 @@ export class SwipeInput implements InputMode {
   private onPointerDown(pointer: Phaser.Input.Pointer): void {
     if (this.tracking) return;
 
-    // Only pick up if touch is near the ball
+    // Only start if touch is near the ball
+    const ballX = this.projectile.sprite.x;
     const ballY = this.projectile.sprite.y;
     const pickupRadius = this.scene.scale.height * BALL_PICKUP_RADIUS_PCT;
-    const dy = Math.abs(pointer.y - ballY);
-    const dx = Math.abs(pointer.x - this.projectile.sprite.x);
-    if (dy > pickupRadius || dx > pickupRadius) return;
+    if (
+      Math.abs(pointer.x - ballX) > pickupRadius ||
+      Math.abs(pointer.y - ballY) > pickupRadius
+    )
+      return;
 
     this.tracking = true;
     this.trail = [];
-    this.prevY = pointer.y;
     this.addPoint(pointer);
 
-    this.projectile.pickup();
+    // Brief pulse feedback — ball does NOT follow finger
+    this.pulseTween?.stop();
+    this.pulseTween = this.scene.tweens.add({
+      targets: this.projectile.sprite,
+      scaleX: BALL_TOUCH_SCALE,
+      scaleY: BALL_TOUCH_SCALE,
+      duration: BALL_TOUCH_PULSE_MS,
+      yoyo: true,
+      ease: "Sine.easeInOut",
+    });
   }
 
   private onPointerMove(pointer: Phaser.Input.Pointer): void {
     if (!this.tracking) return;
     this.addPoint(pointer);
-
-    // Ball follows finger (clamped — can't go below rest or outside x bounds)
-    this.projectile.follow(pointer.x, pointer.y);
-
-    // Check throw-line crossing (moving upward)
-    const lineY = this.throwLine.y;
-    if (this.prevY > lineY && pointer.y <= lineY) {
-      // Crossed the line going up — check speed
-      const speed = this.computeSpeed();
-      if (speed >= SWIPE_MIN_SPEED) {
-        this.tracking = false;
-        const params = this.computeThrow(pointer.x);
-        const recent = this.trail.slice(-5);
-        const rawAngle = Math.atan2(recent[recent.length - 1].x - recent[0].x, -(recent[recent.length - 1].y - recent[0].y));
-        console.log(`Throw! raw=${Phaser.Math.RadToDeg(rawAngle).toFixed(1)}° clamped=${Phaser.Math.RadToDeg(params.angle).toFixed(1)}° speed=${speed.toFixed(0)}px/s`);
-        this.projectile.resetShot();
-        this.onThrow?.(params);
-        return;
-      }
-    }
-
-    this.prevY = pointer.y;
   }
 
   private onPointerUp(_pointer: Phaser.Input.Pointer): void {
     if (!this.tracking) return;
     this.tracking = false;
 
-    // Released below the line — cancel
-    console.log("Cancel: released below line");
-    this.projectile.resetShot();
-    this.onCancel?.();
+    // Need enough points to compute direction
+    if (this.trail.length < 2) return;
+
+    // Check gesture is upward (last point above first)
+    const first = this.trail[0];
+    const last = this.trail[this.trail.length - 1];
+    if (last.y >= first.y) return; // not upward
+
+    // Check speed threshold
+    const speed = this.computeSpeed();
+    if (speed < SWIPE_MIN_SPEED) return;
+
+    // Valid flick — kill pulse tween, fire throw
+    this.pulseTween?.stop();
+    this.projectile.sprite.setScale(1);
+
+    const params = this.computeThrow();
+    console.log(
+      `Throw! angle=${Phaser.Math.RadToDeg(params.angle).toFixed(1)}° speed=${speed.toFixed(0)}px/s`,
+    );
+    this.onThrow?.(params);
   }
 
   private addPoint(pointer: Phaser.Input.Pointer): void {
@@ -142,8 +138,7 @@ export class SwipeInput implements InputMode {
     return dt > 0 ? dist / dt : 0;
   }
 
-  private computeThrow(pointerX: number): ThrowParams {
-    // Angle from recent trail points
+  private computeThrow(): ThrowParams {
     const recent = this.trail.slice(-5);
     const first = recent[0];
     const last = recent[recent.length - 1];
@@ -156,13 +151,9 @@ export class SwipeInput implements InputMode {
       LAUNCH_ANGLE_MAX,
     );
 
-    // LaunchX from pointer position at crossing, clamped to bounds
+    // v1: fixed center launch
     const { width } = this.scene.scale;
-    const launchX = Phaser.Math.Clamp(
-      pointerX,
-      width * LAUNCH_X_MIN_PCT,
-      width * LAUNCH_X_MAX_PCT,
-    );
+    const launchX = width / 2;
 
     return { angle, launchX };
   }
