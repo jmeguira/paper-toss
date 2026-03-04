@@ -57,8 +57,8 @@ Two input modes, both obeying identical launch bounds (±60° angle, 25-75% hori
 ### Scoring
 - Streak-based: consecutive hits increment counter, any miss resets to 0
 - Five landing tiers: PERFECT (5% of hit channel), SWISH (60%), NEAR HIT (100%), NEAR MISS (mirrored outward), MISS
-- Tiers derived from two knobs: `HIT_RADIUS` and `SWISH_PCT`. Near-miss mirrors near-hit band outside the channel
-- PERFECT and SWISH/NEAR HIT all count as hits (score). NEAR MISS and MISS reset streak
+- Tiers derived from two knobs: `TARGET_RADIUS` and `HIT_PCT`. Near-miss mirrors near-hit band outside the target
+- PERFECT, HIT, and NEAR HIT all count as hits (score). NEAR MISS and MISS reset streak
 
 ### Difficulty (future)
 - Target distance controls difficulty: closer = shorter flight, less wind effect, bigger apparent target

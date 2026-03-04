@@ -6,8 +6,8 @@ import {
   FLIGHT_SPEED,
   FLIGHT_LATERAL_MULT,
   PERFECT_RADIUS,
-  SWISH_RADIUS,
   HIT_RADIUS,
+  TARGET_RADIUS,
   NEAR_MISS_RADIUS,
   MISS_BUFFER,
   LAUNCH_ANGLE_MAX,
@@ -97,8 +97,8 @@ export class DevOverlay {
 
     // Edge angles for each zone
     const [perfL, perfR] = channelEdges(PERFECT_RADIUS, windDrift, ft, maxVx);
-    const [swishL, swishR] = channelEdges(SWISH_RADIUS, windDrift, ft, maxVx);
     const [hitL, hitR] = channelEdges(HIT_RADIUS, windDrift, ft, maxVx);
+    const [targetL, targetR] = channelEdges(TARGET_RADIUS, windDrift, ft, maxVx);
     const [nmL, nmR] = channelEdges(NEAR_MISS_RADIUS, windDrift, ft, maxVx);
 
     const MIN_ARC = 0.005;
@@ -127,17 +127,17 @@ export class DevOverlay {
 
     // --- Near-miss (red/amber) ---
     this.graphics.fillStyle(0xff6644, 0.18);
-    fillSector(nmL, hitL);
-    fillSector(hitR, nmR);
+    fillSector(nmL, targetL);
+    fillSector(targetR, nmR);
 
-    // --- Hit (subtle green) ---
+    // --- Near-hit (subtle green) ---
     this.graphics.fillStyle(0x00ff88, 0.14);
-    fillSector(hitL, swishL);
-    fillSector(swishR, hitR);
+    fillSector(targetL, hitL);
+    fillSector(hitR, targetR);
 
-    // --- Swish (bright green) ---
+    // --- Hit (bright green) ---
     this.graphics.fillStyle(0x00ff88, 0.25);
-    fillSector(swishL, swishR);
+    fillSector(hitL, hitR);
 
     // --- Perfect (gold, innermost) ---
     this.graphics.fillStyle(0xffdd44, 0.4);
@@ -153,9 +153,9 @@ export class DevOverlay {
 
     lineAt(nmL, 0xff6644, 0.35);
     lineAt(nmR, 0xff6644, 0.35);
-    lineAt(hitL, 0x00ff88, 0.25);
-    lineAt(hitR, 0x00ff88, 0.25);
-    lineAt(swishL, 0x00ff88, 0.4);
-    lineAt(swishR, 0x00ff88, 0.4);
+    lineAt(targetL, 0x00ff88, 0.25);
+    lineAt(targetR, 0x00ff88, 0.25);
+    lineAt(hitL, 0x00ff88, 0.4);
+    lineAt(hitR, 0x00ff88, 0.4);
   }
 }

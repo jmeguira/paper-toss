@@ -357,7 +357,7 @@
 - Original code used zero-height time everywhere, causing z-overshoot and incorrect solver predictions
 
 ### Derived constants pattern
-- Landing tiers derived from two knobs: `HIT_RADIUS` and `SWISH_PCT`
-- `SWISH_RADIUS = HIT_RADIUS × SWISH_PCT`, `NEAR_MISS_RADIUS = HIT_RADIUS × (2 - SWISH_PCT)`
+- Landing tiers derived from two knobs: `TARGET_RADIUS` and `HIT_PCT`
+- `HIT_RADIUS = TARGET_RADIUS × HIT_PCT`, `NEAR_MISS_RADIUS = TARGET_RADIUS × (2 - HIT_PCT)`
 - Change one value, all zones scale proportionally. Near-miss mirrors the near-hit band outward
 - Same principle as CSS variables or Python dataclass computed fields

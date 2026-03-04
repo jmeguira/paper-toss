@@ -19,13 +19,13 @@ export function flightTime(startHeight: number): number {
   );
 }
 
-// Hit detection — four landing tiers (swish ⊂ hit ⊂ near-miss ⊂ miss)
-export const HIT_RADIUS = 250;
-export const PERFECT_PCT = 0.05; // perfect = dead-center 5% of hit channel
-export const SWISH_PCT = 0.6; // swish = inner 60% of hit channel
-export const PERFECT_RADIUS = HIT_RADIUS * PERFECT_PCT;
-export const SWISH_RADIUS = HIT_RADIUS * SWISH_PCT;
-export const NEAR_MISS_RADIUS = HIT_RADIUS * (2 - SWISH_PCT); // mirrors near-hit band outward
+// Hit detection — five landing tiers (perfect ⊂ hit ⊂ near-hit ⊂ near-miss ⊂ miss)
+export const TARGET_RADIUS = 250;
+export const PERFECT_PCT = 0.05; // perfect = dead-center 5% of target
+export const HIT_PCT = 0.6; // clean hit = inner 60% of target
+export const PERFECT_RADIUS = TARGET_RADIUS * PERFECT_PCT;
+export const HIT_RADIUS = TARGET_RADIUS * HIT_PCT;
+export const NEAR_MISS_RADIUS = TARGET_RADIUS * (2 - HIT_PCT); // mirrors near-hit band outward
 export const LANDING_PAUSE_MS = 600;
 
 // Wind
@@ -53,7 +53,7 @@ export const SWIPE_MIN_SPEED = 300;
 export const SWIPE_MAX_SAMPLES = 60;
 
 // Target texture
-export const TARGET_RADIUS = 360;
+export const TARGET_TEXTURE_RADIUS = 360;
 export const TARGET_COLOR = 0xff4444;
 export const TARGET_RING_WIDTH = 4;
 

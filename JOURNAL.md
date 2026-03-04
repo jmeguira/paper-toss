@@ -110,7 +110,7 @@
 
 ### Dev Overlay + Landing Tiers + Analytical Flight ✅
 - **Ball rest position** — Lowered from 80% to 85% of viewport height for better flick ergonomics
-- **Five-tier landing zones** — PERFECT (5% of hit channel) / SWISH (60%) / NEAR HIT (100%) / NEAR MISS (mirrored outward) / MISS. Tiers derived from two tuning knobs: `HIT_RADIUS` and `SWISH_PCT`
+- **Five-tier landing zones** — PERFECT (5% of target) / HIT (60%) / NEAR HIT (100%) / NEAR MISS (mirrored outward) / MISS. Tiers derived from two tuning knobs: `TARGET_RADIUS` and `HIT_PCT`
 - **Dev overlay** — Created `DevOverlay` component with arc-sector visualization of all landing zones: gold (perfect), bright green (swish), subtle green (hit), red/amber (near-miss), light red (miss), blue buffer slivers at boundaries. Uses `channelEdges()` helper for angle math
 - **Wind cap with miss buffer** — Added `MISS_BUFFER` constant (150 world units). Wind cap formula uses `NEAR_MISS_RADIUS + MISS_BUFFER` to guarantee missable space on both flanks. Buffer visualized as fixed-width blue slivers at angle boundaries
 - **Perfect throw button** — Dev-mode "▶ Perfect" button fires mathematically solved angle. Wired via callback to `handleThrow()`

@@ -17,8 +17,8 @@ import { DevOverlay } from "../ui/DevOverlay";
 import {
   TARGET_Z,
   PERFECT_RADIUS,
-  SWISH_RADIUS,
   HIT_RADIUS,
+  TARGET_RADIUS,
   NEAR_MISS_RADIUS,
   LANDING_PAUSE_MS,
 } from "../constants";
@@ -55,10 +55,10 @@ export class GameScene extends Phaser.Scene {
       if (dist <= PERFECT_RADIUS) {
         tier = "PERFECT";
         this.score.hit();
-      } else if (dist <= SWISH_RADIUS) {
-        tier = "SWISH";
-        this.score.hit();
       } else if (dist <= HIT_RADIUS) {
+        tier = "HIT";
+        this.score.hit();
+      } else if (dist <= TARGET_RADIUS) {
         tier = "NEAR HIT";
         this.score.hit();
       } else if (dist <= NEAR_MISS_RADIUS) {
