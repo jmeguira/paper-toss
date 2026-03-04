@@ -21,11 +21,13 @@ On startup, read these files to establish context:
 
 ## Git Workflow
 - Never commit directly to main. Always use a feature branch + PR.
-- Branch naming: `feature/short-desc`, `fix/short-desc`, `chore/short-desc`. Delete after merge.
+- Branch naming: `dev/YYYY-MM-DD` (or add a suffix if multiple in a day). Delete after merge.
 - Commits are code checkpoints — no doc updates required per commit.
+- One branch can span multiple sessions. Commit freely, PR when there's a meaningful milestone (a PLAN.md item, a feature, a polish pass) — not after every small change.
+- Don't create a PR unless the user asks for one.
 
 ## PR Workflow
-When opening a PR (typically at end of a work session):
+When opening a PR:
 1. Update `JOURNAL.md` — append what was built/changed under the current date
 2. Update `LEARNING.md` — append any new concepts discussed, questions asked, and resolutions
 3. Update `PLAN.md` — mark completed steps, note any deviations from the original plan
