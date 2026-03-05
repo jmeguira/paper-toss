@@ -29,9 +29,10 @@ On startup, read these files to establish context:
 ## PR Workflow
 When opening a PR:
 1. **Review all commits on the branch** — run `git log --oneline main..HEAD` and `git diff main...HEAD`. The PR description must account for every commit, not just the latest one.
-2. Update `JOURNAL.md` — append what was built/changed under the current date
-3. Update `LEARNING.md` — append any new concepts discussed, questions asked, and resolutions
-4. Update `PLAN.md` — mark completed steps, note any deviations from the original plan
-5. Update `DESIGN.md` — if any design decisions were made or changed during the session
-6. Update `README.md` — if project docs were added, removed, or renamed
-7. Include doc updates in the PR alongside code changes
+2. **Code hygiene scan** — review the diff for quick tidy-ups: dead imports, unused variables, stale comments, obvious simplifications. Fix anything small and obvious. Log anything larger as a TODO in PLAN.md. Don't loop — one pass, fix or note, move on.
+3. Update `JOURNAL.md` — append what was built/changed under the current date
+4. Update `LEARNING.md` — append any new concepts discussed, questions asked, and resolutions
+5. Update `PLAN.md` — mark completed steps, note any deviations from the original plan
+6. Update `DESIGN.md` — if any design decisions were made or changed during the session
+7. Update `README.md` — if project docs were added, removed, or renamed
+8. Include doc updates in the PR alongside code changes

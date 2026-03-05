@@ -95,7 +95,7 @@ export const BALL_TOUCH_SCALE = 1.08;
 export const BALL_TOUCH_PULSE_MS = 80;
 
 // Angle bounds cone
-export const ANGLE_BOUNDS_LENGTH_PCT = 0.35;
+export const ANGLE_BOUNDS_LENGTH_PCT = 0.28;
 export const ANGLE_BOUNDS_COLOR = 0xffffff;
 export const ANGLE_BOUNDS_ALPHA = 0.08;
 

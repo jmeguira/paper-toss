@@ -1,7 +1,7 @@
 import { ThrowParams, InputMode } from "../types";
 import { Projectile } from "../objects/Projectile";
-import { TouchButton } from "../ui/TouchButton";
-import { AngleIndicator } from "../ui/AngleIndicator";
+import { TouchButton } from "../components/TouchButton";
+import { AngleIndicator } from "../components/AngleIndicator";
 import {
   BALL_REST_Y_PCT,
   MECH_LAUNCH_SIZE,
