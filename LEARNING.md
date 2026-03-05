@@ -379,3 +379,51 @@
 - `HIT_RADIUS = TARGET_RADIUS × HIT_PCT`, `NEAR_MISS_RADIUS = TARGET_RADIUS × (2 - HIT_PCT)`
 - Change one value, all zones scale proportionally. Near-miss mirrors the near-hit band outward
 - Same principle as CSS variables or Python dataclass computed fields
+
+## localStorage & Client Security (Session 5)
+
+### `private` vs `#private` — compile-time vs runtime
+- TypeScript's `private` keyword is erased at compile time. The emitted JS has no access control — `(obj as any).secret` bypasses it
+- JavaScript's `#field` syntax is enforced by the JS engine at runtime. No casting tricks work
+- `private` is a developer guardrail (like Python's `_underscore` convention, but compiler-enforced). `#` is a security boundary
+- For internal code talking to itself, `private` is fine. For adversarial contexts, use `#`
+
+### localStorage is always user-editable
+- Anyone can open DevTools → Application → Local Storage and edit values directly
+- No injection risk (it's a string→string store, no query language or interpreter)
+- The danger is malformed data that crashes your code — defensive parsing is the defense
+- Validate types, ranges, and keys explicitly. Default to safe values on any parse failure
+
+### Prototype pollution defense
+- If `load()` blindly does `Object.assign(this.data, parsed)`, an attacker could store `{"__proto__": {"isAdmin": true}}` and pollute the object prototype
+- Defense: only read explicitly named keys from parsed data, never iterate unknown keys into your objects
+- This is the JS equivalent of SQL injection — data that changes program behavior through shared mutable structures
+
+### Schema migration for localStorage
+- If the stored data shape changes (e.g., adding per-difficulty stats), you need a migration
+- Pattern: add a `version` field, check on load, run migration functions chained v(N)→v(N+1)
+- Don't add preemptively — current defensive parsing handles v0→v1 naturally (bad data → fresh start)
+
+### `Partial<Record<K, V>>` pattern
+- `Record<DifficultyId, number>` = all keys must exist. `Partial<...>` = any key might be missing
+- Access with `?? 0` to default missing keys. Python equivalent: `dict.get(key, 0)`
+
+### Leaderboard tamper resistance — the spectrum
+1. **Client-submitted scores + server storage** — easy to build, easy to cheat (`curl POST { streak: 9999 }`)
+2. **Server-side replay validation** — client sends inputs (angle, wind, difficulty), server re-runs `resolveShot()` to verify. Much harder to fake
+3. **Server-authoritative simulation** — server generates wind, validates each throw live. Impossible to cheat. Most work to build
+- For deterministic physics games, option 2 is the sweet spot — the math is cheap to replay server-side
+
+## UI Patterns (Session 5)
+
+### Phaser scene data passing (`init()`)
+- `this.scene.start("Game", { difficultyId: "HARD" })` — second arg passed to target scene's `init(data)` method
+- `init()` fires before `create()` in Phaser's lifecycle, so data is available during setup
+- Python equivalent: like calling a class constructor with kwargs, but split across two lifecycle hooks
+
+### Depth enum — z-ordering tiers
+- `const enum Depth { HUD = 100, DEV = 200, CONTROLS = 300, OVERLAY = 500 }`
+- Defines global visual stacking roles, not per-scene values. Depth is a canvas-wide rendering concern
+- Components offset within their tier locally: `Depth.DEV + 1` for buttons above graphics
+- Tiers spaced by 100 to leave room for insertion without renumbering
+- `const enum` is fully erased at compile time — values are inlined as literal numbers in the JS output. Zero runtime cost

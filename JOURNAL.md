@@ -136,3 +136,16 @@
 - Removed commented ThrowLine import from `GameScene.ts`
 - Removed redundant `as number` cast from `DevOverlay.ts`
 - Updated DESIGN.md, PLAN.md, LEARNING.md — cleared stale references to ball-in-hand, Euler integration, ThrowLine, specific wind values, "swish" naming
+
+## 2026-03-05
+
+### Start Screen, High Score Persistence, Settings Overlay ✅
+- **HighScoreStore** — Pure-logic localStorage wrapper for per-difficulty best streaks. Defensive parsing (handles corrupted/missing data, validates types, ignores unknown keys to prevent prototype pollution). Storage key: `paperToss.highScores`
+- **ScoreDisplay.getStreak()** — Exposes current streak so GameScene can submit it to HighScoreStore before `miss()` resets it
+- **StartScene** — New scene between Boot and Game. Title, three difficulty buttons with highlight on selection, per-difficulty high score display, Play button. Scene flow: Boot → Start → Game
+- **GameScene.init()** — Receives `{ difficultyId }` from scene transition via Phaser's `init(data)` lifecycle hook
+- **SettingsOverlay** — Full-screen backdrop (blocks input), centered panel with close button (✕), input mode toggle (Swipe/Mechanical), and "Back to Menu" button. Panel dimensions are screen-percentage based (`OVERLAY_PANEL_W_PCT`, `OVERLAY_PANEL_H_PCT`)
+- **Hamburger menu** — ☰ icon at top-right, opens settings overlay. Replaced standalone ModeToggle circle (mode toggle now lives inside settings)
+- **returnToMenu()** — Submits current streak before transitioning back to Start (preserves mid-streak records)
+- **Depth enum** — Centralized z-ordering tiers in `constants.ts`: HUD (100), DEV (200), CONTROLS (300), OVERLAY (500). Components offset within their tier as needed (e.g. `Depth.DEV + 1`). Replaced all hardcoded depth values across ScoreDisplay, WindIndicator, DevOverlay, GameScene, StartScene, SettingsOverlay
+- **PLAN.md** — Added server-validated leaderboard to v2 parking lot

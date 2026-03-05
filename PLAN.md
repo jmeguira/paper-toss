@@ -81,7 +81,7 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 ### Next up
 - **Dev settings panel** — Live sliders for targetZ, wind range, TARGET_RADIUS, tier percentages, etc. for feel-based tuning without recompiling
 - **Sound + haptics**
-- **Start screen + high score persistence**
+- ~~**Start screen + high score persistence**~~ ✅ — StartScene with difficulty selector + high scores, HighScoreStore (localStorage), settings overlay with mode toggle, hamburger menu, Depth enum
 
 ### v2 parking lot
 - Skins (baseball, paper toss aesthetic)
