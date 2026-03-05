@@ -30,6 +30,7 @@ export class GameScene extends Phaser.Scene {
   private diffLabel!: Phaser.GameObjects.Text;
   private highScores!: HighScoreStore;
   private activeMode: InputModeType = "swipe";
+  private landingTimer?: Phaser.Time.TimerEvent;
 
   constructor() {
     super("Game");
@@ -61,7 +62,7 @@ export class GameScene extends Phaser.Scene {
       console.log(`Landed: dist=${result.distance.toFixed(0)} ${info.label}`);
 
       // Brief pause, then reset with new wind
-      this.time.delayedCall(LANDING_PAUSE_MS, () => {
+      this.landingTimer = this.time.delayedCall(LANDING_PAUSE_MS, () => {
         const { width, height } = this.scale;
         this.projectile.resetPosition(width, height);
         this.wind.generate(this.difficulty.targetZ);
@@ -76,6 +77,7 @@ export class GameScene extends Phaser.Scene {
     this.windIndicator = new WindIndicator(this);
     this.devOverlay = new DevOverlay(this);
     this.devOverlay.onPerfectThrow = (angle) => {
+      this.resetForNextShot();
       this.handleThrow({ angle, launchX: this.scale.width / 2 });
     };
     this.wind.generate(this.difficulty.targetZ);
@@ -139,6 +141,19 @@ export class GameScene extends Phaser.Scene {
     } else if (this.activeMode === "mechanical") {
       this.mechInput.update(time, delta);
     }
+  }
+
+  /** Abort any in-progress flight or landing pause and reset the ball. */
+  private resetForNextShot(): void {
+    this.flight.stop();
+    this.landingTimer?.remove();
+    this.landingTimer = undefined;
+
+    const { width, height } = this.scale;
+    this.projectile.resetPosition(width, height);
+    this.wind.generate(this.difficulty.targetZ);
+    this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
+    this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
   }
 
   private handleThrow(params: ThrowParams): void {

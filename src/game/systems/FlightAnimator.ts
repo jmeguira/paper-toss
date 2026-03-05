@@ -85,6 +85,11 @@ export class FlightAnimator {
     this.projectile.sprite.setScale(scale);
   }
 
+  /** Abort the current flight without firing onComplete. */
+  stop(): void {
+    this.flying = false;
+  }
+
   get isFlying(): boolean {
     return this.flying;
   }
