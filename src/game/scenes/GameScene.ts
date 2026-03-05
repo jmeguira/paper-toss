@@ -3,15 +3,16 @@ import { InputModeType, ThrowParams } from "../types";
 import { GroundPlane } from "../objects/GroundPlane";
 import { Target } from "../objects/Target";
 import { Projectile } from "../objects/Projectile";
-import { AngleBounds } from "../ui/AngleBounds";
+import { AngleBounds } from "../components/AngleBounds";
+import { ThrowAngle } from "../components/ThrowAngle";
 import { SwipeInput } from "../systems/SwipeInput";
 import { MechanicalInput } from "../systems/MechanicalInput";
 import { FlightAnimator } from "../systems/FlightAnimator";
 import { WindSystem } from "../systems/WindSystem";
-import { ScoreDisplay } from "../ui/ScoreDisplay";
-import { WindIndicator } from "../ui/WindIndicator";
-import { DevOverlay } from "../ui/DevOverlay";
-import { SettingsOverlay } from "../ui/SettingsOverlay";
+import { ScoreDisplay } from "../components/ScoreDisplay";
+import { WindIndicator } from "../components/WindIndicator";
+import { DevOverlay } from "../composites/DevOverlay";
+import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
 import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, MODE_TOGGLE_MARGIN, tierInfo } from "../constants";
@@ -29,6 +30,8 @@ export class GameScene extends Phaser.Scene {
   private difficulty: (typeof DIFFICULTIES)[number] = DEFAULT_DIFFICULTY;
   private diffLabel!: Phaser.GameObjects.Text;
   private highScores!: HighScoreStore;
+  private angleBounds!: AngleBounds;
+  private throwAngle!: ThrowAngle;
   private activeMode: InputModeType = "swipe";
   private landingTimer?: Phaser.Time.TimerEvent;
 
@@ -45,7 +48,8 @@ export class GameScene extends Phaser.Scene {
     // Background layers (z-order: GroundPlane → Target → AngleBounds → Projectile → UI)
     new GroundPlane(this);
     this.target = new Target(this, this.difficulty.targetZ);
-    new AngleBounds(this);
+    this.angleBounds = new AngleBounds(this);
+    this.throwAngle = new ThrowAngle(this);
     this.projectile = new Projectile(this);
 
     // Flight animator
@@ -63,6 +67,7 @@ export class GameScene extends Phaser.Scene {
 
       // Brief pause, then reset with new wind
       this.landingTimer = this.time.delayedCall(LANDING_PAUSE_MS, () => {
+        this.throwAngle.hide();
         const { width, height } = this.scale;
         this.projectile.resetPosition(width, height);
         this.wind.generate(this.difficulty.targetZ);
@@ -148,6 +153,7 @@ export class GameScene extends Phaser.Scene {
     this.flight.stop();
     this.landingTimer?.remove();
     this.landingTimer = undefined;
+    this.throwAngle.hide();
 
     const { width, height } = this.scale;
     this.projectile.resetPosition(width, height);
@@ -164,6 +170,7 @@ export class GameScene extends Phaser.Scene {
     const result = resolveShot(params.angle, wx0, wy0, this.wind.force, this.difficulty.targetZ);
 
     this.disableActiveMode();
+    this.throwAngle.show(params.angle);
     this.flight.play(result);
   }
 

@@ -115,6 +115,19 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 - Components offset within their tier as needed (e.g. `Depth.DEV + 1`)
 - `const enum` — fully erased at compile time, zero runtime cost
 
+### Directory Convention
+One-pass sorting rule for new files — ask in order:
+1. Extends `Phaser.Scene`? → `scenes/`
+2. Pure logic, no rendering? → `systems/`
+3. World-space entity (depth-projected)? → `objects/`
+4. Composes other visual components? → `composites/`
+5. Otherwise (draws one thing, owns one Graphics/Text/Sprite) → `components/`
+
+Key distinctions:
+- **objects** vs **components** = world space vs screen space
+- **components** vs **composites** = leaf vs branch
+- **systems** = never touches the display list
+
 ## Open Decisions (for later)
 - Play area aspect ratio (9:16? 9:19.5?)
 - Obstacle design and placement

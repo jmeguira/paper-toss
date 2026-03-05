@@ -17,25 +17,34 @@ paper-toss/
       main.ts                      # Phaser.Game config (RESIZE scaling, single pointer)
       constants.ts                 # All tuning knobs in one file
       types.ts                     # Shared interfaces (ThrowParams, InputMode, etc.)
-      scenes/
-        BootScene.ts               # Procedural texture generation, then -> GameScene
-        GameScene.ts               # Main gameplay orchestrator, mode switching
-      systems/
+      scenes/                      # Phaser Scene subclasses — orchestrators
+        BootScene.ts               # Procedural texture generation, then -> StartScene
+        StartScene.ts              # Title, difficulty select, high scores, Play button
+        GameScene.ts               # Main gameplay orchestrator
+      systems/                     # Pure logic, no rendering
         SwipeInput.ts              # Flick gesture input — touch near ball, flick upward
         MechanicalInput.ts         # Button-based input: oscillating angle + GO launch
-        FlightSimulator.ts         # Analytical parametric flight + wind, 3D→screen projection
+        FlightAnimator.ts          # Analytical parametric flight + wind, 3D→screen projection
+        ShotResolver.ts            # Computes landing result + zone edges from throw params
         WindSystem.ts              # Per-throw wind with solvability cap
-      objects/
+        HighScoreStore.ts          # localStorage persistence for per-difficulty best streaks
+      objects/                     # World-space entities (depth-projected, part of game world)
         Projectile.ts              # Throwable object — sprite + reset
         Target.ts                  # Distant target rings
         GroundPlane.ts             # Perspective grid lines
-      ui/
-        TouchButton.ts             # Reusable circular button with press/release tracking
+      components/                  # Visual building blocks (one Graphics/Text, screen-space)
+        AngleBounds.ts             # Faint ±60° cone lines from ball
         AngleIndicator.ts          # Oscillating needle for mechanical mode
+        ThrowAngle.ts              # Post-throw arrow showing input angle
+        ZoneOverlay.ts             # Arc-sector visualization of landing zones
+        PerfectThrowButton.ts      # Dev button that fires the solved angle
+        TouchButton.ts             # Reusable circular button with press/release tracking
         ModeToggle.ts              # S/M toggle to switch input modes
-        DevOverlay.ts              # Dev-mode zone visualization + perfect throw button
         WindIndicator.ts           # Arrow + strength display
         ScoreDisplay.ts            # Streak counter
+      composites/                  # Compose components into screen-level UI
+        DevOverlay.ts              # Dev-mode: ZoneOverlay + PerfectThrowButton
+        SettingsOverlay.ts         # Modal: mode toggle + back to menu
 ```
 
 ## Input Mechanic (the core)
