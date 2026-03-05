@@ -16,7 +16,7 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     this.generateProjectileTexture();
     this.generateTargetTexture();
-    this.scene.start("Game");
+    this.scene.start("Start");
   }
 
   private generateProjectileTexture(): void {

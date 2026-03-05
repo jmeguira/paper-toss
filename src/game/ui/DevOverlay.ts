@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import {
   DEV_MODE,
+  Depth,
   BALL_REST_Y_PCT,
   ANGLE_BOUNDS_LENGTH_PCT,
   LAUNCH_ANGLE_MAX,
@@ -24,7 +25,7 @@ export class DevOverlay {
     if (!DEV_MODE) return;
 
     this.graphics = scene.add.graphics();
-    this.graphics.setDepth(200);
+    this.graphics.setDepth(Depth.DEV);
 
     const btn = scene.add.text(scene.scale.width - 16, scene.scale.height - 16, "▶ Perfect", {
       fontFamily: "monospace",
@@ -34,7 +35,7 @@ export class DevOverlay {
       padding: { x: 6, y: 4 },
     });
     btn.setOrigin(1, 1);
-    btn.setDepth(201);
+    btn.setDepth(Depth.DEV + 1);
     btn.setInteractive({ useHandCursor: true });
     btn.on("pointerdown", () => {
       this.onPerfectThrow?.(this.solvedAngle);

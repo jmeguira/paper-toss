@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { Depth } from "../constants";
 
 export class WindIndicator {
   private arrow: Phaser.GameObjects.Graphics;
@@ -8,7 +9,7 @@ export class WindIndicator {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.arrow = scene.add.graphics();
-    this.arrow.setDepth(100);
+    this.arrow.setDepth(Depth.HUD);
 
     this.label = scene.add.text(0, 0, "", {
       fontSize: "20px",
@@ -17,7 +18,7 @@ export class WindIndicator {
       stroke: "#000000",
       strokeThickness: 3,
     });
-    this.label.setDepth(100);
+    this.label.setDepth(Depth.HUD);
     this.label.setOrigin(0.5, 0);
   }
 

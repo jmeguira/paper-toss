@@ -4,7 +4,6 @@ import { GroundPlane } from "../objects/GroundPlane";
 import { Target } from "../objects/Target";
 import { Projectile } from "../objects/Projectile";
 import { AngleBounds } from "../ui/AngleBounds";
-import { ModeToggle } from "../ui/ModeToggle";
 import { SwipeInput } from "../systems/SwipeInput";
 import { MechanicalInput } from "../systems/MechanicalInput";
 import { FlightAnimator } from "../systems/FlightAnimator";
@@ -12,8 +11,10 @@ import { WindSystem } from "../systems/WindSystem";
 import { ScoreDisplay } from "../ui/ScoreDisplay";
 import { WindIndicator } from "../ui/WindIndicator";
 import { DevOverlay } from "../ui/DevOverlay";
+import { SettingsOverlay } from "../ui/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
-import { LANDING_PAUSE_MS, DIFFICULTIES, DEFAULT_DIFFICULTY, tierInfo } from "../constants";
+import { HighScoreStore } from "../systems/HighScoreStore";
+import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, MODE_TOGGLE_MARGIN, tierInfo } from "../constants";
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
@@ -27,10 +28,16 @@ export class GameScene extends Phaser.Scene {
   private target!: Target;
   private difficulty: (typeof DIFFICULTIES)[number] = DEFAULT_DIFFICULTY;
   private diffLabel!: Phaser.GameObjects.Text;
+  private highScores!: HighScoreStore;
   private activeMode: InputModeType = "swipe";
 
   constructor() {
     super("Game");
+  }
+
+  init(data: { difficultyId?: DifficultyId }): void {
+    const match = DIFFICULTIES.find((d) => d.id === data.difficultyId);
+    this.difficulty = match ?? DEFAULT_DIFFICULTY;
   }
 
   create(): void {
@@ -47,6 +54,7 @@ export class GameScene extends Phaser.Scene {
       if (info.scores) {
         this.score.hit();
       } else {
+        this.highScores.submit(this.difficulty.id, this.score.getStreak());
         this.score.miss();
       }
 
@@ -74,8 +82,9 @@ export class GameScene extends Phaser.Scene {
     this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
     this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
 
-    // Score display
+    // Score display + persistence
     this.score = new ScoreDisplay(this);
+    this.highScores = new HighScoreStore();
 
     // Input systems
     this.swipeInput = new SwipeInput(this, this.projectile);
@@ -87,12 +96,6 @@ export class GameScene extends Phaser.Scene {
     // Start in swipe mode
     this.swipeInput.enable();
 
-    // Mode toggle (top-right, highest z)
-    const toggle = new ModeToggle(this, "swipe");
-    toggle.onToggle = (mode) => {
-      this.setMode(mode);
-    };
-
     // Difficulty cycle button
     this.diffLabel = this.add.text(16, 80, this.difficulty.label, {
       fontFamily: "monospace",
@@ -101,9 +104,33 @@ export class GameScene extends Phaser.Scene {
       backgroundColor: "#00000066",
       padding: { x: 6, y: 4 },
     });
-    this.diffLabel.setDepth(300);
+    this.diffLabel.setDepth(Depth.CONTROLS);
     this.diffLabel.setInteractive({ useHandCursor: true });
     this.diffLabel.on("pointerdown", () => this.cycleDifficulty());
+
+    // Hamburger menu button (top-right)
+    const { width } = this.scale;
+    const hamburger = this.add.text(
+      width - MODE_TOGGLE_MARGIN,
+      MODE_TOGGLE_MARGIN,
+      "\u2630",
+      {
+        fontFamily: "monospace",
+        fontSize: "28px",
+        color: "#888888",
+        backgroundColor: "#00000066",
+        padding: { x: 6, y: 2 },
+      },
+    );
+    hamburger.setOrigin(1, 0);
+    hamburger.setDepth(Depth.CONTROLS);
+    hamburger.setInteractive({ useHandCursor: true });
+    hamburger.on("pointerdown", () => settingsOverlay.show());
+
+    // Settings overlay (mode toggle lives inside)
+    const settingsOverlay = new SettingsOverlay(this, this.activeMode);
+    settingsOverlay.onModeChange = (mode) => this.setMode(mode);
+    settingsOverlay.onBackToMenu = () => this.returnToMenu();
   }
 
   update(time: number, delta: number): void {
@@ -149,6 +176,11 @@ export class GameScene extends Phaser.Scene {
     this.wind.generate(this.difficulty.targetZ);
     this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
     this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
+  }
+
+  private returnToMenu(): void {
+    this.highScores.submit(this.difficulty.id, this.score.getStreak());
+    this.scene.start("Start");
   }
 
   private setMode(mode: InputModeType): void {
