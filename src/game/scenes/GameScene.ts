@@ -148,7 +148,8 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** Abort any in-progress flight or landing pause and reset the ball. */
+  /** Abort any in-progress flight or landing pause and reset the ball.
+   *  Does NOT regenerate wind — the current wind stays active for the next throw. */
   private resetForNextShot(): void {
     this.flight.stop();
     this.landingTimer?.remove();
@@ -157,9 +158,6 @@ export class GameScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
     this.projectile.resetPosition(width, height);
-    this.wind.generate(this.difficulty.targetZ);
-    this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
-    this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
   }
 
   private handleThrow(params: ThrowParams): void {
