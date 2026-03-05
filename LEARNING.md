@@ -421,6 +421,17 @@
 - `init()` fires before `create()` in Phaser's lifecycle, so data is available during setup
 - Python equivalent: like calling a class constructor with kwargs, but split across two lifecycle hooks
 
+### Directory convention — sorting rule for new files
+- One-pass decision: Phaser.Scene → `scenes/`, pure logic → `systems/`, world-space entity → `objects/`, composes components → `composites/`, draws one thing → `components/`
+- Key distinction: `objects/` = world space (depth-projected), `components/` = screen space (HUD/UI). `components/` = leaf, `composites/` = branch
+- `systems/` never touches the display list. FlightAnimator stays in systems even though it moves a sprite — the sprite is owned by Projectile, not the animator
+- Previous flat `ui/` directory mixed leaf components and compositions — splitting prevents the bag-of-everything problem as the project grows
+
+### Component extraction pattern
+- When a class does multiple things (DevOverlay: zone arcs + button + gating), extract each into its own component with `show()`/`hide()`, then compose them from a thin parent
+- Each component owns exactly one Graphics/Text/Sprite. Toggling one never affects another
+- Composites wire callbacks between components (e.g. PerfectThrowButton asks ZoneOverlay for the solved angle)
+
 ### Depth enum — z-ordering tiers
 - `const enum Depth { HUD = 100, DEV = 200, CONTROLS = 300, OVERLAY = 500 }`
 - Defines global visual stacking roles, not per-scene values. Depth is a canvas-wide rendering concern

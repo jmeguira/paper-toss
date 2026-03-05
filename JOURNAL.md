@@ -149,3 +149,12 @@
 - **returnToMenu()** — Submits current streak before transitioning back to Start (preserves mid-streak records)
 - **Depth enum** — Centralized z-ordering tiers in `constants.ts`: HUD (100), DEV (200), CONTROLS (300), OVERLAY (500). Components offset within their tier as needed (e.g. `Depth.DEV + 1`). Replaced all hardcoded depth values across ScoreDisplay, WindIndicator, DevOverlay, GameScene, StartScene, SettingsOverlay
 - **PLAN.md** — Added server-validated leaderboard to v2 parking lot
+
+### Perfect Throw Button Fix + Throw Angle Arrow + Directory Restructure ✅
+- **Perfect throw button fix** — Button now aborts in-flight animation and cancels landing pause timer before firing. Added `FlightAnimator.stop()` and `GameScene.resetForNextShot()`. Wind is NOT regenerated on reset so the perfect throw fires against the same wind its solved angle was computed from
+- **Throw angle arrow** — New `ThrowAngle` component: post-throw arrow with arrowhead showing the exact input angle. Shown on throw, cleared on landing reset
+- **Angle bounds shrink** — `ANGLE_BOUNDS_LENGTH_PCT` reduced 0.35 → 0.28 (20% shorter)
+- **Directory restructure** — Replaced flat `ui/` with `components/` (leaf visual elements) and `composites/` (compositions like DevOverlay, SettingsOverlay). Sorting convention documented in DESIGN.md: scenes → systems → objects → composites → components
+- **Component extraction** — DevOverlay decomposed into `ZoneOverlay` (arc-sector zone visualization), `PerfectThrowButton` (dev perfect-throw button), and a thin `DevOverlay` composition layer
+- **Dead code removal** — Deleted unused `ModeToggle.ts` (replaced by mode toggle inside SettingsOverlay)
+- **PR workflow** — Added code hygiene scan step to CLAUDE.md (step 2: one-pass review of diff for quick tidy-ups or TODOs)

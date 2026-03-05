@@ -39,7 +39,6 @@ paper-toss/
         ZoneOverlay.ts             # Arc-sector visualization of landing zones
         PerfectThrowButton.ts      # Dev button that fires the solved angle
         TouchButton.ts             # Reusable circular button with press/release tracking
-        ModeToggle.ts              # S/M toggle to switch input modes
         WindIndicator.ts           # Arrow + strength display
         ScoreDisplay.ts            # Streak counter
       composites/                  # Compose components into screen-level UI
