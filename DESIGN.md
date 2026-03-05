@@ -98,6 +98,23 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 - Perfect throw button fires the solved angle — PERFECT hit every time
 - Only visible when `DEV_MODE = true`
 
+### Scene Flow
+- Boot → Start → Game, with return path via settings overlay
+- StartScene: title, difficulty selector (three buttons, selected highlights), per-difficulty high score, Play button
+- GameScene receives difficulty via `init({ difficultyId })` from scene transition
+- Settings overlay: hamburger (☰) top-right opens full-screen modal with mode toggle + "Back to Menu"
+- Returning to menu submits current streak to HighScoreStore (preserves mid-streak records)
+
+### High Score Persistence
+- Per-difficulty best streak stored in localStorage under `paperToss.highScores`
+- Defensive parsing: validates types, ignores unknown keys, defaults to zeroes on corruption
+- Schema migration deferred — current shape is trivially simple; defensive load handles future v0→v1 naturally
+
+### Z-Ordering
+- Centralized `Depth` enum in constants.ts: HUD (100), DEV (200), CONTROLS (300), OVERLAY (500)
+- Components offset within their tier as needed (e.g. `Depth.DEV + 1`)
+- `const enum` — fully erased at compile time, zero runtime cost
+
 ## Open Decisions (for later)
 - Play area aspect ratio (9:16? 9:19.5?)
 - Obstacle design and placement

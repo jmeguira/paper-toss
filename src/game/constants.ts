@@ -107,3 +107,16 @@ export const MECH_INDICATOR_RADIUS = 80;
 // Mode toggle
 export const MODE_TOGGLE_SIZE = 40;
 export const MODE_TOGGLE_MARGIN = 16;
+
+// Z-ordering layers — higher draws on top
+// Components offset within their tier as needed (e.g. Depth.DEV + 1)
+export const enum Depth {
+  HUD = 100,      // score, wind indicator, start screen UI
+  DEV = 200,      // dev overlay graphics + buttons
+  CONTROLS = 300, // difficulty label, hamburger
+  OVERLAY = 500,  // modal overlays (backdrop, panel, contents)
+}
+
+// Settings overlay
+export const OVERLAY_PANEL_W_PCT = 0.8; // fraction of screen width
+export const OVERLAY_PANEL_H_PCT = 0.4; // fraction of screen height

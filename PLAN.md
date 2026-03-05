@@ -75,14 +75,13 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 ### Completed
 - **Swipe rework (A–C)** ✅ — Flick gesture replaces ball-in-hand drag. Fixed center launch. Angle bounds cone. Flight tuning (lateral multiplier, higher arc, wind rebalance). Swipe as default mode.
 - **Dev overlay + landing tiers + analytical flight** ✅ — Five-tier landing zones (PERFECT/HIT/NEAR HIT/NEAR MISS/MISS) with derived radii. Dev overlay with arc-sector zone visualization. Wind cap with miss buffer guarantee. Perfect throw button. Analytical flight (parametric path replaces Euler integration). Shared `flightTime()` helper fixes starting-height bug.
+- **Code cleanup pass** ✅
+- **Difficulty levels** ✅ — Distance-driven flight time, three presets (Easy/Medium/Hard), cycle button
 
 ### Next up
-- **Code cleanup pass** — Review all files for dead code, stale comments, unused imports, and artifacts from walked-back decisions. Several refactors this session (Euler→analytical, binary→five-tier, flight time fix) likely left cruft behind. Tidy before adding new features.
 - **Dev settings panel** — Live sliders for targetZ, wind range, TARGET_RADIUS, tier percentages, etc. for feel-based tuning without recompiling
-- **Wind curve ramp** — Ramp wind force 30%→100% over flight for dramatic late-flight bending.
 - **Sound + haptics**
-- **Start screen + high score persistence**
-- ~~**Difficulty levels** (target distance)~~ ✅ — Distance-driven flight time, three presets (Easy/Medium/Hard), cycle button
+- ~~**Start screen + high score persistence**~~ ✅ — StartScene with difficulty selector + high scores, HighScoreStore (localStorage), settings overlay with mode toggle, hamburger menu, Depth enum
 
 ### v2 parking lot
 - Skins (baseball, paper toss aesthetic)
@@ -96,6 +95,7 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 - Accessibility options (mechanical angle/power input alternatives)
 - Dynamic window resizing (reposition objects on viewport change — desktop only)
 - Overall complexity tuning (how many mechanics is the right amount)
+- Server-validated leaderboard (replay validation — client sends inputs, server re-runs physics)
 
 ## Verification
 - `npm run dev` → game loads on mobile browser / Chrome DevTools touch emulation
