@@ -26,10 +26,13 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 - Power and spin deferred from MVP
 
 ### Visual Style
-- Abstract, minimal
-- Procedural graphics for now — visual polish is a priority but not yet scoped
+- Abstract, minimal — aim-lab aesthetic. Paper toss skin as v2 easter egg.
+- **Theme system:** all visual constants in `theme.ts`. Single import point, swappable for re-skinning.
 - Fake 3D: 2D canvas with depth scaling to simulate perspective
-- Ground plane with perspective grid lines — dev scaffold for spatial readability, not final art
+- **Perspective grid room:** floor + back wall using `GRID_CELL` world-unit projection. Lines converge naturally via perspective math. Wall sits at `GROUND_MAX_Z`.
+- **Target:** ellipse (squashed circle) with thick rim centered on near-hit/near-miss boundary
+- **Ball:** solid color from theme (placeholder — visual identity TBD)
+- Spin animation deferred — needs physics-driven spin or proper 3D asset, not a texture hack
 
 ### Physics
 - Analytical parametric flight (no Phaser physics engine, no Euler integration)

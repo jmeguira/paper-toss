@@ -60,28 +60,24 @@ export const LANDING_PAUSE_MS = 600;
 export const WIND_MIN = 1250;
 export const MISS_BUFFER = 150; // clear-miss space beyond near-miss zone, both sides
 
-// Ground plane
-export const GROUND_LINE_COLOR = 0x3a3a5c;
-export const GROUND_LINE_ALPHA = 0.4;
-export const GROUND_LINE_COUNT = 12;
-export const GROUND_MAX_Z = 4000;
-export const GROUND_VERTICAL_COUNT = 8;
+// Ground plane / back wall depth
+export const GROUND_MAX_Z = 2000;
 
 // Dev mode
 export const DEV_MODE = true;
 
 // Projectile texture
 export const PROJECTILE_RADIUS = 45;
-export const PROJECTILE_COLOR = 0xf5f5f5;
 
 // Swipe input
 export const SWIPE_MIN_SPEED = 300;
 export const SWIPE_MAX_SAMPLES = 60;
+export const SWIPE_TRIM_END = 2;     // discard last N points (finger-lift noise)
+export const SWIPE_FIT_POINTS = 12;  // points used for angle/speed calculation
 
 // Target texture
 export const TARGET_TEXTURE_RADIUS = 360;
 export const TARGET_COLOR = 0xff4444;
-export const TARGET_RING_WIDTH = 4;
 
 // Shared launch bounds
 export const LAUNCH_ANGLE_MAX = (60 * Math.PI) / 180; // ±60° from vertical

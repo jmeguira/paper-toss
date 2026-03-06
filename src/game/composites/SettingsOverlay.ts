@@ -1,6 +1,7 @@
 import Phaser from "phaser";
-import { InputModeType } from "../types";
+import { InputModeType, SwipeModeType } from "../types";
 import { Depth, OVERLAY_PANEL_W_PCT, OVERLAY_PANEL_H_PCT } from "../constants";
+import { theme } from "../theme";
 
 // Sub-layers within the OVERLAY tier
 const BG = Depth.OVERLAY;
@@ -13,10 +14,13 @@ export class SettingsOverlay {
   private title: Phaser.GameObjects.Text;
   private closeBtn: Phaser.GameObjects.Text;
   private modeBtn: Phaser.GameObjects.Text;
+  private swipeModeBtn: Phaser.GameObjects.Text;
   private menuBtn: Phaser.GameObjects.Text;
   private currentMode: InputModeType;
+  private currentSwipeMode: SwipeModeType = "instant";
 
   onModeChange: ((mode: InputModeType) => void) | null = null;
+  onSwipeModeChange: ((mode: SwipeModeType) => void) | null = null;
   onBackToMenu: (() => void) | null = null;
 
   constructor(scene: Phaser.Scene, initialMode: InputModeType) {
@@ -29,7 +33,7 @@ export class SettingsOverlay {
 
     // Full-screen backdrop — blocks input to everything below
     this.backdrop = scene.add
-      .rectangle(0, 0, width, height, 0x000000, 0.5)
+      .rectangle(0, 0, width, height, theme.ui.overlay.backdropColor, theme.ui.overlay.backdropAlpha)
       .setOrigin(0)
       .setDepth(BG)
       .setInteractive();
@@ -37,16 +41,16 @@ export class SettingsOverlay {
 
     // Centered panel
     this.panel = scene.add
-      .rectangle(cx, cy, panelW, panelH, 0x2a2a4e, 1)
+      .rectangle(cx, cy, panelW, panelH, theme.ui.panel.bg, theme.ui.panel.bgAlpha)
       .setDepth(PANEL)
       .setInteractive(); // absorbs taps so they don't hit backdrop
 
     // Title
     this.title = scene.add
       .text(cx, cy - panelH * 0.35, "Settings", {
-        fontFamily: "monospace",
+        fontFamily: theme.ui.fontFamily,
         fontSize: "24px",
-        color: "#ffffff",
+        color: theme.ui.text.primary,
       })
       .setOrigin(0.5)
       .setDepth(UI);
@@ -54,9 +58,9 @@ export class SettingsOverlay {
     // Close button (top-right of panel)
     this.closeBtn = scene.add
       .text(cx + panelW / 2 - 12, cy - panelH / 2 + 8, "\u2715", {
-        fontFamily: "monospace",
+        fontFamily: theme.ui.fontFamily,
         fontSize: "20px",
-        color: "#888888",
+        color: theme.ui.text.dim,
       })
       .setOrigin(1, 0)
       .setDepth(UI)
@@ -67,10 +71,10 @@ export class SettingsOverlay {
     // Input mode toggle
     this.modeBtn = scene.add
       .text(cx, cy - panelH * 0.05, this.modeLabel(), {
-        fontFamily: "monospace",
+        fontFamily: theme.ui.fontFamily,
         fontSize: "18px",
-        color: "#ffffff",
-        backgroundColor: "#66666688",
+        color: theme.ui.text.primary,
+        backgroundColor: theme.ui.button.bgToggle,
         padding: { x: 16, y: 10 },
       })
       .setOrigin(0.5)
@@ -84,13 +88,33 @@ export class SettingsOverlay {
       this.onModeChange?.(this.currentMode);
     });
 
+    // Swipe mode toggle (instant vs aim-then-fire)
+    this.swipeModeBtn = scene.add
+      .text(cx, cy + panelH * 0.15, this.swipeModeLabel(), {
+        fontFamily: theme.ui.fontFamily,
+        fontSize: "18px",
+        color: theme.ui.text.primary,
+        backgroundColor: theme.ui.button.bgToggle,
+        padding: { x: 16, y: 10 },
+      })
+      .setOrigin(0.5)
+      .setDepth(UI)
+      .setInteractive({ useHandCursor: true });
+
+    this.swipeModeBtn.on("pointerdown", () => {
+      this.currentSwipeMode =
+        this.currentSwipeMode === "instant" ? "aim" : "instant";
+      this.swipeModeBtn.setText(this.swipeModeLabel());
+      this.onSwipeModeChange?.(this.currentSwipeMode);
+    });
+
     // Back to Menu button
     this.menuBtn = scene.add
-      .text(cx, cy + panelH * 0.3, "Back to Menu", {
-        fontFamily: "monospace",
+      .text(cx, cy + panelH * 0.35, "Back to Menu", {
+        fontFamily: theme.ui.fontFamily,
         fontSize: "18px",
-        color: "#ffffff",
-        backgroundColor: "#4444aa",
+        color: theme.ui.text.primary,
+        backgroundColor: theme.ui.button.bg,
         padding: { x: 16, y: 10 },
       })
       .setOrigin(0.5)
@@ -111,6 +135,7 @@ export class SettingsOverlay {
     this.title.setVisible(true);
     this.closeBtn.setVisible(true).setActive(true);
     this.modeBtn.setVisible(true).setActive(true);
+    this.swipeModeBtn.setVisible(true).setActive(true);
     this.menuBtn.setVisible(true).setActive(true);
   }
 
@@ -120,10 +145,15 @@ export class SettingsOverlay {
     this.title.setVisible(false);
     this.closeBtn.setVisible(false).setActive(false);
     this.modeBtn.setVisible(false).setActive(false);
+    this.swipeModeBtn.setVisible(false).setActive(false);
     this.menuBtn.setVisible(false).setActive(false);
   }
 
   private modeLabel(): string {
     return `Mode: ${this.currentMode === "swipe" ? "Swipe" : "Mechanical"}`;
+  }
+
+  private swipeModeLabel(): string {
+    return `Throw: ${this.currentSwipeMode === "instant" ? "Instant" : "Aim & Fire"}`;
   }
 }

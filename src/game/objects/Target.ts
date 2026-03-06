@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { FOCAL_LENGTH, VANISH_Y_PCT } from "../constants";
+import { theme } from "../theme";
 
 export class Target {
   public sprite: Phaser.GameObjects.Sprite;
@@ -18,6 +19,6 @@ export class Target {
     const y = vanishY + (height - vanishY) * scale;
 
     this.sprite.setPosition(width / 2, y);
-    this.sprite.setScale(scale);
+    this.sprite.setScale(scale, scale * theme.target.squash);
   }
 }

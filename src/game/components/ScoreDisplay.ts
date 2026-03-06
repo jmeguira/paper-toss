@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { Depth } from "../constants";
+import { theme } from "../theme";
 
 export class ScoreDisplay {
   private text: Phaser.GameObjects.Text;
@@ -7,11 +8,11 @@ export class ScoreDisplay {
 
   constructor(scene: Phaser.Scene) {
     this.text = scene.add.text(16, 16, "0", {
-      fontSize: "48px",
-      fontFamily: "monospace",
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 4,
+      fontSize: theme.ui.score.fontSize,
+      fontFamily: theme.ui.fontFamily,
+      color: theme.ui.text.primary,
+      stroke: theme.ui.score.stroke,
+      strokeThickness: theme.ui.score.strokeThickness,
     });
     this.text.setDepth(Depth.HUD);
   }

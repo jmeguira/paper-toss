@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { theme } from "../theme";
 
 export interface TouchButtonConfig {
   x: number;
@@ -28,8 +29,8 @@ export class TouchButton {
     this.text = scene.add
       .text(x, y, label, {
         fontSize: `${fontSize}px`,
-        color: "#ffffff",
-        fontFamily: "monospace",
+        color: theme.ui.text.primary,
+        fontFamily: theme.ui.fontFamily,
       })
       .setOrigin(0.5);
 

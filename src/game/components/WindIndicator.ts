@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { Depth } from "../constants";
+import { theme } from "../theme";
 
 export class WindIndicator {
   private arrow: Phaser.GameObjects.Graphics;
@@ -13,10 +14,10 @@ export class WindIndicator {
 
     this.label = scene.add.text(0, 0, "", {
       fontSize: "20px",
-      fontFamily: "monospace",
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 3,
+      fontFamily: theme.ui.fontFamily,
+      color: theme.wind.label.color,
+      stroke: theme.wind.label.stroke,
+      strokeThickness: theme.wind.label.strokeThickness,
     });
     this.label.setDepth(Depth.HUD);
     this.label.setOrigin(0.5, 0);
@@ -33,7 +34,7 @@ export class WindIndicator {
     const dir = Math.sign(force);
 
     this.arrow.clear();
-    this.arrow.lineStyle(3, 0xffffff);
+    this.arrow.lineStyle(theme.wind.arrowWidth, theme.wind.arrowColor);
 
     // Shaft
     this.arrow.lineBetween(

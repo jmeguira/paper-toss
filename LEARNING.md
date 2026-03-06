@@ -277,6 +277,30 @@
 - To center on 12 o'clock: offset by `-Math.PI / 2` (rotate 90° counterclockwise)
 - `cos`/`sin` convert angle + radius to x,y endpoint — basic trig for drawing needles, pointers, etc.
 
+### WebGL vs Canvas 2D (deeper)
+- WebGL is the newer, GPU-accelerated API. Canvas 2D is older, CPU-based. Both widely supported.
+- Phaser's `Phaser.AUTO` tries WebGL first, falls back to Canvas 2D silently.
+- Some Phaser APIs (like `fillGradientStyle()`) are WebGL-only and silently no-op on Canvas fallback.
+- Strip-based gradient rendering (stacking thin rects with interpolated colors) works on both renderers.
+
+### Perspective projection — world-unit grids
+- Instead of arbitrary line counts, define a `GRID_CELL` size in world units and project everything through the perspective formula.
+- Floor lines at `z = i * GRID_CELL`, verticals at `worldX = j * GRID_CELL` — both naturally converge via `scale = f / (f + z)`.
+- Back wall at `z = GROUND_MAX_Z`: same worldX positions as floor verticals, but straight vertical (flat surface, constant z).
+- To guarantee full line coverage: calculate visible world extent from the most zoomed-out surface (the wall), derive line count from that.
+
+### Least-squares linear fit for swipe angle
+- Instead of first-to-last slope from 2 points, fit a line through all recent points to average out jitter.
+- Fit `x` as a function of `y` (not `y(x)`) because swipes are mostly vertical — `y(x)` would blow up for near-vertical gestures.
+- Formula: `slope = (nΣxy - ΣxΣy) / (nΣy² - (Σy)²)` — same as `np.polyfit(y, x, 1)` in Python.
+- The slope `dxdy` = lateral drift per unit vertical travel. Convert to angle with `atan2(-dxdy, 1)`.
+
+### Phaser sprite sheet animation
+- Generate multiple frames side-by-side in one texture, register individual frame regions with `texture.add(frameIndex, ...)`.
+- `this.anims.create({ key, frames, frameRate, repeat: -1 })` defines a looping animation.
+- `sprite.play({ key, startFrame, timeScale })` plays with variation. `timeScale` controls speed.
+- Negative `timeScale` does NOT work for reverse playback in Phaser — create a separate animation with reversed frame order instead.
+
 ### Underscore prefix for unused params
 - `_pointer` in `onPointerUp(_pointer)` — tells TypeScript "I know this exists, I'm not using it"
 - Python equivalent: `_` in `for _ in range(10)`

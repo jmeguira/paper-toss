@@ -4,6 +4,7 @@ export interface ThrowParams {
 }
 
 export type InputModeType = "swipe" | "mechanical";
+export type SwipeModeType = "instant" | "aim";
 
 export interface InputMode {
   enable(): void;
