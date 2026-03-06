@@ -15,7 +15,8 @@ import { DevOverlay } from "../composites/DevOverlay";
 import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
-import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, MODE_TOGGLE_MARGIN, tierInfo } from "../constants";
+import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, MODE_TOGGLE_MARGIN, VANISH_Y_PCT, tierInfo } from "../constants";
+import { theme } from "../theme";
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
@@ -45,6 +46,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Sky gradient — drawn first, sits behind everything
+    this.drawSky();
+
     // Background layers (z-order: GroundPlane → Target → AngleBounds → Projectile → UI)
     new GroundPlane(this);
     this.target = new Target(this, this.difficulty.targetZ);
@@ -201,6 +205,37 @@ export class GameScene extends Phaser.Scene {
   private returnToMenu(): void {
     this.highScores.submit(this.difficulty.id, this.score.getStreak());
     this.scene.start("Start");
+  }
+
+  private drawSky(): void {
+    const { width, height } = this.scale;
+    const sky = this.add.graphics();
+
+    // Renderer-agnostic gradient: stack of thin horizontal strips
+    // with linearly interpolated color between sky.top and sky.bottom
+    const steps = 64;
+    const stripH = Math.ceil(height / steps);
+    const topR = (theme.sky.top >> 16) & 0xff;
+    const topG = (theme.sky.top >> 8) & 0xff;
+    const topB = theme.sky.top & 0xff;
+    const botR = (theme.sky.bottom >> 16) & 0xff;
+    const botG = (theme.sky.bottom >> 8) & 0xff;
+    const botB = theme.sky.bottom & 0xff;
+
+    for (let i = 0; i < steps; i++) {
+      const t = i / (steps - 1);
+      const r = Math.round(topR + (botR - topR) * t);
+      const g = Math.round(topG + (botG - topG) * t);
+      const b = Math.round(topB + (botB - topB) * t);
+      sky.fillStyle((r << 16) | (g << 8) | b);
+      sky.fillRect(0, i * stripH, width, stripH + 1); // +1 avoids sub-pixel gaps
+    }
+
+    // Horizon glow band — soft rectangle centered on the vanishing point
+    const horizonY = height * VANISH_Y_PCT;
+    const glowH = height * theme.horizon.heightPct;
+    sky.fillStyle(theme.horizon.color, theme.horizon.alpha);
+    sky.fillRect(0, horizonY - glowH / 2, width, glowH);
   }
 
   private setMode(mode: InputModeType): void {

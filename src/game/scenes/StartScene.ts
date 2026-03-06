@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY } from "../constants";
 import { HighScoreStore } from "../systems/HighScoreStore";
+import { theme } from "../theme";
 
 export class StartScene extends Phaser.Scene {
   private highScores!: HighScoreStore;
@@ -16,6 +17,26 @@ export class StartScene extends Phaser.Scene {
     this.highScores = new HighScoreStore();
     const { width, height } = this.scale;
     const cx = width / 2;
+
+    // Sky gradient — same as GameScene for seamless transitions
+    const sky = this.add.graphics();
+    const steps = 64;
+    const stripH = Math.ceil(height / steps);
+    const topR = (theme.sky.top >> 16) & 0xff;
+    const topG = (theme.sky.top >> 8) & 0xff;
+    const topB = theme.sky.top & 0xff;
+    const botR = (theme.sky.bottom >> 16) & 0xff;
+    const botG = (theme.sky.bottom >> 8) & 0xff;
+    const botB = theme.sky.bottom & 0xff;
+
+    for (let i = 0; i < steps; i++) {
+      const t = i / (steps - 1);
+      const r = Math.round(topR + (botR - topR) * t);
+      const g = Math.round(topG + (botG - topG) * t);
+      const b = Math.round(topB + (botB - topB) * t);
+      sky.fillStyle((r << 16) | (g << 8) | b);
+      sky.fillRect(0, i * stripH, width, stripH + 1);
+    }
 
     // Title
     this.add

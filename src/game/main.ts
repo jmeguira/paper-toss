@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { BootScene } from "./scenes/BootScene";
 import { StartScene } from "./scenes/StartScene";
 import { GameScene } from "./scenes/GameScene";
+import { theme } from "./theme";
 
 export function createGame(): Phaser.Game {
   return new Phaser.Game({
@@ -11,7 +12,7 @@ export function createGame(): Phaser.Game {
       width: window.innerWidth,
       height: window.innerHeight,
     },
-    backgroundColor: "#1a1a2e",
+    backgroundColor: theme.canvas,
     scene: [BootScene, StartScene, GameScene],
   });
 }
