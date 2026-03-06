@@ -150,6 +150,19 @@
 - **Depth enum** — Centralized z-ordering tiers in `constants.ts`: HUD (100), DEV (200), CONTROLS (300), OVERLAY (500). Components offset within their tier as needed (e.g. `Depth.DEV + 1`). Replaced all hardcoded depth values across ScoreDisplay, WindIndicator, DevOverlay, GameScene, StartScene, SettingsOverlay
 - **PLAN.md** — Added server-validated leaderboard to v2 parking lot
 
+## 2026-03-06
+
+### Visual Overhaul + Swipe Refinement
+- **Theme system** — `src/game/theme.ts` with typed `Theme` interface and `defaultTheme` object. All visual constants (colors, fonts, alphas, widths) in one swappable object. Game code imports from `theme`, never hardcodes style values.
+- **Perspective grid room** — Replaced flat ground plane + sky gradient with a proper 3D-projected grid room. Floor grid + back wall, both using single `GRID_CELL` world-unit system. Vertical line count derived from visible area to guarantee full coverage. `GROUND_MAX_Z` reduced to 2000 (wall just past hard difficulty target).
+- **Ball visual** — Color now from `theme.ball.base` (blue for dev contrast). Attempted sprite sheet spin animation (stripe ball, rotating cross) — deferred as a larger feature requiring proper 3D asset or physics-driven spin system.
+- **Target** — Thick rim centered on near-hit/near-miss boundary (`TARGET_RADIUS`), width from `theme.target.rimWidth`. Ellipse squash via `theme.target.squash` for top-down perspective look.
+- **UI theme wiring** — All 7 UI files migrated from hardcoded fonts/colors/buttons to `theme.ui.*`. Zero hardcoded style values remain outside `theme.ts`.
+- **Swipe refinement** — Trim last 2 trail points (finger-lift noise). Least-squares linear fit over 12 points for angle computation (replaces first-to-last of 5). New constants: `SWIPE_TRIM_END`, `SWIPE_FIT_POINTS`.
+- **Aim-then-fire mode** — New `SwipeModeType` (`"instant"` | `"aim"`). In aim mode: swipe sets angle + shows arrow, LAUNCH button appears below ball to fire. Toggle in settings overlay.
+- **Dev logger** — `systems/logger.ts` gates `console.log` behind `DEV_MODE`.
+- **Cleanup** — Removed dead constants: `GROUND_LINE_COUNT`, `GROUND_VERTICAL_COUNT`, `PROJECTILE_COLOR`, `TARGET_RING_WIDTH`, `GROUND_LINE_COLOR`, `GROUND_LINE_ALPHA`.
+
 ### Perfect Throw Button Fix + Throw Angle Arrow + Directory Restructure ✅
 - **Perfect throw button fix** — Button now aborts in-flight animation and cancels landing pause timer before firing. Added `FlightAnimator.stop()` and `GameScene.resetForNextShot()`. Wind is NOT regenerated on reset so the perfect throw fires against the same wind its solved angle was computed from
 - **Throw angle arrow** — New `ThrowAngle` component: post-throw arrow with arrowhead showing the exact input angle. Shown on throw, cleared on landing reset

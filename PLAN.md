@@ -86,6 +86,19 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 - **Code cleanup pass** ✅
 - **Difficulty levels** ✅ — Distance-driven flight time, three presets (Easy/Medium/Hard), cycle button
 
+### Visual overhaul ✅
+- **Theme system** — all visual constants in `theme.ts`, all UI files wired to `theme.ui.*`
+- **Perspective grid room** — floor + back wall using `GRID_CELL` world-unit projection
+- **Target** — thick rim on scoring boundary, ellipse squash for perspective
+- **Ball** — color from theme (blue placeholder)
+- **Spin** — deferred (needs proper 3D asset or physics-driven spin system)
+- **Flight trail** — deferred (unnecessary if visual ends up being a paper ball)
+
+### Swipe refinement ✅
+- Trim last 2 trail points (finger-lift noise) + least-squares linear fit over 12 points
+- Aim-then-fire mode with LAUNCH button (toggle in settings)
+- Dev logger gating console output behind DEV_MODE
+
 ### Next up
 - **Dev settings panel** — Live sliders for targetZ, wind range, TARGET_RADIUS, tier percentages, etc. for feel-based tuning without recompiling
 - **Sound + haptics**
