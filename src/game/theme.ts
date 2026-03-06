@@ -38,7 +38,8 @@ export interface Theme {
   target: {
     primary: number;        // ring stroke + fill
     fillAlpha: number;      // inner fill opacity
-    ringWidth: number;
+    rimWidth: number;
+    squash: number;         // Y scale multiplier — <1 = ellipse wider than tall
   };
 
   /** Flight trail (step 4) */
@@ -153,8 +154,8 @@ export const defaultTheme: Theme = {
   },
 
   ball: {
-    base: 0xf5f5f5,
-    highlight: 0xffffff,     // unused until sphere step
+    base: 0x3366cc,
+    highlight: 0xe6c832,     // warm neon yellow stripe
     shadow: 0xaaaaaa,        // unused until sphere step
     glow: 0xf5f5f5,          // unused until sphere step
     glowAlpha: 0.15,         // unused until sphere step
@@ -163,7 +164,8 @@ export const defaultTheme: Theme = {
   target: {
     primary: 0xff4444,
     fillAlpha: 0.4,
-    ringWidth: 4,
+    rimWidth: 30,
+    squash: 0.4,
   },
 
   trail: {

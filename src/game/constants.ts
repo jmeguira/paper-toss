@@ -60,20 +60,22 @@ export const LANDING_PAUSE_MS = 600;
 export const WIND_MIN = 1250;
 export const MISS_BUFFER = 150; // clear-miss space beyond near-miss zone, both sides
 
-// Ground plane (geometry — how many lines, how far)
-export const GROUND_LINE_COUNT = 12;
-export const GROUND_MAX_Z = 4000;
-export const GROUND_VERTICAL_COUNT = 8;
+// Ground plane / back wall depth
+export const GROUND_MAX_Z = 2000;
 
 // Dev mode
 export const DEV_MODE = true;
 
-// Projectile (geometry)
+// Projectile texture
 export const PROJECTILE_RADIUS = 45;
 
 // Swipe input
 export const SWIPE_MIN_SPEED = 300;
 export const SWIPE_MAX_SAMPLES = 60;
+
+// Target texture
+export const TARGET_TEXTURE_RADIUS = 360;
+export const TARGET_COLOR = 0xff4444;
 
 // Shared launch bounds
 export const LAUNCH_ANGLE_MAX = (60 * Math.PI) / 180; // ±60° from vertical
@@ -86,15 +88,18 @@ export const BALL_REST_Y_PCT = 0.85;
 export const BALL_TOUCH_SCALE = 1.08;
 export const BALL_TOUCH_PULSE_MS = 80;
 
-// Angle bounds cone (geometry)
+// Angle bounds cone
 export const ANGLE_BOUNDS_LENGTH_PCT = 0.28;
+export const ANGLE_BOUNDS_COLOR = 0xffffff;
+export const ANGLE_BOUNDS_ALPHA = 0.08;
 
 // Mechanical mode
 export const MECH_LAUNCH_SIZE = 80;
 export const MECH_ANGLE_SWEEP_SPEED = 2.0;
 export const MECH_INDICATOR_RADIUS = 80;
 
-// Layout
+// Mode toggle
+export const MODE_TOGGLE_SIZE = 40;
 export const MODE_TOGGLE_MARGIN = 16;
 
 // Z-ordering layers — higher draws on top

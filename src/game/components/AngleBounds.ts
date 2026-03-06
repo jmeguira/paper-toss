@@ -3,8 +3,9 @@ import {
   BALL_REST_Y_PCT,
   LAUNCH_ANGLE_MAX,
   ANGLE_BOUNDS_LENGTH_PCT,
+  ANGLE_BOUNDS_COLOR,
+  ANGLE_BOUNDS_ALPHA,
 } from "../constants";
-import { theme } from "../theme";
 
 export class AngleBounds {
   private graphics: Phaser.GameObjects.Graphics;
@@ -35,7 +36,7 @@ export class AngleBounds {
     const length = height * ANGLE_BOUNDS_LENGTH_PCT;
 
     this.graphics.clear();
-    this.graphics.lineStyle(1, theme.angleBounds.color, theme.angleBounds.alpha);
+    this.graphics.lineStyle(1, ANGLE_BOUNDS_COLOR, ANGLE_BOUNDS_ALPHA);
 
     // Left bound: -LAUNCH_ANGLE_MAX from vertical
     const lx = originX + Math.sin(-LAUNCH_ANGLE_MAX) * length;
