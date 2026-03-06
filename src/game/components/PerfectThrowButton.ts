@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { theme } from "../theme";
 
 /**
  * Dev button that fires the mathematically solved "perfect" angle.
@@ -16,10 +17,10 @@ export class PerfectThrowButton {
       scene.scale.height - 16,
       "\u25b6 Perfect",
       {
-        fontFamily: "monospace",
+        fontFamily: theme.ui.fontFamily,
         fontSize: "14px",
-        color: "#00ff88",
-        backgroundColor: "#00000066",
+        color: theme.ui.devButton.color,
+        backgroundColor: theme.ui.devButton.bg,
         padding: { x: 6, y: 4 },
       },
     );

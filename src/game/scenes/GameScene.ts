@@ -16,6 +16,7 @@ import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
 import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, MODE_TOGGLE_MARGIN, tierInfo } from "../constants";
+import { theme } from "../theme";
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
@@ -105,10 +106,10 @@ export class GameScene extends Phaser.Scene {
 
     // Difficulty cycle button
     this.diffLabel = this.add.text(16, 80, this.difficulty.label, {
-      fontFamily: "monospace",
+      fontFamily: theme.ui.fontFamily,
       fontSize: "16px",
-      color: "#aaaaff",
-      backgroundColor: "#00000066",
+      color: theme.ui.text.accent,
+      backgroundColor: theme.ui.button.bgMuted,
       padding: { x: 6, y: 4 },
     });
     this.diffLabel.setDepth(Depth.CONTROLS);
@@ -122,10 +123,10 @@ export class GameScene extends Phaser.Scene {
       MODE_TOGGLE_MARGIN,
       "\u2630",
       {
-        fontFamily: "monospace",
+        fontFamily: theme.ui.fontFamily,
         fontSize: "28px",
-        color: "#888888",
-        backgroundColor: "#00000066",
+        color: theme.ui.text.dim,
+        backgroundColor: theme.ui.button.bgMuted,
         padding: { x: 6, y: 2 },
       },
     );

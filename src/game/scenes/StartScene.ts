@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY } from "../constants";
 import { HighScoreStore } from "../systems/HighScoreStore";
+import { theme } from "../theme";
 
 export class StartScene extends Phaser.Scene {
   private highScores!: HighScoreStore;
@@ -20,11 +21,11 @@ export class StartScene extends Phaser.Scene {
     // Title
     this.add
       .text(cx, height * 0.2, "PAPER TOSS", {
-        fontFamily: "monospace",
+        fontFamily: theme.ui.fontFamily,
         fontSize: "36px",
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
+        color: theme.ui.text.primary,
+        stroke: theme.ui.score.stroke,
+        strokeThickness: theme.ui.score.strokeThickness,
       })
       .setOrigin(0.5)
       .setDepth(Depth.HUD);
@@ -37,10 +38,10 @@ export class StartScene extends Phaser.Scene {
     this.diffButtons = DIFFICULTIES.map((diff, i) => {
       const btn = this.add
         .text(startX + i * buttonSpacing, buttonY, diff.label, {
-          fontFamily: "monospace",
+          fontFamily: theme.ui.fontFamily,
           fontSize: "20px",
-          color: "#aaaaaa",
-          backgroundColor: "#00000066",
+          color: theme.ui.text.secondary,
+          backgroundColor: theme.ui.button.bgMuted,
           padding: { x: 10, y: 8 },
         })
         .setOrigin(0.5)
@@ -54,9 +55,9 @@ export class StartScene extends Phaser.Scene {
     // High score label
     this.highScoreLabel = this.add
       .text(cx, height * 0.55, "", {
-        fontFamily: "monospace",
+        fontFamily: theme.ui.fontFamily,
         fontSize: "18px",
-        color: "#888888",
+        color: theme.ui.text.dim,
       })
       .setOrigin(0.5)
       .setDepth(Depth.HUD);
@@ -64,10 +65,10 @@ export class StartScene extends Phaser.Scene {
     // Play button
     const playBtn = this.add
       .text(cx, height * 0.7, "PLAY", {
-        fontFamily: "monospace",
+        fontFamily: theme.ui.fontFamily,
         fontSize: "28px",
-        color: "#ffffff",
-        backgroundColor: "#4444aa",
+        color: theme.ui.text.primary,
+        backgroundColor: theme.ui.button.bg,
         padding: { x: 32, y: 14 },
       })
       .setOrigin(0.5)
@@ -89,11 +90,11 @@ export class StartScene extends Phaser.Scene {
     DIFFICULTIES.forEach((diff, i) => {
       const btn = this.diffButtons[i];
       if (diff.id === id) {
-        btn.setColor("#ffffff");
-        btn.setBackgroundColor("#4444aa88");
+        btn.setColor(theme.ui.text.primary);
+        btn.setBackgroundColor(theme.ui.button.bgHover);
       } else {
-        btn.setColor("#aaaaaa");
-        btn.setBackgroundColor("#00000066");
+        btn.setColor(theme.ui.text.secondary);
+        btn.setBackgroundColor(theme.ui.button.bgMuted);
       }
     });
 
