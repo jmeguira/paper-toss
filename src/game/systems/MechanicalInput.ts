@@ -7,6 +7,7 @@ import {
   MECH_LAUNCH_SIZE,
   MECH_ANGLE_SWEEP_SPEED,
 } from "../constants";
+import { log } from "./logger";
 
 export class MechanicalInput implements InputMode {
   private scene: Phaser.Scene;
@@ -43,7 +44,7 @@ export class MechanicalInput implements InputMode {
         angle: this.indicator.angle,
         launchX: this.scene.scale.width / 2,
       };
-      console.log("Throw! (mechanical)", params);
+      log("Throw! (mechanical)", params);
       this.onThrow?.(params);
     };
 

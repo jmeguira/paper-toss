@@ -72,6 +72,8 @@ export const PROJECTILE_RADIUS = 45;
 // Swipe input
 export const SWIPE_MIN_SPEED = 300;
 export const SWIPE_MAX_SAMPLES = 60;
+export const SWIPE_TRIM_END = 2;     // discard last N points (finger-lift noise)
+export const SWIPE_FIT_POINTS = 12;  // points used for angle/speed calculation
 
 // Target texture
 export const TARGET_TEXTURE_RADIUS = 360;

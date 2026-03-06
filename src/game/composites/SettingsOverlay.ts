@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { InputModeType } from "../types";
+import { InputModeType, SwipeModeType } from "../types";
 import { Depth, OVERLAY_PANEL_W_PCT, OVERLAY_PANEL_H_PCT } from "../constants";
 import { theme } from "../theme";
 
@@ -14,10 +14,13 @@ export class SettingsOverlay {
   private title: Phaser.GameObjects.Text;
   private closeBtn: Phaser.GameObjects.Text;
   private modeBtn: Phaser.GameObjects.Text;
+  private swipeModeBtn: Phaser.GameObjects.Text;
   private menuBtn: Phaser.GameObjects.Text;
   private currentMode: InputModeType;
+  private currentSwipeMode: SwipeModeType = "instant";
 
   onModeChange: ((mode: InputModeType) => void) | null = null;
+  onSwipeModeChange: ((mode: SwipeModeType) => void) | null = null;
   onBackToMenu: (() => void) | null = null;
 
   constructor(scene: Phaser.Scene, initialMode: InputModeType) {
@@ -85,9 +88,29 @@ export class SettingsOverlay {
       this.onModeChange?.(this.currentMode);
     });
 
+    // Swipe mode toggle (instant vs aim-then-fire)
+    this.swipeModeBtn = scene.add
+      .text(cx, cy + panelH * 0.15, this.swipeModeLabel(), {
+        fontFamily: theme.ui.fontFamily,
+        fontSize: "18px",
+        color: theme.ui.text.primary,
+        backgroundColor: theme.ui.button.bgToggle,
+        padding: { x: 16, y: 10 },
+      })
+      .setOrigin(0.5)
+      .setDepth(UI)
+      .setInteractive({ useHandCursor: true });
+
+    this.swipeModeBtn.on("pointerdown", () => {
+      this.currentSwipeMode =
+        this.currentSwipeMode === "instant" ? "aim" : "instant";
+      this.swipeModeBtn.setText(this.swipeModeLabel());
+      this.onSwipeModeChange?.(this.currentSwipeMode);
+    });
+
     // Back to Menu button
     this.menuBtn = scene.add
-      .text(cx, cy + panelH * 0.3, "Back to Menu", {
+      .text(cx, cy + panelH * 0.35, "Back to Menu", {
         fontFamily: theme.ui.fontFamily,
         fontSize: "18px",
         color: theme.ui.text.primary,
@@ -112,6 +135,7 @@ export class SettingsOverlay {
     this.title.setVisible(true);
     this.closeBtn.setVisible(true).setActive(true);
     this.modeBtn.setVisible(true).setActive(true);
+    this.swipeModeBtn.setVisible(true).setActive(true);
     this.menuBtn.setVisible(true).setActive(true);
   }
 
@@ -121,10 +145,15 @@ export class SettingsOverlay {
     this.title.setVisible(false);
     this.closeBtn.setVisible(false).setActive(false);
     this.modeBtn.setVisible(false).setActive(false);
+    this.swipeModeBtn.setVisible(false).setActive(false);
     this.menuBtn.setVisible(false).setActive(false);
   }
 
   private modeLabel(): string {
     return `Mode: ${this.currentMode === "swipe" ? "Swipe" : "Mechanical"}`;
+  }
+
+  private swipeModeLabel(): string {
+    return `Throw: ${this.currentSwipeMode === "instant" ? "Instant" : "Aim & Fire"}`;
   }
 }
