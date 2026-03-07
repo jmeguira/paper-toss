@@ -79,18 +79,6 @@ export class GameScene extends Phaser.Scene {
       });
     };
 
-    // Wind
-    this.wind = new WindSystem();
-    this.windIndicator = new WindIndicator(this);
-    this.devOverlay = new DevOverlay(this);
-    this.devOverlay.onPerfectThrow = (angle) => {
-      this.resetForNextShot();
-      this.handleThrow({ angle, launchX: this.scale.width / 2 });
-    };
-    this.wind.generate(this.difficulty.targetZ);
-    this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
-    this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
-
     // Score display + persistence
     this.score = new ScoreDisplay(this);
     this.highScores = new HighScoreStore();
@@ -135,6 +123,20 @@ export class GameScene extends Phaser.Scene {
     hamburger.setDepth(Depth.CONTROLS);
     hamburger.setInteractive({ useHandCursor: true });
     hamburger.on("pointerdown", () => settingsOverlay.show());
+
+    // Wind + dev overlay (buttons stack below hamburger)
+    this.wind = new WindSystem();
+    this.windIndicator = new WindIndicator(this);
+    const devBtnX = width - MODE_TOGGLE_MARGIN;
+    const devBtnY = hamburger.y + hamburger.height + 8;
+    this.devOverlay = new DevOverlay(this, devBtnX, devBtnY);
+    this.devOverlay.onThrow = (angle) => {
+      this.resetForNextShot();
+      this.handleThrow({ angle, launchX: this.scale.width / 2 });
+    };
+    this.wind.generate(this.difficulty.targetZ);
+    this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
+    this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
 
     // Settings overlay (mode toggle lives inside)
     const settingsOverlay = new SettingsOverlay(this, this.activeMode);

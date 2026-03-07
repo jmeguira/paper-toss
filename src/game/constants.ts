@@ -29,12 +29,12 @@ export const DEFAULT_DIFFICULTY = DIFFICULTIES[1]; // Medium
 
 // Hit detection — landing tiers ordered innermost → outermost
 // Single source of truth: add/remove/rename tiers here, everything else derives.
-export const TARGET_RADIUS = 275;
+export const TARGET_RADIUS = 260;
 export const LANDING_TIERS = [
   { id: "PERFECT", label: "PERFECT", pct: 0.1, scores: true },
-  { id: "HIT", label: "HIT", pct: 0.6, scores: true },
-  { id: "NEAR_HIT", label: "NEAR HIT", pct: 1.0, scores: true },
-  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.4, scores: false },
+  { id: "HIT", label: "HIT", pct: 0.7, scores: true },
+  { id: "NEAR_HIT", label: "NEAR HIT", pct: 1, scores: true },
+  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.3, scores: false },
   { id: "MISS", label: "MISS", pct: Infinity, scores: false },
 ] as const;
 export type LandingTier = (typeof LANDING_TIERS)[number]["id"];
