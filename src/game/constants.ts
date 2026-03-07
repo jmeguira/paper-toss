@@ -1,5 +1,5 @@
 // Camera / fake-3D projection
-export const FOCAL_LENGTH = 300;
+export const FOCAL_LENGTH = 250;
 export const VANISH_Y_PCT = 0.35;
 
 // Flight physics
@@ -20,9 +20,9 @@ export function flightTime(targetZ: number): number {
 
 // Difficulty presets — targetZ is the only knob
 export const DIFFICULTIES = [
-  { id: "EASY", label: "Easy", targetZ: 900 },
-  { id: "MEDIUM", label: "Medium", targetZ: 1150 },
-  { id: "HARD", label: "Hard", targetZ: 1400 },
+  { id: "EASY", label: "Easy", targetZ: 750 },
+  { id: "MEDIUM", label: "Medium", targetZ: 1000 },
+  { id: "HARD", label: "Hard", targetZ: 1250 },
 ] as const;
 export type DifficultyId = (typeof DIFFICULTIES)[number]["id"];
 export const DEFAULT_DIFFICULTY = DIFFICULTIES[1]; // Medium
@@ -72,7 +72,7 @@ export const GROUND_MAX_Z = 2000;
 // Dev mode
 export const DEV_MODE = true;
 
-// Projectile texture
+// Projectile
 export const PROJECTILE_RADIUS = 50;
 
 // Swipe input

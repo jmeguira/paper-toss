@@ -1,8 +1,9 @@
 import Phaser from "phaser";
-import { BALL_REST_Y_PCT } from "../constants";
+import { BALL_REST_Y_PCT, PROJECTILE_RADIUS } from "../constants";
+import { theme } from "../theme";
 
 export class Projectile {
-  public sprite: Phaser.GameObjects.Sprite;
+  public sprite: Phaser.GameObjects.Graphics;
   private scene: Phaser.Scene;
   private restX: number;
   private restY: number;
@@ -14,8 +15,10 @@ export class Projectile {
     this.restX = width / 2;
     this.restY = height * BALL_REST_Y_PCT;
 
-    this.sprite = scene.add.sprite(this.restX, this.restY, "projectile");
-    this.sprite.setScale(1);
+    this.sprite = scene.add.graphics();
+    this.sprite.fillStyle(theme.ball.base);
+    this.sprite.fillCircle(0, 0, PROJECTILE_RADIUS);
+    this.sprite.setPosition(this.restX, this.restY);
   }
 
   /** Hard reset — no animation, used on resize or mode switch */
