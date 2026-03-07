@@ -8,6 +8,10 @@ export const FLIGHT_SPEED = 1100;
 export const FLIGHT_LATERAL_MULT = 2.0;
 export const FLIGHT_GRAVITY = 2000;
 
+// Flight animation (cosmetic only — never affects landing result)
+export const ARC_SCALE = 1.5; // visual height multiplier on the arc
+export const DIVE_EXPONENT = 1.7; // >1 = hang at peak, dive into target
+
 /** Flight duration for a given target distance.
  *  Distance is the single difficulty knob — everything else derives. */
 export function flightTime(targetZ: number): number {
@@ -16,26 +20,26 @@ export function flightTime(targetZ: number): number {
 
 // Difficulty presets — targetZ is the only knob
 export const DIFFICULTIES = [
-  { id: "EASY",   label: "Easy",   targetZ: 700 },
-  { id: "MEDIUM", label: "Medium", targetZ: 1200 },
-  { id: "HARD",   label: "Hard",   targetZ: 1800 },
+  { id: "EASY", label: "Easy", targetZ: 900 },
+  { id: "MEDIUM", label: "Medium", targetZ: 1150 },
+  { id: "HARD", label: "Hard", targetZ: 1400 },
 ] as const;
 export type DifficultyId = (typeof DIFFICULTIES)[number]["id"];
 export const DEFAULT_DIFFICULTY = DIFFICULTIES[1]; // Medium
 
 // Hit detection — landing tiers ordered innermost → outermost
 // Single source of truth: add/remove/rename tiers here, everything else derives.
-export const TARGET_RADIUS = 250;
+export const TARGET_RADIUS = 275;
 export const LANDING_TIERS = [
-  { id: "PERFECT",   label: "PERFECT",   pct: 0.05, scores: true },
-  { id: "HIT",       label: "HIT",       pct: 0.60, scores: true },
-  { id: "NEAR_HIT",  label: "NEAR HIT",  pct: 1.00, scores: true },
-  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.40, scores: false },
-  { id: "MISS",      label: "MISS",      pct: Infinity, scores: false },
+  { id: "PERFECT", label: "PERFECT", pct: 0.1, scores: true },
+  { id: "HIT", label: "HIT", pct: 0.6, scores: true },
+  { id: "NEAR_HIT", label: "NEAR HIT", pct: 1.0, scores: true },
+  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.4, scores: false },
+  { id: "MISS", label: "MISS", pct: Infinity, scores: false },
 ] as const;
 export type LandingTier = (typeof LANDING_TIERS)[number]["id"];
 export function tierInfo(tier: LandingTier) {
-  return LANDING_TIERS.find(t => t.id === tier)!;
+  return LANDING_TIERS.find((t) => t.id === tier)!;
 }
 
 // Sanity check — runs once at module load, costs nothing in prod
@@ -50,14 +54,16 @@ export function tierInfo(tier: LandingTier) {
     }
   }
   if (isFinite(LANDING_TIERS[LANDING_TIERS.length - 1].pct)) {
-    throw new Error("LANDING_TIERS: last tier must have pct = Infinity (catch-all)");
+    throw new Error(
+      "LANDING_TIERS: last tier must have pct = Infinity (catch-all)",
+    );
   }
 })();
 
 export const LANDING_PAUSE_MS = 600;
 
 // Wind
-export const WIND_MIN = 1250;
+export const WIND_MIN = 250;
 export const MISS_BUFFER = 150; // clear-miss space beyond near-miss zone, both sides
 
 // Ground plane / back wall depth
@@ -67,17 +73,13 @@ export const GROUND_MAX_Z = 2000;
 export const DEV_MODE = true;
 
 // Projectile texture
-export const PROJECTILE_RADIUS = 45;
+export const PROJECTILE_RADIUS = 50;
 
 // Swipe input
 export const SWIPE_MIN_SPEED = 300;
 export const SWIPE_MAX_SAMPLES = 60;
-export const SWIPE_TRIM_END = 2;     // discard last N points (finger-lift noise)
-export const SWIPE_FIT_POINTS = 12;  // points used for angle/speed calculation
-
-// Target texture
-export const TARGET_TEXTURE_RADIUS = 360;
-export const TARGET_COLOR = 0xff4444;
+export const SWIPE_TRIM_END = 2; // discard last N points (finger-lift noise)
+export const SWIPE_FIT_POINTS = 12; // points used for angle/speed calculation
 
 // Shared launch bounds
 export const LAUNCH_ANGLE_MAX = (60 * Math.PI) / 180; // ±60° from vertical
@@ -92,8 +94,6 @@ export const BALL_TOUCH_PULSE_MS = 80;
 
 // Angle bounds cone
 export const ANGLE_BOUNDS_LENGTH_PCT = 0.28;
-export const ANGLE_BOUNDS_COLOR = 0xffffff;
-export const ANGLE_BOUNDS_ALPHA = 0.08;
 
 // Mechanical mode
 export const MECH_LAUNCH_SIZE = 80;
@@ -107,10 +107,10 @@ export const MODE_TOGGLE_MARGIN = 16;
 // Z-ordering layers — higher draws on top
 // Components offset within their tier as needed (e.g. Depth.DEV + 1)
 export const enum Depth {
-  HUD = 100,      // score, wind indicator, start screen UI
-  DEV = 200,      // dev overlay graphics + buttons
+  HUD = 100, // score, wind indicator, start screen UI
+  DEV = 200, // dev overlay graphics + buttons
   CONTROLS = 300, // difficulty label, hamburger
-  OVERLAY = 500,  // modal overlays (backdrop, panel, contents)
+  OVERLAY = 500, // modal overlays (backdrop, panel, contents)
 }
 
 // Settings overlay

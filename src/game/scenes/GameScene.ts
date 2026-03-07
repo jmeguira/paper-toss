@@ -140,6 +140,7 @@ export class GameScene extends Phaser.Scene {
     const settingsOverlay = new SettingsOverlay(this, this.activeMode);
     settingsOverlay.onModeChange = (mode) => this.setMode(mode);
     settingsOverlay.onSwipeModeChange = (mode) => this.swipeInput.setSwipeMode(mode);
+    settingsOverlay.onDevToggle = (enabled) => this.setDevOverlay(enabled);
     settingsOverlay.onBackToMenu = () => this.returnToMenu();
   }
 
@@ -204,6 +205,16 @@ export class GameScene extends Phaser.Scene {
   private returnToMenu(): void {
     this.highScores.submit(this.difficulty.id, this.score.getStreak());
     this.scene.start("Start");
+  }
+
+  private setDevOverlay(enabled: boolean): void {
+    if (enabled) {
+      this.devOverlay.show();
+      this.angleBounds.show();
+    } else {
+      this.devOverlay.hide();
+      this.angleBounds.hide();
+    }
   }
 
   private setMode(mode: InputModeType): void {

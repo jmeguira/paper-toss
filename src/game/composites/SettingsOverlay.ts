@@ -16,11 +16,14 @@ export class SettingsOverlay {
   private modeBtn: Phaser.GameObjects.Text;
   private swipeModeBtn: Phaser.GameObjects.Text;
   private menuBtn: Phaser.GameObjects.Text;
+  private devBtn: Phaser.GameObjects.Text;
   private currentMode: InputModeType;
   private currentSwipeMode: SwipeModeType = "instant";
+  private devEnabled = true;
 
   onModeChange: ((mode: InputModeType) => void) | null = null;
   onSwipeModeChange: ((mode: SwipeModeType) => void) | null = null;
+  onDevToggle: ((enabled: boolean) => void) | null = null;
   onBackToMenu: (() => void) | null = null;
 
   constructor(scene: Phaser.Scene, initialMode: InputModeType) {
@@ -47,7 +50,7 @@ export class SettingsOverlay {
 
     // Title
     this.title = scene.add
-      .text(cx, cy - panelH * 0.35, "Settings", {
+      .text(cx, 0, "Settings", {
         fontFamily: theme.ui.fontFamily,
         fontSize: "24px",
         color: theme.ui.text.primary,
@@ -68,15 +71,17 @@ export class SettingsOverlay {
 
     this.closeBtn.on("pointerdown", () => this.hide());
 
+    const toggleStyle = {
+      fontFamily: theme.ui.fontFamily,
+      fontSize: "18px",
+      color: theme.ui.text.primary,
+      backgroundColor: theme.ui.button.bgToggle,
+      padding: { x: 16, y: 10 },
+    };
+
     // Input mode toggle
     this.modeBtn = scene.add
-      .text(cx, cy - panelH * 0.05, this.modeLabel(), {
-        fontFamily: theme.ui.fontFamily,
-        fontSize: "18px",
-        color: theme.ui.text.primary,
-        backgroundColor: theme.ui.button.bgToggle,
-        padding: { x: 16, y: 10 },
-      })
+      .text(cx, 0, this.modeLabel(), toggleStyle)
       .setOrigin(0.5)
       .setDepth(UI)
       .setInteractive({ useHandCursor: true });
@@ -90,13 +95,7 @@ export class SettingsOverlay {
 
     // Swipe mode toggle (instant vs aim-then-fire)
     this.swipeModeBtn = scene.add
-      .text(cx, cy + panelH * 0.15, this.swipeModeLabel(), {
-        fontFamily: theme.ui.fontFamily,
-        fontSize: "18px",
-        color: theme.ui.text.primary,
-        backgroundColor: theme.ui.button.bgToggle,
-        padding: { x: 16, y: 10 },
-      })
+      .text(cx, 0, this.swipeModeLabel(), toggleStyle)
       .setOrigin(0.5)
       .setDepth(UI)
       .setInteractive({ useHandCursor: true });
@@ -108,9 +107,22 @@ export class SettingsOverlay {
       this.onSwipeModeChange?.(this.currentSwipeMode);
     });
 
+    // Dev overlay toggle
+    this.devBtn = scene.add
+      .text(cx, 0, this.devLabel(), toggleStyle)
+      .setOrigin(0.5)
+      .setDepth(UI)
+      .setInteractive({ useHandCursor: true });
+
+    this.devBtn.on("pointerdown", () => {
+      this.devEnabled = !this.devEnabled;
+      this.devBtn.setText(this.devLabel());
+      this.onDevToggle?.(this.devEnabled);
+    });
+
     // Back to Menu button
     this.menuBtn = scene.add
-      .text(cx, cy + panelH * 0.35, "Back to Menu", {
+      .text(cx, 0, "Back to Menu", {
         fontFamily: theme.ui.fontFamily,
         fontSize: "18px",
         color: theme.ui.text.primary,
@@ -125,6 +137,11 @@ export class SettingsOverlay {
       this.onBackToMenu?.();
     });
 
+    // Evenly distribute items within the panel
+    const items = [this.title, this.modeBtn, this.swipeModeBtn, this.devBtn, this.menuBtn];
+    const slotH = panelH / (items.length + 1);
+    items.forEach((item, i) => item.setY(cy - panelH / 2 + slotH * (i + 1)));
+
     // Start hidden
     this.hide();
   }
@@ -136,6 +153,7 @@ export class SettingsOverlay {
     this.closeBtn.setVisible(true).setActive(true);
     this.modeBtn.setVisible(true).setActive(true);
     this.swipeModeBtn.setVisible(true).setActive(true);
+    this.devBtn.setVisible(true).setActive(true);
     this.menuBtn.setVisible(true).setActive(true);
   }
 
@@ -146,6 +164,7 @@ export class SettingsOverlay {
     this.closeBtn.setVisible(false).setActive(false);
     this.modeBtn.setVisible(false).setActive(false);
     this.swipeModeBtn.setVisible(false).setActive(false);
+    this.devBtn.setVisible(false).setActive(false);
     this.menuBtn.setVisible(false).setActive(false);
   }
 
@@ -155,5 +174,9 @@ export class SettingsOverlay {
 
   private swipeModeLabel(): string {
     return `Throw: ${this.currentSwipeMode === "instant" ? "Instant" : "Aim & Fire"}`;
+  }
+
+  private devLabel(): string {
+    return `Dev Overlay: ${this.devEnabled ? "On" : "Off"}`;
   }
 }

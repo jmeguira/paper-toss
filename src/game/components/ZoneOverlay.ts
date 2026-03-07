@@ -5,6 +5,7 @@ import {
   LAUNCH_ANGLE_MAX,
 } from "../constants";
 import { resolveZones } from "../systems/ShotResolver";
+import { theme } from "../theme";
 
 /** Convert our angle convention (0 = up, + = right) to canvas (0 = right, + = CW) */
 function toCanvas(angle: number): number {
@@ -51,32 +52,34 @@ export class ZoneOverlay {
 
     this.graphics.clear();
 
-    // --- Miss (light red, between near-miss and boundaries) ---
-    this.graphics.fillStyle(0xff4444, 0.08);
+    const z = theme.zones;
+
+    // --- Miss (between near-miss and boundaries) ---
+    this.graphics.fillStyle(z.miss.fill, z.miss.alpha);
     fillSector(-LAUNCH_ANGLE_MAX, nmL);
     fillSector(nmR, LAUNCH_ANGLE_MAX);
 
-    // --- Buffer indicators (blue, fixed-width slivers flush to boundaries) ---
-    this.graphics.fillStyle(0x4488ff, 0.15);
+    // --- Buffer indicators (slivers flush to boundaries) ---
+    this.graphics.fillStyle(z.buffer.fill, z.buffer.alpha);
     fillSector(-LAUNCH_ANGLE_MAX, -LAUNCH_ANGLE_MAX + zones.bufferAngleWidth);
     fillSector(LAUNCH_ANGLE_MAX - zones.bufferAngleWidth, LAUNCH_ANGLE_MAX);
 
-    // --- Near-miss (red/amber) ---
-    this.graphics.fillStyle(0xff6644, 0.18);
+    // --- Near-miss ---
+    this.graphics.fillStyle(z.nearMiss.fill, z.nearMiss.alpha);
     fillSector(nmL, targetL);
     fillSector(targetR, nmR);
 
-    // --- Near-hit (subtle green) ---
-    this.graphics.fillStyle(0x00ff88, 0.14);
+    // --- Near-hit ---
+    this.graphics.fillStyle(z.nearHit.fill, z.nearHit.alpha);
     fillSector(targetL, hitL);
     fillSector(hitR, targetR);
 
-    // --- Hit (bright green) ---
-    this.graphics.fillStyle(0x00ff88, 0.25);
+    // --- Hit ---
+    this.graphics.fillStyle(z.hit.fill, z.hit.alpha);
     fillSector(hitL, hitR);
 
-    // --- Perfect (gold, innermost) ---
-    this.graphics.fillStyle(0xffdd44, 0.4);
+    // --- Perfect ---
+    this.graphics.fillStyle(z.perfect.fill, z.perfect.alpha);
     fillSector(perfL, perfR);
 
     // --- Edge lines (radial, at arc radius) ---
@@ -87,12 +90,12 @@ export class ZoneOverlay {
       this.graphics.lineBetween(originX, originY, ex, ey);
     };
 
-    lineAt(nmL, 0xff6644, 0.35);
-    lineAt(nmR, 0xff6644, 0.35);
-    lineAt(targetL, 0x00ff88, 0.25);
-    lineAt(targetR, 0x00ff88, 0.25);
-    lineAt(hitL, 0x00ff88, 0.4);
-    lineAt(hitR, 0x00ff88, 0.4);
+    lineAt(nmL, z.nearMiss.edge, z.nearMiss.edgeAlpha);
+    lineAt(nmR, z.nearMiss.edge, z.nearMiss.edgeAlpha);
+    lineAt(targetL, z.nearHit.edge, z.nearHit.edgeAlpha);
+    lineAt(targetR, z.nearHit.edge, z.nearHit.edgeAlpha);
+    lineAt(hitL, z.hit.edge, z.hit.edgeAlpha);
+    lineAt(hitR, z.hit.edge, z.hit.edgeAlpha);
   }
 
   show(): void {
