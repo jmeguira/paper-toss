@@ -1,9 +1,6 @@
 import Phaser from "phaser";
 import { BALL_REST_Y_PCT, ANGLE_BOUNDS_LENGTH_PCT } from "../constants";
-
-const ARROW_COLOR = 0xffffff;
-const ARROW_ALPHA = 0.45;
-const ARROW_WIDTH = 2;
+import { theme } from "../theme";
 
 export class ThrowAngle {
   private graphics: Phaser.GameObjects.Graphics;
@@ -23,7 +20,7 @@ export class ThrowAngle {
     const length = height * ANGLE_BOUNDS_LENGTH_PCT;
 
     this.graphics.clear();
-    this.graphics.lineStyle(ARROW_WIDTH, ARROW_COLOR, ARROW_ALPHA);
+    this.graphics.lineStyle(theme.throwAngle.width, theme.throwAngle.color, theme.throwAngle.alpha);
 
     const tipX = originX + Math.sin(angle) * length;
     const tipY = originY - Math.cos(angle) * length;

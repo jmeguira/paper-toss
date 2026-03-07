@@ -1,14 +1,21 @@
 import Phaser from "phaser";
-import { FOCAL_LENGTH, VANISH_Y_PCT } from "../constants";
+import { FOCAL_LENGTH, VANISH_Y_PCT, TARGET_RADIUS } from "../constants";
 import { theme } from "../theme";
 
 export class Target {
-  public sprite: Phaser.GameObjects.Sprite;
+  public sprite: Phaser.GameObjects.Graphics;
   private scene: Phaser.Scene;
 
   constructor(scene: Phaser.Scene, targetZ: number) {
     this.scene = scene;
-    this.sprite = scene.add.sprite(0, 0, "target");
+    this.sprite = scene.add.graphics();
+
+    // Draw at local origin — positioned/scaled via setDistance()
+    this.sprite.fillStyle(theme.target.primary, theme.target.fillAlpha);
+    this.sprite.fillCircle(0, 0, TARGET_RADIUS);
+    this.sprite.lineStyle(theme.target.rimWidth, theme.target.primary, 1);
+    this.sprite.strokeCircle(0, 0, TARGET_RADIUS);
+
     this.setDistance(targetZ);
   }
 

@@ -26,13 +26,21 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 - Power and spin deferred from MVP
 
 ### Visual Style
-- Abstract, minimal — aim-lab aesthetic. Paper toss skin as v2 easter egg.
-- **Theme system:** all visual constants in `theme.ts`. Single import point, swappable for re-skinning.
+- **Bioluminescent palette:** teal/cyan world + warm orange player elements. Deep ocean canvas, soft glow, not neon. Portal/Tron inspired but accessible.
+- **Two-color rule:** teal = environment (grid, target, bounds), orange = player actions (ball, throw arrow, GO button). Wind = neutral gray.
+- **Theme system:** all visual constants in `theme.ts`. Single import point, swappable for re-skinning. Zero hardcoded colors outside theme.
+- **Canvas renderer:** `Phaser.CANVAS` instead of WebGL. Canvas 2D draws true anti-aliased curves; WebGL approximates circles as polygons.
+- **Live Graphics:** ball and target are Graphics objects, not pre-rendered textures. Canvas 2D renders at native device resolution every frame — crisp on all screens.
 - Fake 3D: 2D canvas with depth scaling to simulate perspective
 - **Perspective grid room:** floor + back wall using `GRID_CELL` world-unit projection. Lines converge naturally via perspective math. Wall sits at `GROUND_MAX_Z`.
 - **Target:** ellipse (squashed circle) with thick rim centered on near-hit/near-miss boundary
-- **Ball:** solid color from theme (placeholder — visual identity TBD)
+- **Ball:** solid orange from theme
 - Spin animation deferred — needs physics-driven spin or proper 3D asset, not a texture hack
+
+### Flight Animation
+- **Arc amplification:** `ARC_SCALE` multiplies visual height of the arc (cosmetic only, endpoints preserved via baseline interpolation)
+- **Dive effect:** `DIVE_EXPONENT` remaps time through a power curve — slow start, fast finish. Ball hangs at peak then accelerates into the target
+- Both are presentation-layer tricks on top of the pre-computed analytical flight. Landing result is never affected.
 
 ### Physics
 - Analytical parametric flight (no Phaser physics engine, no Euler integration)

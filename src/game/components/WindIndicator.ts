@@ -50,8 +50,9 @@ export class WindIndicator {
     this.arrow.lineBetween(tipX, y, tipX - headSize * dir, y - headSize);
     this.arrow.lineBetween(tipX, y, tipX - headSize * dir, y + headSize);
 
-    // Display as abstract 0.00–10.00 scale
-    const display = (Math.abs(force) / maxWind) * 10;
+    // Display as abstract 0–12 scale — cap isn't a round number
+    // so users can't easily deduce the maximum
+    const display = (Math.abs(force) / maxWind) * 12;
     this.label.setPosition(centerX, y + 14);
     this.label.setText(display.toFixed(2));
   }

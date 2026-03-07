@@ -7,6 +7,7 @@ import {
   MECH_LAUNCH_SIZE,
   MECH_ANGLE_SWEEP_SPEED,
 } from "../constants";
+import { theme } from "../theme";
 import { log } from "./logger";
 
 export class MechanicalInput implements InputMode {
@@ -33,7 +34,7 @@ export class MechanicalInput implements InputMode {
       x: width / 2,
       y: controlsY,
       radius: goRadius,
-      fillColor: 0x44aa44,
+      fillColor: theme.ui.goButton.color,
       label: "GO",
       fontSize: 22,
     });

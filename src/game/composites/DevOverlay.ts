@@ -27,4 +27,14 @@ export class DevOverlay {
   update(windForce: number, targetZ: number): void {
     this.zoneOverlay?.update(windForce, targetZ);
   }
+
+  show(): void {
+    this.zoneOverlay?.show();
+    this.perfectBtn?.show();
+  }
+
+  hide(): void {
+    this.zoneOverlay?.hide();
+    this.perfectBtn?.hide();
+  }
 }

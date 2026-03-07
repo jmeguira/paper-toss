@@ -4,6 +4,8 @@ import {
   FOCAL_LENGTH,
   VANISH_Y_PCT,
   FLIGHT_GRAVITY,
+  ARC_SCALE,
+  DIVE_EXPONENT,
 } from "../constants";
 
 export class FlightAnimator {
@@ -64,13 +66,21 @@ export class FlightAnimator {
       return;
     }
 
-    this.evaluate(this.elapsed);
+    // Time warp: remap linear progress through a power curve.
+    // Exponent > 1 = slow start, fast finish (hang then dive).
+    const p = this.elapsed / this.duration;
+    const warped = Math.pow(p, DIVE_EXPONENT) * this.duration;
+    this.evaluate(warped);
   }
 
   /** Evaluate the parametric path at time t and project to screen. */
   private evaluate(t: number): void {
     const wx = this.wx0 + this.vx0 * t + 0.5 * this.wind * t * t;
-    const wy = this.wy0 + this.vy0 * t - 0.5 * FLIGHT_GRAVITY * t * t;
+    const wyRaw = this.wy0 + this.vy0 * t - 0.5 * FLIGHT_GRAVITY * t * t;
+    // Scale only the arc hump, not the endpoints.
+    // Baseline = straight line from wy0 to 0 over the flight.
+    const baseline = this.wy0 * (1 - t / this.duration);
+    const wy = baseline + (wyRaw - baseline) * ARC_SCALE;
     const wz = this.vz * t;
 
     const { width, height } = this.scene.scale;

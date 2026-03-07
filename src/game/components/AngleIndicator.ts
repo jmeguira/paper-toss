@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { LAUNCH_ANGLE_MAX, MECH_INDICATOR_RADIUS } from "../constants";
+import { theme } from "../theme";
 
 export class AngleIndicator {
   private graphics: Phaser.GameObjects.Graphics;
@@ -50,7 +51,7 @@ export class AngleIndicator {
     this.graphics.clear();
 
     // Draw arc background (the sweep range)
-    this.graphics.lineStyle(2, 0xffffff, 0.15);
+    this.graphics.lineStyle(2, theme.angleIndicator.arcColor, theme.angleIndicator.arcAlpha);
     // Arc from -LAUNCH_ANGLE_MAX to +LAUNCH_ANGLE_MAX, measured from 12 o'clock
     // Phaser arcs use standard math angles (0 = right, CCW positive)
     // We want: straight up = -π/2, left of up = -π/2 - LAUNCH_ANGLE_MAX, right = -π/2 + LAUNCH_ANGLE_MAX
@@ -75,11 +76,11 @@ export class AngleIndicator {
     const needleY =
       this.centerY + Math.sin(needleAngle) * MECH_INDICATOR_RADIUS;
 
-    this.graphics.lineStyle(3, 0x44ff44, 0.8);
+    this.graphics.lineStyle(3, theme.angleIndicator.needleColor, theme.angleIndicator.needleAlpha);
     this.graphics.lineBetween(this.centerX, this.centerY, needleX, needleY);
 
     // Needle tip dot
-    this.graphics.fillStyle(0x44ff44, 1);
+    this.graphics.fillStyle(theme.angleIndicator.needleColor, 1);
     this.graphics.fillCircle(needleX, needleY, 4);
   }
 }

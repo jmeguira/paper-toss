@@ -171,3 +171,14 @@
 - **Component extraction** — DevOverlay decomposed into `ZoneOverlay` (arc-sector zone visualization), `PerfectThrowButton` (dev perfect-throw button), and a thin `DevOverlay` composition layer
 - **Dead code removal** — Deleted unused `ModeToggle.ts` (replaced by mode toggle inside SettingsOverlay)
 - **PR workflow** — Added code hygiene scan step to CLAUDE.md (step 2: one-pass review of diff for quick tidy-ups or TODOs)
+
+### Flight Polish + Theme Completion + Bioluminescent Palette
+- **Flight arc polish** — `ARC_SCALE` amplifies visual arc height (cosmetic only, endpoints preserved). `DIVE_EXPONENT` remaps time via power curve for hang-then-dive feel. Landing result unaffected.
+- **Wind display** — Scale changed to 0–12 (obscures max cap from user). Arrow length still proportional.
+- **Theme stragglers** — Wired all remaining hardcoded colors: ThrowAngle, AngleBounds, AngleIndicator, ZoneOverlay, MechanicalInput GO button, BootScene target color. Removed dead constants: `TARGET_COLOR`, `TARGET_TEXTURE_RADIUS`, `ANGLE_BOUNDS_COLOR`, `ANGLE_BOUNDS_ALPHA`.
+- **Dev overlay toggle** — Settings panel button hides zone arcs, perfect throw button, and angle bounds. Throw angle arrow stays visible.
+- **Settings panel layout** — Auto-layout: items array drives even spacing, add/remove buttons without hardcoding positions.
+- **Bioluminescent palette** — Teal/cyan world + warm orange player elements. Two-color rule: teal = environment, orange = player actions. Soft glow alphas, deep ocean canvas. Wind indicator neutral gray.
+- **Canvas renderer** — Switched from WebGL (`Phaser.AUTO`) to `Phaser.CANVAS`. WebGL approximates circles as polygons; Canvas 2D draws true anti-aliased curves via native `arc()`.
+- **Live Graphics objects** — Replaced procedural texture generation (BootScene `generateTexture()`) with live Graphics for ball and target. Canvas 2D renders at native device resolution every frame — crisp on all screens without supersampling. Removed `TEXTURE_SCALE` constant and all plumbing.
+- **Deleted** — `VISUAL_OVERHAUL.md` (temp planning doc, completed)

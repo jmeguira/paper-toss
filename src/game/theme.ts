@@ -130,94 +130,95 @@ export interface Theme {
 }
 
 // ---------------------------------------------------------------------------
-// Default theme — warm dusk palette.
+// Default theme — bioluminescent deep-ocean palette.
+// Teal/cyan world, warm orange player elements. Soft glow, not neon.
 // ---------------------------------------------------------------------------
 
 export const defaultTheme: Theme = {
-  canvas: "#0d0d2b",
+  canvas: "#0a0a1e",
 
   sky: {
-    top: 0x0d0d2b,          // deep indigo
-    bottom: 0x2a1a3e,       // dusty warm purple
+    top: 0x0a0a1e,           // near-black with blue undertone
+    bottom: 0x0f1a2a,        // deep ocean blue-black
   },
 
   horizon: {
-    color: 0x6b4c8a,        // soft lavender glow
-    alpha: 0.25,
+    color: 0x2a8888,         // soft teal glow
+    alpha: 0.2,
     heightPct: 0.06,
   },
 
   ground: {
-    lineColor: 0x5a4a7a,    // warm purple-gray
-    alphaFar: 0.08,
-    alphaNear: 0.35,
+    lineColor: 0x2a8888,     // teal grid — bioluminescent skeleton
+    alphaFar: 0.06,
+    alphaNear: 0.3,
   },
 
   ball: {
-    base: 0x3366cc,
-    highlight: 0xe6c832,     // warm neon yellow stripe
-    shadow: 0xaaaaaa,        // unused until sphere step
-    glow: 0xf5f5f5,          // unused until sphere step
-    glowAlpha: 0.15,         // unused until sphere step
+    base: 0xe8884a,          // warm amber-orange
+    highlight: 0xffbb77,     // bright highlight (sphere step)
+    shadow: 0x994422,        // deep warm shadow (sphere step)
+    glow: 0xe8884a,          // orange glow (sphere step)
+    glowAlpha: 0.12,
   },
 
   target: {
-    primary: 0xff4444,
-    fillAlpha: 0.4,
+    primary: 0x44ddcc,       // cyan-teal — "destination"
+    fillAlpha: 0.25,
     rimWidth: 30,
     squash: 0.4,
   },
 
   trail: {
-    color: 0xf5f5f5,
-    alpha: 0.3,
+    color: 0xe8884a,         // matches ball
+    alpha: 0.25,
     count: 12,
   },
 
   angleBounds: {
-    color: 0xffffff,
-    alpha: 0.08,
+    color: 0x44ddcc,         // teal, part of the world
+    alpha: 0.06,
   },
 
   throwAngle: {
-    color: 0xffffff,
-    alpha: 0.45,
+    color: 0xe8884a,         // orange — "your" color
+    alpha: 0.5,
     width: 2,
   },
 
   angleIndicator: {
-    arcColor: 0xffffff,
-    arcAlpha: 0.15,
-    needleColor: 0x44ff44,
+    arcColor: 0x44ddcc,      // teal arc
+    arcAlpha: 0.12,
+    needleColor: 0xe8884a,   // orange needle — player's indicator
     needleAlpha: 0.8,
   },
 
   wind: {
-    arrowColor: 0xffffff,
+    arrowColor: 0xcccccc,    // neutral — not teal or orange
     arrowWidth: 3,
     label: {
-      color: "#ffffff",
+      color: "#cccccc",
       stroke: "#000000",
       strokeThickness: 3,
     },
   },
 
   zones: {
-    perfect:  { fill: 0xffdd44, alpha: 0.4 },
-    hit:      { fill: 0x00ff88, alpha: 0.25, edge: 0x00ff88, edgeAlpha: 0.4 },
-    nearHit:  { fill: 0x00ff88, alpha: 0.14, edge: 0x00ff88, edgeAlpha: 0.25 },
-    nearMiss: { fill: 0xff6644, alpha: 0.18, edge: 0xff6644, edgeAlpha: 0.35 },
-    miss:     { fill: 0xff4444, alpha: 0.08 },
-    buffer:   { fill: 0x4488ff, alpha: 0.15 },
+    perfect:  { fill: 0xffcc44, alpha: 0.4 },
+    hit:      { fill: 0x44ddcc, alpha: 0.25, edge: 0x44ddcc, edgeAlpha: 0.4 },
+    nearHit:  { fill: 0x44ddcc, alpha: 0.12, edge: 0x44ddcc, edgeAlpha: 0.2 },
+    nearMiss: { fill: 0xe8884a, alpha: 0.15, edge: 0xe8884a, edgeAlpha: 0.3 },
+    miss:     { fill: 0xff4444, alpha: 0.06 },
+    buffer:   { fill: 0x4488aa, alpha: 0.12 },
   },
 
   ui: {
     fontFamily: "monospace",
     text: {
-      primary: "#ffffff",
-      secondary: "#888888",
-      dim: "#888888",
-      accent: "#aaaaff",
+      primary: "#e0e0e0",    // soft white — not harsh pure white
+      secondary: "#778888",  // muted teal-gray
+      dim: "#556666",        // subtle
+      accent: "#44ddcc",     // teal accent
     },
     score: {
       fontSize: "48px",
@@ -225,24 +226,24 @@ export const defaultTheme: Theme = {
       strokeThickness: 4,
     },
     button: {
-      bg: "#4444aa",
-      bgHover: "#4444aa88",
+      bg: "#1a4444",         // dark teal
+      bgHover: "#1a444488",
       bgMuted: "#00000066",
-      bgToggle: "#66666688",
+      bgToggle: "#1a3a3a88",
     },
     panel: {
-      bg: 0x2a2a4e,
-      bgAlpha: 1,
+      bg: 0x0f1a2a,          // matches sky bottom
+      bgAlpha: 0.95,
     },
     overlay: {
       backdropColor: 0x000000,
-      backdropAlpha: 0.5,
+      backdropAlpha: 0.6,
     },
     goButton: {
-      color: 0x44aa44,
+      color: 0xe8884a,       // orange — player action
     },
     devButton: {
-      color: "#00ff88",
+      color: "#44ddcc",
       bg: "#00000066",
     },
   },

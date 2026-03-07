@@ -462,3 +462,15 @@
 - Components offset within their tier locally: `Depth.DEV + 1` for buttons above graphics
 - Tiers spaced by 100 to leave room for insertion without renumbering
 - `const enum` is fully erased at compile time — values are inlined as literal numbers in the JS output. Zero runtime cost
+
+### WebGL vs Canvas 2D — circle rendering
+- **WebGL can't draw curves.** It only knows triangles and straight line segments. Phaser's Graphics `fillCircle`/`strokeCircle`/`arc` approximate curves as polygons with N segments. More segments = smoother, but never a true curve.
+- **Canvas 2D has native `arc()`** which draws mathematically smooth, anti-aliased curves at the device's native pixel density.
+- `Phaser.AUTO` picks WebGL when available. For a 2D game with no WebGL-specific features, `Phaser.CANVAS` is often better — true curves, no polygon artifacts.
+- `antialias: true` in WebGL enables MSAA (smooths polygon edges) but doesn't add more segments to circle approximations.
+
+### Procedural textures vs live Graphics
+- **`generateTexture()`** rasterizes a Graphics object into a fixed-resolution bitmap sprite. The bitmap is locked to that pixel count — scaling it (projection, retina screens) reveals the jagged polygon edges and resolution limits.
+- **Live Graphics objects** are re-rendered by Canvas 2D every frame at native resolution. For simple shapes (circles, lines), the per-frame cost is negligible.
+- **Rule of thumb:** use live Graphics for a handful of simple shapes. Use textures/sprites for complex visuals, sprite sheets, or when you need hundreds of identical instances (particles).
+- `window.devicePixelRatio` matters for textures (a 3x retina phone needs 3x pixels) but is irrelevant for live Graphics (Canvas 2D handles it natively).
