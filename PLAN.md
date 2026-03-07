@@ -99,9 +99,20 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 - Aim-then-fire mode with LAUNCH button (toggle in settings)
 - Dev logger gating console output behind DEV_MODE
 
-### Next up
-- **Dev settings panel** — Live sliders for targetZ, wind range, TARGET_RADIUS, tier percentages, etc. for feel-based tuning without recompiling
+### Flight polish + theme completion + palette ✅
+- Flight arc amplification (`ARC_SCALE`) and dive effect (`DIVE_EXPONENT`)
+- All hardcoded colors wired through theme — zero color literals outside `theme.ts`
+- Dev overlay toggle in settings panel
+- Bioluminescent teal/orange palette
+- Canvas renderer (true anti-aliased curves vs WebGL polygon approximation)
+- Live Graphics objects for ball/target (native device resolution, no procedural textures)
+
+### Next up (see NEXT_UP.md)
+- **Target elevation** — vertical ring/portal with world-space Y height
+- **Landing feedback** — tier text on back wall (PERFECT/HIT/MISS)
+- **Wind particles** — ambient flow lines showing direction + strength
 - **Sound + haptics**
+- **Dev settings panel** — Live sliders for feel-based tuning
 - ~~**Start screen + high score persistence**~~ ✅ — StartScene with difficulty selector + high scores, HighScoreStore (localStorage), settings overlay with mode toggle, hamburger menu, Depth enum
 
 ### v2 parking lot
