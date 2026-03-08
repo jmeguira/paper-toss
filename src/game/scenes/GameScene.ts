@@ -18,7 +18,6 @@ import { HighScoreStore } from "../systems/HighScoreStore";
 import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, PROJECTILE_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo } from "../constants";
 import { log } from "../systems/logger";
 
-
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
   private swipeInput!: SwipeInput;

@@ -66,15 +66,14 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 - Tiers derived from two knobs: `TARGET_RADIUS` and `HIT_PCT`. Near-miss mirrors near-hit band outside the target
 - PERFECT, HIT, and NEAR HIT all count as hits (score). NEAR MISS and MISS reset streak
 
-### Difficulty
-- Distance is the single difficulty knob: `targetZ` controls flight time, wind drift, and visual target size
-- `flightTime = targetZ / FORWARD_SPEED` — duration scales linearly with distance, wind drift scales quadratically
-- `vy0` computed per-shot from kinematics so the arc fits the flight time (not a constant)
-- Three presets: Easy (700), Medium (1200), Hard (1800). `FORWARD_SPEED = 810` preserves current Medium feel
-- Wind range auto-scales via physics: shorter flight → higher maxWind allowed but less actual drift
-- Visual target size scales naturally via depth projection (closer = bigger)
-- Lateral target offset adds further complexity (not straight ahead — v2)
+### Difficulty — Streak-Driven Ramping (planned)
+- **No difficulty tiers.** One mode, one leaderboard. Streak is the single point of pride.
+- Distance (`targetZ`) ramps gradually as streak increases, up to a ceiling
+- Target X and launch X may also vary per throw — every throw is a unique geometry problem
+- Wind range auto-scales via physics: longer flight → more drift, for free
+- Visual target size scales naturally via depth projection (further = smaller)
 - Play area aspect ratio should be locked for universal feel across devices
+- Currently: three presets still in code (Easy/Medium/Hard) pending rework
 
 ### Swipe Input (v1 rework)
 - Flick gesture replaces ball-in-hand drag: touch near ball → pulse feedback, flick upward → throw
@@ -106,7 +105,8 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 
 ### Dev Overlay
 - Arc-sector visualization of all landing zones: gold (perfect), green (hit/near-hit), red (near-miss), light red (miss), blue (buffer)
-- Perfect throw button fires the solved angle — PERFECT hit every time
+- Tier throw buttons (P/H/NH/NM) fire angles into specific landing bands
+- DevOverlay owns the single `resolveZones()` call — passes results to ZoneOverlay and button callbacks
 - Only visible when `DEV_MODE = true`
 
 ### Scene Flow
@@ -122,9 +122,21 @@ Two input modes sharing ±60° angle bounds and fixed center launch:
 - Schema migration deferred — current shape is trivially simple; defensive load handles future v0→v1 naturally
 
 ### Z-Ordering
-- Centralized `Depth` enum in constants.ts: HUD (100), DEV (200), CONTROLS (300), OVERLAY (500)
+- Centralized `Depth` enum in constants.ts: GRID (0), WALL (1), GAME (10), HUD (100), DEV (200), CONTROLS (300), OVERLAY (500)
 - Components offset within their tier as needed (e.g. `Depth.DEV + 1`)
 - `const enum` — fully erased at compile time, zero runtime cost
+
+### Vertical Layout System
+- Percentage-based budget in `LAYOUT` constant: NAV (7%), HUD (20%), Buffer (8%)
+- `VANISH_Y_PCT` is a derived getter (sum of the three zones = 0.35)
+- Everything above the vanish line is UI; everything below is playable space (sacred)
+- Playable space = court + launch area (65% of screen height)
+- WallPanel is screen-space with a wall aesthetic — sized by pixel budget, not world-space projection
+
+### Typographic Scale
+- `typeScale(screenHeight)` returns three clamped tiers: heading (20–32px), body (12–20px), caption (10–16px)
+- All text in the game pulls from this scale — zero hardcoded font sizes in game code
+- Ensures readability from iPhone SE (667px) to Pro Max (932px)
 
 ### Directory Convention
 One-pass sorting rule for new files — ask in order:

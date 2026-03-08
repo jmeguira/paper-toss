@@ -182,3 +182,26 @@
 - **Canvas renderer** — Switched from WebGL (`Phaser.AUTO`) to `Phaser.CANVAS`. WebGL approximates circles as polygons; Canvas 2D draws true anti-aliased curves via native `arc()`.
 - **Live Graphics objects** — Replaced procedural texture generation (BootScene `generateTexture()`) with live Graphics for ball and target. Canvas 2D renders at native device resolution every frame — crisp on all screens without supersampling. Removed `TEXTURE_SCALE` constant and all plumbing.
 - **Deleted** — `VISUAL_OVERHAUL.md` (temp planning doc, completed)
+
+## 2026-03-07
+
+### Wall Panel HUD, Dev Buttons, Target Elevation
+- **Wall panel** — New `WallPanel` composite replacing ScoreDisplay + WindIndicator. Streak, best score, difficulty, wind arrow, feedback zone placeholder — all in a projected panel on the back wall
+- **NavBar** — Extracted hamburger into NavBar component with proportional sizing
+- **Depth layers** — Added GRID (0), WALL (1), GAME (10) to Depth enum. All game objects now have explicit depth
+- **Dev throw buttons** — Row of tier buttons (P/H/NH/NM) replacing single Perfect button. DevOverlay owns `resolveZones()`, passes to ZoneOverlay and buttons
+- **Zone resolution refactor** — ZoneOverlay is now a pure renderer (receives pre-computed ZoneInfo)
+- **Target elevation** — `TARGET_Y = 200` lifts target off ground plane. Flight baseline interpolates to TARGET_Y. ShotResolver vy0 formula updated
+- **Tuning** — Focal length 250→225, difficulty spread widened (600/1000/1400), landing tier percentages adjusted, ARC_SCALE 1.5→1.2
+- **VS Code + lint** — Prettier, ESLint (TS + Prettier compat), extensions.json, format-on-save settings
+
+## 2026-03-08
+
+### Layout System + Typographic Scale + WallPanel Decomposition
+- **Percentage-based layout** — `LAYOUT` constant with NAV_PCT (7%), HUD_PCT (20%), BUFFER_PCT (8%). `VANISH_Y_PCT` is a derived getter. Playable space = everything below 35%
+- **Screen-space WallPanel** — Replaced world-space projection sizing with pixel budget from LAYOUT. Panel width 88% of screen, centered. Works across iPhone SE to Pro Max
+- **Typographic scale** — `typeScale(screenHeight)` in theme.ts: heading (20–32px), body (12–20px), caption (10–16px). Migrated all 7 files with hardcoded font sizes
+- **NavBar cleanup** — Home button (⌂) added, heading-size icons, dropped unused scene field
+- **WallPanel decomposition** — Split into ScoreRow (streak/best/difficulty + state), WindDisplay (arrow + label), FeedbackZone (bordered rect placeholder). WallPanel reduced from 198 to 95 lines
+- **Cleanup** — Removed unused `wallPanel.label` from theme, dead `ui.score.fontSize`, extra blank line in GameScene
+- **Design decision** — Streak-driven difficulty replaces tier presets. One mode, one leaderboard. targetZ/targetX/launchX ramp with streak

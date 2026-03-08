@@ -469,6 +469,18 @@
 - `Phaser.AUTO` picks WebGL when available. For a 2D game with no WebGL-specific features, `Phaser.CANVAS` is often better — true curves, no polygon artifacts.
 - `antialias: true` in WebGL enables MSAA (smooths polygon edges) but doesn't add more segments to circle approximations.
 
+### Getter in `as const` objects
+- `LAYOUT` uses a `get VANISH_Y_PCT()` getter inside an `as const` object — a computed property that derives from sibling values
+- Called like a regular property (`LAYOUT.VANISH_Y_PCT`), computed on access
+- Python equivalent: `@property` on a frozen dataclass
+- Useful when one value must always equal the sum of others — structurally impossible to drift
+
+### Typographic scale pattern
+- Define font size tiers as clamped functions of screen height: `clamp(min, height * factor, max)`
+- All text in the app pulls from the same three tiers (heading/body/caption)
+- Same idea as CSS `clamp()` or a design system's type scale — consistency by construction
+- Avoids the scattered-magic-numbers problem where every component invents its own font math
+
 ### Procedural textures vs live Graphics
 - **`generateTexture()`** rasterizes a Graphics object into a fixed-resolution bitmap sprite. The bitmap is locked to that pixel count — scaling it (projection, retina screens) reveals the jagged polygon edges and resolution limits.
 - **Live Graphics objects** are re-rendered by Canvas 2D every frame at native resolution. For simple shapes (circles, lines), the per-frame cost is negligible.

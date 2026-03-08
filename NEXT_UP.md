@@ -14,8 +14,14 @@ Picked direction: bioluminescent deep-ocean palette, teal/cyan world + warm oran
 - vy0 formula adjusted so ball arrives at TARGET_Y; flight baseline interpolates to TARGET_Y
 - Focal length tuned (250→225) and difficulty spread widened (600/1000/1400) for more felt distance
 
+### Layout system ✅
+- Percentage-based vertical zones (NAV 7% / HUD 20% / Buffer 8% / Playable 65%)
+- Screen-space WallPanel sized by pixel budget, not world-space projection
+- Typographic scale (heading/body/caption) replaces all hardcoded font sizes
+- WallPanel decomposed into ScoreRow, WindDisplay, FeedbackZone
+
 ### Landing feedback
-- Tier text on the back wall: PERFECT (gold), HIT (teal), NEAR HIT (subtle), MISS (dim red)
+- Tier text/animation in feedback zone: PERFECT (gold), HIT (teal), NEAR HIT (subtle), MISS (dim red)
 - Flash/fade quickly — don't slow down the shot cycle
 - Gradient of delight already baked into tier system, just needs a face
 
@@ -23,6 +29,11 @@ Picked direction: bioluminescent deep-ocean palette, teal/cyan world + warm oran
 - Ambient flow lines/streamers showing wind direction + strength
 - Keep the numeric display — user should feel like a calculation is happening
 - Layer on top of existing arrow + number
+
+### Streak-driven difficulty (design phase)
+- Replace difficulty tiers with progressive ramping based on streak
+- targetZ, targetX, launchX all potentially variable per throw
+- One mode, one leaderboard — streak is the identity
 
 ### Future
 - Sound + haptics

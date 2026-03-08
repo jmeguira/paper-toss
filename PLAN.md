@@ -107,19 +107,27 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 - Canvas renderer (true anti-aliased curves vs WebGL polygon approximation)
 - Live Graphics objects for ball/target (native device resolution, no procedural textures)
 
+### HUD + layout system ✅
+- **Percentage-based vertical layout** — `LAYOUT` constant: NAV (7%) → HUD (20%) → Buffer (8%) → Playable (65%). `VANISH_Y_PCT` derived as getter
+- **Screen-space WallPanel** — sized by pixel budget, not world-space projection. Works across SE to Pro Max
+- **Typographic scale** — `typeScale(screenHeight)` returns heading/body/caption sizes. All text uses it, zero hardcoded px values
+- **WallPanel decomposition** — split into ScoreRow, WindDisplay, FeedbackZone components. WallPanel is thin composite
+- **NavBar** — home button + hamburger, heading-size icons
+- **Dev throw buttons** — P/H/NH/NM tier buttons replace single Perfect button
+- **Depth layers** — GRID (0), WALL (1), GAME (10) added to Depth enum
+- **Target elevation** — `TARGET_Y = 200` lifts target off ground plane
+- **VS Code + lint setup** — Prettier, ESLint, extensions, format-on-save
+
 ### Next up (see NEXT_UP.md)
-- **Target elevation** — vertical ring/portal with world-space Y height
-- **Landing feedback** — tier text on back wall (PERFECT/HIT/MISS)
+- **Landing feedback** — tier text/animation in feedback zone (PERFECT/HIT/MISS)
 - **Wind particles** — ambient flow lines showing direction + strength
 - **Sound + haptics**
 - **Dev settings panel** — Live sliders for feel-based tuning
-- ~~**Start screen + high score persistence**~~ ✅ — StartScene with difficulty selector + high scores, HighScoreStore (localStorage), settings overlay with mode toggle, hamburger menu, Depth enum
+- **Streak-driven difficulty** — replace difficulty tiers with progressive ramping (see Design Decisions)
 
 ### v2 parking lot
 - Skins (baseball, paper toss aesthetic)
 - Alternative game modes
-- Lateral launch point (re-enable L/R buttons)
-- Moving targets
 - Power mechanic (swipe speed, separate UI, or fixed)
 - Spin mechanic (curved swipe → curved flight)
 - Projectile types (Heavy/Balanced/Flippy) with unlock system
