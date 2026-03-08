@@ -2,6 +2,7 @@ import {
   LandingTier,
   LANDING_TIERS,
   TARGET_RADIUS,
+  TARGET_Y,
   FLIGHT_SPEED,
   FLIGHT_LATERAL_MULT,
   FLIGHT_GRAVITY,
@@ -95,7 +96,7 @@ export function resolveShot(
 ): ShotResult {
   const duration = flightTime(targetZ);
   const vx0 = FLIGHT_SPEED * FLIGHT_LATERAL_MULT * Math.sin(angle);
-  const vy0 = 0.5 * FLIGHT_GRAVITY * duration - wy0 / duration;
+  const vy0 = 0.5 * FLIGHT_GRAVITY * duration + (TARGET_Y - wy0) / duration;
   const vz = targetZ / duration;
 
   const landingX = vx0 * duration + 0.5 * windForce * duration ** 2;

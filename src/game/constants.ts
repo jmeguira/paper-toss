@@ -1,5 +1,5 @@
 // Camera / fake-3D projection
-export const FOCAL_LENGTH = 250;
+export const FOCAL_LENGTH = 225;
 export const VANISH_Y_PCT = 0.35;
 
 // Flight physics
@@ -20,12 +20,15 @@ export function flightTime(targetZ: number): number {
 
 // Difficulty presets — targetZ is the only knob
 export const DIFFICULTIES = [
-  { id: "EASY", label: "Easy", targetZ: 750 },
+  { id: "EASY", label: "Easy", targetZ: 600 },
   { id: "MEDIUM", label: "Medium", targetZ: 1000 },
-  { id: "HARD", label: "Hard", targetZ: 1250 },
+  { id: "HARD", label: "Hard", targetZ: 1400 },
 ] as const;
 export type DifficultyId = (typeof DIFFICULTIES)[number]["id"];
 export const DEFAULT_DIFFICULTY = DIFFICULTIES[1]; // Medium
+
+// Target elevation (world-space Y height — cosmetic, does not affect hit detection)
+export const TARGET_Y = 200;
 
 // Hit detection — landing tiers ordered innermost → outermost
 // Single source of truth: add/remove/rename tiers here, everything else derives.

@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { FOCAL_LENGTH, VANISH_Y_PCT, TARGET_RADIUS } from "../constants";
+import { FOCAL_LENGTH, VANISH_Y_PCT, TARGET_RADIUS, TARGET_Y } from "../constants";
 import { theme } from "../theme";
 
 export class Target {
@@ -23,7 +23,8 @@ export class Target {
     const { width, height } = this.scene.scale;
     const scale = FOCAL_LENGTH / (FOCAL_LENGTH + z);
     const vanishY = height * VANISH_Y_PCT;
-    const y = vanishY + (height - vanishY) * scale;
+    const groundY = vanishY + (height - vanishY) * scale;
+    const y = groundY - TARGET_Y * scale;
 
     this.sprite.setPosition(width / 2, y);
     this.sprite.setScale(scale, scale * theme.target.squash);

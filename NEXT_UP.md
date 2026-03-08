@@ -8,11 +8,11 @@ Picked direction: bioluminescent deep-ocean palette, teal/cyan world + warm oran
 
 ## Remaining steps
 
-### Target elevation
-- Give target actual Y height in world space — ball arcs *into* it, not onto it
-- "Making a basket" / "Death Star trench run" feel
+### Target elevation ✅
+- `TARGET_Y = 200` world-space height — ball arcs *into* it, not onto it
 - Hit detection unchanged (x,z only, Y is cosmetic)
-- Render as a vertical ring/portal floating at a world-space Y height
+- vy0 formula adjusted so ball arrives at TARGET_Y; flight baseline interpolates to TARGET_Y
+- Focal length tuned (250→225) and difficulty spread widened (600/1000/1400) for more felt distance
 
 ### Landing feedback
 - Tier text on the back wall: PERFECT (gold), HIT (teal), NEAR HIT (subtle), MISS (dim red)
