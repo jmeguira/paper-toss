@@ -9,15 +9,15 @@ import { SwipeInput } from "../systems/SwipeInput";
 import { MechanicalInput } from "../systems/MechanicalInput";
 import { FlightAnimator } from "../systems/FlightAnimator";
 import { WindSystem } from "../systems/WindSystem";
-import { ScoreDisplay } from "../components/ScoreDisplay";
-import { WindIndicator } from "../components/WindIndicator";
+import { NavBar } from "../components/NavBar";
+import { WallPanel } from "../composites/WallPanel";
 import { DevOverlay } from "../composites/DevOverlay";
 import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
-import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, MODE_TOGGLE_MARGIN, tierInfo } from "../constants";
-import { theme } from "../theme";
+import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, PROJECTILE_RADIUS, DEV_BUTTON_GAP_PCT, tierInfo } from "../constants";
 import { log } from "../systems/logger";
+
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
@@ -25,12 +25,10 @@ export class GameScene extends Phaser.Scene {
   private mechInput!: MechanicalInput;
   private flight!: FlightAnimator;
   private wind!: WindSystem;
-  private score!: ScoreDisplay;
-  private windIndicator!: WindIndicator;
+  private panel!: WallPanel;
   private devOverlay!: DevOverlay;
   private target!: Target;
   private difficulty: (typeof DIFFICULTIES)[number] = DEFAULT_DIFFICULTY;
-  private diffLabel!: Phaser.GameObjects.Text;
   private highScores!: HighScoreStore;
   private angleBounds!: AngleBounds;
   private throwAngle!: ThrowAngle;
@@ -59,10 +57,11 @@ export class GameScene extends Phaser.Scene {
     this.flight.onComplete = (result) => {
       const info = tierInfo(result.tier);
       if (info.scores) {
-        this.score.hit();
+        this.panel.hit();
       } else {
-        this.highScores.submit(this.difficulty.id, this.score.getStreak());
-        this.score.miss();
+        const isRecord = this.highScores.submit(this.difficulty.id, this.panel.getStreak());
+        this.panel.miss();
+        if (isRecord) this.panel.setBest(this.highScores.get(this.difficulty.id));
       }
 
       log(`Landed: dist=${result.distance.toFixed(0)} ${info.label}`);
@@ -73,15 +72,28 @@ export class GameScene extends Phaser.Scene {
         const { width, height } = this.scale;
         this.projectile.resetPosition(width, height);
         this.wind.generate(this.difficulty.targetZ);
-        this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
+        this.panel.updateWind(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
         this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
         this.enableActiveMode();
       });
     };
 
-    // Score display + persistence
-    this.score = new ScoreDisplay(this);
+    // Persistence
     this.highScores = new HighScoreStore();
+
+    // Nav bar (top row — hamburger, future back button, etc.)
+    const navBar = new NavBar(this);
+    navBar.onMenuClick = () => settingsOverlay.show();
+
+    // Wall panel — anchored below nav bar
+    const { width, height } = this.scale;
+    this.panel = new WallPanel(
+      this,
+      navBar.bottom,
+      this.difficulty.label,
+      this.highScores.get(this.difficulty.id),
+    );
+    this.panel.onDifficultyClick = () => this.cycleDifficulty();
 
     // Input systems
     this.swipeInput = new SwipeInput(this, this.projectile, this.throwAngle);
@@ -93,49 +105,16 @@ export class GameScene extends Phaser.Scene {
     // Start in swipe mode
     this.swipeInput.enable();
 
-    // Difficulty cycle button
-    this.diffLabel = this.add.text(16, 80, this.difficulty.label, {
-      fontFamily: theme.ui.fontFamily,
-      fontSize: "16px",
-      color: theme.ui.text.accent,
-      backgroundColor: theme.ui.button.bgMuted,
-      padding: { x: 6, y: 4 },
-    });
-    this.diffLabel.setDepth(Depth.CONTROLS);
-    this.diffLabel.setInteractive({ useHandCursor: true });
-    this.diffLabel.on("pointerdown", () => this.cycleDifficulty());
-
-    // Hamburger menu button (top-right)
-    const { width } = this.scale;
-    const hamburger = this.add.text(
-      width - MODE_TOGGLE_MARGIN,
-      MODE_TOGGLE_MARGIN,
-      "\u2630",
-      {
-        fontFamily: theme.ui.fontFamily,
-        fontSize: "28px",
-        color: theme.ui.text.dim,
-        backgroundColor: theme.ui.button.bgMuted,
-        padding: { x: 6, y: 2 },
-      },
-    );
-    hamburger.setOrigin(1, 0);
-    hamburger.setDepth(Depth.CONTROLS);
-    hamburger.setInteractive({ useHandCursor: true });
-    hamburger.on("pointerdown", () => settingsOverlay.show());
-
-    // Wind + dev overlay (buttons stack below hamburger)
+    // Wind + dev overlay (buttons centered below ball)
     this.wind = new WindSystem();
-    this.windIndicator = new WindIndicator(this);
-    const devBtnX = width - MODE_TOGGLE_MARGIN;
-    const devBtnY = hamburger.y + hamburger.height + 8;
-    this.devOverlay = new DevOverlay(this, devBtnX, devBtnY);
+    const devBtnY = this.projectile.sprite.y + PROJECTILE_RADIUS + height * DEV_BUTTON_GAP_PCT;
+    this.devOverlay = new DevOverlay(this, width / 2, devBtnY);
     this.devOverlay.onThrow = (angle) => {
       this.resetForNextShot();
       this.handleThrow({ angle, launchX: this.scale.width / 2 });
     };
     this.wind.generate(this.difficulty.targetZ);
-    this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
+    this.panel.updateWind(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
     this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
 
     // Settings overlay (mode toggle lives inside)
@@ -197,15 +176,16 @@ export class GameScene extends Phaser.Scene {
   private cycleDifficulty(): void {
     const idx = DIFFICULTIES.indexOf(this.difficulty);
     this.difficulty = DIFFICULTIES[(idx + 1) % DIFFICULTIES.length];
-    this.diffLabel.setText(this.difficulty.label);
+    this.panel.setDifficulty(this.difficulty.label);
+    this.panel.setBest(this.highScores.get(this.difficulty.id));
     this.target.setDistance(this.difficulty.targetZ);
     this.wind.generate(this.difficulty.targetZ);
-    this.windIndicator.update(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
+    this.panel.updateWind(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
     this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
   }
 
   private returnToMenu(): void {
-    this.highScores.submit(this.difficulty.id, this.score.getStreak());
+    this.highScores.submit(this.difficulty.id, this.panel.getStreak());
     this.scene.start("Start");
   }
 

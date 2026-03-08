@@ -103,18 +103,21 @@ export const MECH_LAUNCH_SIZE = 80;
 export const MECH_ANGLE_SWEEP_SPEED = 2.0;
 export const MECH_INDICATOR_RADIUS = 80;
 
-// Mode toggle
-export const MODE_TOGGLE_SIZE = 40;
-export const MODE_TOGGLE_MARGIN = 16;
 
 // Z-ordering layers — higher draws on top
 // Components offset within their tier as needed (e.g. Depth.DEV + 1)
 export const enum Depth {
-  HUD = 100, // score, wind indicator, start screen UI
+  GRID = 0, // ground plane / wall grid lines (furthest back)
+  WALL = 1, // wall-mounted panel (above grid, behind game objects)
+  GAME = 10, // projectile, target, flight trail, angle indicators
+  HUD = 100, // start screen UI
   DEV = 200, // dev overlay graphics + buttons
-  CONTROLS = 300, // difficulty label, hamburger
+  CONTROLS = 300, // hamburger
   OVERLAY = 500, // modal overlays (backdrop, panel, contents)
 }
+
+// Dev overlay
+export const DEV_BUTTON_GAP_PCT = 0.02; // gap between ball and dev buttons as fraction of screen height
 
 // Settings overlay
 export const OVERLAY_PANEL_W_PCT = 0.8; // fraction of screen width

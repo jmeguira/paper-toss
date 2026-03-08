@@ -91,6 +91,27 @@ export interface Theme {
     buffer:   { fill: number; alpha: number };
   };
 
+  /** Wall-mounted info panel */
+  wallPanel: {
+    bg: number;
+    bgAlpha: number;
+    border: number;
+    borderAlpha: number;
+    borderWidth: number;
+    text: {
+      color: string;
+      stroke: string;
+      strokeThickness: number;
+    };
+    label: {
+      color: string;          // "streak:", "best:" prefix color
+    };
+    feedbackZone: {
+      border: number;
+      borderAlpha: number;
+    };
+  };
+
   /** UI styling — fonts, text, buttons, panels */
   ui: {
     fontFamily: string;
@@ -210,6 +231,26 @@ export const defaultTheme: Theme = {
     nearMiss: { fill: 0xe8884a, alpha: 0.15, edge: 0xe8884a, edgeAlpha: 0.3 },
     miss:     { fill: 0xff4444, alpha: 0.06 },
     buffer:   { fill: 0x4488aa, alpha: 0.12 },
+  },
+
+  wallPanel: {
+    bg: 0x0d1520,              // slightly lighter than canvas
+    bgAlpha: 1,
+    border: 0x2a8888,          // teal, matches grid
+    borderAlpha: 0.4,
+    borderWidth: 1,
+    text: {
+      color: "#e0e0e0",        // uniform — same as ui.text.primary
+      stroke: "#000000",
+      strokeThickness: 2,
+    },
+    label: {
+      color: "#778888",        // muted prefix labels
+    },
+    feedbackZone: {
+      border: 0x2a8888,
+      borderAlpha: 0.15,
+    },
   },
 
   ui: {

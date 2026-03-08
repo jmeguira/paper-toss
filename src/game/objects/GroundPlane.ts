@@ -3,6 +3,7 @@ import {
   FOCAL_LENGTH,
   VANISH_Y_PCT,
   GROUND_MAX_Z,
+  Depth,
 } from "../constants";
 import { theme } from "../theme";
 
@@ -15,6 +16,7 @@ export class GroundPlane {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.graphics = scene.add.graphics();
+    this.graphics.setDepth(Depth.GRID);
     this.draw();
   }
 

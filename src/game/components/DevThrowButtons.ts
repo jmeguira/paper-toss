@@ -7,8 +7,8 @@ interface TierButton {
 }
 
 /**
- * Column of dev buttons that fire throws into specific landing tiers.
- * Position owned by caller — this component just stacks downward from (x, y).
+ * Horizontal row of dev buttons that fire throws into specific landing tiers.
+ * Centered at (centerX, y), buttons spaced evenly in a row.
  */
 export class DevThrowButtons {
   private buttons: Phaser.GameObjects.Text[] = [];
@@ -18,28 +18,37 @@ export class DevThrowButtons {
   constructor(
     scene: Phaser.Scene,
     depth: number,
-    x: number,
+    centerX: number,
     y: number,
     tiers: TierButton[],
   ) {
-    let curY = y;
+    const gap = 8;
 
+    // Create buttons first to measure total width
+    const btns: Phaser.GameObjects.Text[] = [];
     for (const tier of tiers) {
-      const btn = scene.add.text(x, curY, tier.label, {
+      const btn = scene.add.text(0, 0, tier.label, {
         fontFamily: theme.ui.fontFamily,
         fontSize: "18px",
         color: theme.ui.devButton.color,
         backgroundColor: theme.ui.devButton.bg,
         padding: { x: 10, y: 6 },
       });
-      btn.setOrigin(1, 0);
       btn.setDepth(depth);
       btn.setInteractive({ useHandCursor: true });
       btn.on("pointerdown", () => {
         this.onThrow?.(tier.getAngle());
       });
+      btns.push(btn);
+    }
+
+    // Layout centered horizontally
+    const totalW = btns.reduce((sum, b) => sum + b.width, 0) + gap * (btns.length - 1);
+    let curX = centerX - totalW / 2;
+    for (const btn of btns) {
+      btn.setPosition(curX, y);
+      curX += btn.width + gap;
       this.buttons.push(btn);
-      curY += btn.height + 8;
     }
   }
 

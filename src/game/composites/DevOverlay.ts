@@ -16,7 +16,7 @@ export class DevOverlay {
 
   public onThrow: ((angle: number) => void) | null = null;
 
-  constructor(scene: Phaser.Scene, buttonX: number, buttonY: number) {
+  constructor(scene: Phaser.Scene, centerX: number, buttonY: number) {
     if (!DEV_MODE) return;
 
     this.zoneOverlay = new ZoneOverlay(scene, Depth.DEV);
@@ -46,7 +46,7 @@ export class DevOverlay {
     this.throwButtons = new DevThrowButtons(
       scene,
       Depth.DEV + 1,
-      buttonX,
+      centerX,
       buttonY,
       [
         {

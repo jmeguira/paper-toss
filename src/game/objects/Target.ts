@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { FOCAL_LENGTH, VANISH_Y_PCT, TARGET_RADIUS, TARGET_Y } from "../constants";
+import { FOCAL_LENGTH, VANISH_Y_PCT, TARGET_RADIUS, TARGET_Y, Depth } from "../constants";
 import { theme } from "../theme";
 
 export class Target {
@@ -16,6 +16,7 @@ export class Target {
     this.sprite.lineStyle(theme.target.rimWidth, theme.target.primary, 1);
     this.sprite.strokeCircle(0, 0, TARGET_RADIUS);
 
+    this.sprite.setDepth(Depth.GAME);
     this.setDistance(targetZ);
   }
 
