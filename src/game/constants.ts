@@ -1,6 +1,16 @@
 // Camera / fake-3D projection
 export const FOCAL_LENGTH = 225;
-export const VANISH_Y_PCT = 0.35;
+
+// Vertical layout budget — fractions of screen height, top to bottom.
+// Everything above VANISH_Y_PCT is UI; everything below is playable space.
+export const LAYOUT = {
+  NAV_PCT: 0.05,
+  HUD_PCT: 0.2,
+  BUFFER_PCT: 0.1,
+  get VANISH_Y_PCT() {
+    return this.NAV_PCT + this.HUD_PCT + this.BUFFER_PCT;
+  },
+} as const;
 
 // Flight physics
 export const FORWARD_SPEED = 810;
@@ -9,7 +19,7 @@ export const FLIGHT_LATERAL_MULT = 2.0;
 export const FLIGHT_GRAVITY = 2000;
 
 // Flight animation (cosmetic only — never affects landing result)
-export const ARC_SCALE = 1.5; // visual height multiplier on the arc
+export const ARC_SCALE = 1.2; // visual height multiplier on the arc
 export const DIVE_EXPONENT = 1.7; // >1 = hang at peak, dive into target
 
 /** Flight duration for a given target distance.
@@ -57,9 +67,7 @@ export function tierInfo(tier: LandingTier) {
     }
   }
   if (isFinite(LANDING_TIERS[LANDING_TIERS.length - 1].pct)) {
-    throw new Error(
-      "LANDING_TIERS: last tier must have pct = Infinity (catch-all)",
-    );
+    throw new Error("LANDING_TIERS: last tier must have pct = Infinity (catch-all)");
   }
 })();
 
@@ -102,7 +110,6 @@ export const ANGLE_BOUNDS_LENGTH_PCT = 0.28;
 export const MECH_LAUNCH_SIZE = 80;
 export const MECH_ANGLE_SWEEP_SPEED = 2.0;
 export const MECH_INDICATOR_RADIUS = 80;
-
 
 // Z-ordering layers — higher draws on top
 // Components offset within their tier as needed (e.g. Depth.DEV + 1)

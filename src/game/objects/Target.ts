@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { FOCAL_LENGTH, VANISH_Y_PCT, TARGET_RADIUS, TARGET_Y, Depth } from "../constants";
+import { FOCAL_LENGTH, LAYOUT, TARGET_RADIUS, TARGET_Y, Depth } from "../constants";
 import { theme } from "../theme";
 
 export class Target {
@@ -23,7 +23,7 @@ export class Target {
   setDistance(z: number): void {
     const { width, height } = this.scene.scale;
     const scale = FOCAL_LENGTH / (FOCAL_LENGTH + z);
-    const vanishY = height * VANISH_Y_PCT;
+    const vanishY = height * LAYOUT.VANISH_Y_PCT;
     const groundY = vanishY + (height - vanishY) * scale;
     const y = groundY - TARGET_Y * scale;
 

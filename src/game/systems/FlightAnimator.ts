@@ -2,7 +2,7 @@ import { Projectile } from "../objects/Projectile";
 import { ShotResult } from "./ShotResolver";
 import {
   FOCAL_LENGTH,
-  VANISH_Y_PCT,
+  LAYOUT,
   FLIGHT_GRAVITY,
   ARC_SCALE,
   DIVE_EXPONENT,
@@ -86,7 +86,7 @@ export class FlightAnimator {
     const wz = this.vz * t;
 
     const { width, height } = this.scene.scale;
-    const vanishY = height * VANISH_Y_PCT;
+    const vanishY = height * LAYOUT.VANISH_Y_PCT;
 
     const scale = FOCAL_LENGTH / (FOCAL_LENGTH + wz);
     const screenX = width / 2 + wx * scale;

@@ -15,7 +15,7 @@ import { DevOverlay } from "../composites/DevOverlay";
 import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
-import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, PROJECTILE_RADIUS, DEV_BUTTON_GAP_PCT, tierInfo } from "../constants";
+import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, PROJECTILE_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo } from "../constants";
 import { log } from "../systems/logger";
 
 
@@ -81,15 +81,20 @@ export class GameScene extends Phaser.Scene {
     // Persistence
     this.highScores = new HighScoreStore();
 
-    // Nav bar (top row — hamburger, future back button, etc.)
+    // Layout zones — pixel bounds from percentage budget
+    const { width, height } = this.scale;
+    const navH = Math.round(height * LAYOUT.NAV_PCT);
+    const hudH = Math.round(height * LAYOUT.HUD_PCT);
+
+    // Nav bar (top row — hamburger, future home button)
     const navBar = new NavBar(this);
     navBar.onMenuClick = () => settingsOverlay.show();
 
-    // Wall panel — anchored below nav bar
-    const { width, height } = this.scale;
+    // Wall panel — fills HUD zone, anchored below nav bar
     this.panel = new WallPanel(
       this,
-      navBar.bottom,
+      navH,
+      hudH,
       this.difficulty.label,
       this.highScores.get(this.difficulty.id),
     );

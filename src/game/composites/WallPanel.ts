@@ -1,30 +1,25 @@
 import Phaser from "phaser";
-import {
-  FOCAL_LENGTH,
-  VANISH_Y_PCT,
-  GROUND_MAX_Z,
-  Depth,
-} from "../constants";
+import { Depth } from "../constants";
 import { theme } from "../theme";
 
-// World-space panel geometry (at z = GROUND_MAX_Z)
-const PANEL_WORLD_W = 4000;
-const PANEL_WORLD_H = 2200;
-const TOP_MARGIN_PCT = 0.01; // gap between anchor (hamburger bottom) and panel top
+// Panel width as fraction of screen width
+const PANEL_W_PCT = 0.88;
 
-// Internal layout (fractions of panel screen-space size)
-const PAD_X_PCT = 0.06;
+// Internal layout (fractions of panel size)
+const PAD_X_PCT = 0.05;
 const PAD_Y_PCT = 0.06;
-const TOP_ROW_GAP_PCT = 0.02; // gap below top row
-const WIND_ROW_GAP_PCT = 0.02; // gap above wind row
-const FONT_SIZE_PCT = 0.08; // all panel text as fraction of panel height
-const MIN_FONT_SIZE = 10;
+const TOP_ROW_GAP_PCT = 0.04; // gap below top row before feedback zone
+const WIND_ROW_GAP_PCT = 0.04; // gap above wind row
 const WIND_ARROW_LENGTH_PCT = 0.25; // max arrow length as fraction of panel width
 const WIND_ARROW_HEAD = 6;
-const WIND_LABEL_OFFSET = 14; // label below arrow center
+const WIND_LABEL_OFFSET = 14;
+
+// Font size: fraction of panel height, clamped
+const FONT_SIZE_PCT = 0.12;
+const MIN_FONT_SIZE = 10;
+const MAX_FONT_SIZE = 18;
 
 export class WallPanel {
-  private scene: Phaser.Scene;
   private container: Phaser.GameObjects.Container;
 
   // Layout metrics (screen-space, relative to container origin)
@@ -48,28 +43,22 @@ export class WallPanel {
 
   constructor(
     scene: Phaser.Scene,
-    topAnchorY: number,
+    topY: number,
+    panelHeight: number,
     difficultyLabel: string,
     bestScore: number,
   ) {
-    this.scene = scene;
+    const { width } = scene.scale;
 
-    // --- Project panel from world space to screen space ---
-    const { width, height } = scene.scale;
-    const vanishX = width / 2;
-    const wallScale = FOCAL_LENGTH / (FOCAL_LENGTH + GROUND_MAX_Z);
+    // Screen-space dimensions
+    this.pw = Math.round(width * PANEL_W_PCT);
+    this.ph = Math.round(panelHeight);
+    const px = Math.round((width - this.pw) / 2);
 
-    const halfW = PANEL_WORLD_W / 2;
-    const px = vanishX - halfW * wallScale;
-    const py = topAnchorY + height * TOP_MARGIN_PCT;
-    this.pw = PANEL_WORLD_W * wallScale;
-    this.ph = PANEL_WORLD_H * wallScale;
-
-    // --- Container at panel top-left, behind all game objects ---
-    this.container = scene.add.container(px, py);
+    this.container = scene.add.container(px, topY);
     this.container.setDepth(Depth.WALL);
 
-    // --- Internal layout ---
+    // Internal layout
     const padX = this.pw * PAD_X_PCT;
     const padY = this.ph * PAD_Y_PCT;
     const innerLeft = padX;
@@ -78,18 +67,17 @@ export class WallPanel {
     const innerTop = padY;
     this.centerX = this.pw / 2;
 
-    // Uniform font size for all panel text
-    const fontSize = Math.max(MIN_FONT_SIZE, Math.round(this.ph * FONT_SIZE_PCT));
+    // Font size — clamped for readability across screen sizes
+    const fontSize = Math.max(
+      MIN_FONT_SIZE,
+      Math.min(MAX_FONT_SIZE, Math.round(this.ph * FONT_SIZE_PCT)),
+    );
     const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
       fontFamily: theme.ui.fontFamily,
       fontSize: `${fontSize}px`,
       color: theme.wallPanel.text.color,
       stroke: theme.wallPanel.text.stroke,
       strokeThickness: theme.wallPanel.text.strokeThickness,
-    };
-    const labelStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-      ...textStyle,
-      color: theme.wallPanel.label.color,
     };
 
     // Row heights
