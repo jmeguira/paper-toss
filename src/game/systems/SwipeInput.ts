@@ -14,7 +14,7 @@ import {
   SWIPE_FIT_POINTS,
   Depth,
 } from "../constants";
-import { theme } from "../theme";
+import { theme, typeScale } from "../theme";
 
 interface TrailPoint {
   x: number;
@@ -44,10 +44,11 @@ export class SwipeInput implements InputMode {
 
     // Launch button for aim mode — always created, hidden until armed
     const { width, height } = scene.scale;
+    const ts = typeScale(height);
     this.launchBtn = scene.add
       .text(width / 2, height * 0.93, "LAUNCH", {
         fontFamily: theme.ui.fontFamily,
-        fontSize: "22px",
+        fontSize: `${ts.body}px`,
         color: theme.ui.text.primary,
         backgroundColor: theme.ui.button.bg,
         padding: { x: 24, y: 12 },

@@ -4,9 +4,9 @@ export const FOCAL_LENGTH = 225;
 // Vertical layout budget — fractions of screen height, top to bottom.
 // Everything above VANISH_Y_PCT is UI; everything below is playable space.
 export const LAYOUT = {
-  NAV_PCT: 0.05,
+  NAV_PCT: 0.07,
   HUD_PCT: 0.2,
-  BUFFER_PCT: 0.1,
+  BUFFER_PCT: 0.08,
   get VANISH_Y_PCT() {
     return this.NAV_PCT + this.HUD_PCT + this.BUFFER_PCT;
   },

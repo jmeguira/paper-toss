@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { Depth } from "../constants";
-import { theme } from "../theme";
+import { theme, typeScale } from "../theme";
 
 // Panel width as fraction of screen width
 const PANEL_W_PCT = 0.88;
@@ -13,11 +13,6 @@ const WIND_ROW_GAP_PCT = 0.04; // gap above wind row
 const WIND_ARROW_LENGTH_PCT = 0.25; // max arrow length as fraction of panel width
 const WIND_ARROW_HEAD = 6;
 const WIND_LABEL_OFFSET = 14;
-
-// Font size: fraction of panel height, clamped
-const FONT_SIZE_PCT = 0.12;
-const MIN_FONT_SIZE = 10;
-const MAX_FONT_SIZE = 18;
 
 export class WallPanel {
   private container: Phaser.GameObjects.Container;
@@ -48,7 +43,8 @@ export class WallPanel {
     difficultyLabel: string,
     bestScore: number,
   ) {
-    const { width } = scene.scale;
+    const { width, height } = scene.scale;
+    const ts = typeScale(height);
 
     // Screen-space dimensions
     this.pw = Math.round(width * PANEL_W_PCT);
@@ -67,11 +63,7 @@ export class WallPanel {
     const innerTop = padY;
     this.centerX = this.pw / 2;
 
-    // Font size — clamped for readability across screen sizes
-    const fontSize = Math.max(
-      MIN_FONT_SIZE,
-      Math.min(MAX_FONT_SIZE, Math.round(this.ph * FONT_SIZE_PCT)),
-    );
+    const fontSize = ts.body;
     const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
       fontFamily: theme.ui.fontFamily,
       fontSize: `${fontSize}px`,

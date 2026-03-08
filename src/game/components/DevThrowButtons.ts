@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { theme } from "../theme";
+import { theme, typeScale } from "../theme";
 
 interface TierButton {
   label: string;
@@ -23,13 +23,14 @@ export class DevThrowButtons {
     tiers: TierButton[],
   ) {
     const gap = 8;
+    const ts = typeScale(scene.scale.height);
 
     // Create buttons first to measure total width
     const btns: Phaser.GameObjects.Text[] = [];
     for (const tier of tiers) {
       const btn = scene.add.text(0, 0, tier.label, {
         fontFamily: theme.ui.fontFamily,
-        fontSize: "18px",
+        fontSize: `${ts.caption}px`,
         color: theme.ui.devButton.color,
         backgroundColor: theme.ui.devButton.bg,
         padding: { x: 10, y: 6 },

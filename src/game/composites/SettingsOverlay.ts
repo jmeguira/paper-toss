@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { InputModeType, SwipeModeType } from "../types";
 import { Depth, OVERLAY_PANEL_W_PCT, OVERLAY_PANEL_H_PCT } from "../constants";
-import { theme } from "../theme";
+import { theme, typeScale } from "../theme";
 
 // Sub-layers within the OVERLAY tier
 const BG = Depth.OVERLAY;
@@ -29,6 +29,7 @@ export class SettingsOverlay {
   constructor(scene: Phaser.Scene, initialMode: InputModeType) {
     this.currentMode = initialMode;
     const { width, height } = scene.scale;
+    const ts = typeScale(height);
     const cx = width / 2;
     const cy = height / 2;
     const panelW = width * OVERLAY_PANEL_W_PCT;
@@ -52,7 +53,7 @@ export class SettingsOverlay {
     this.title = scene.add
       .text(cx, 0, "Settings", {
         fontFamily: theme.ui.fontFamily,
-        fontSize: "24px",
+        fontSize: `${ts.heading}px`,
         color: theme.ui.text.primary,
       })
       .setOrigin(0.5)
@@ -62,7 +63,7 @@ export class SettingsOverlay {
     this.closeBtn = scene.add
       .text(cx + panelW / 2 - 12, cy - panelH / 2 + 8, "\u2715", {
         fontFamily: theme.ui.fontFamily,
-        fontSize: "20px",
+        fontSize: `${ts.body}px`,
         color: theme.ui.text.dim,
       })
       .setOrigin(1, 0)
@@ -73,7 +74,7 @@ export class SettingsOverlay {
 
     const toggleStyle = {
       fontFamily: theme.ui.fontFamily,
-      fontSize: "18px",
+      fontSize: `${ts.body}px`,
       color: theme.ui.text.primary,
       backgroundColor: theme.ui.button.bgToggle,
       padding: { x: 16, y: 10 },
@@ -124,7 +125,7 @@ export class SettingsOverlay {
     this.menuBtn = scene.add
       .text(cx, 0, "Back to Menu", {
         fontFamily: theme.ui.fontFamily,
-        fontSize: "18px",
+        fontSize: `${ts.body}px`,
         color: theme.ui.text.primary,
         backgroundColor: theme.ui.button.bg,
         padding: { x: 16, y: 10 },

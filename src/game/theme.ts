@@ -103,9 +103,6 @@ export interface Theme {
       stroke: string;
       strokeThickness: number;
     };
-    label: {
-      color: string;          // "streak:", "best:" prefix color
-    };
     feedbackZone: {
       border: number;
       borderAlpha: number;
@@ -244,9 +241,6 @@ export const defaultTheme: Theme = {
       stroke: "#000000",
       strokeThickness: 2,
     },
-    label: {
-      color: "#778888",        // muted prefix labels
-    },
     feedbackZone: {
       border: 0x2a8888,
       borderAlpha: 0.15,
@@ -293,3 +287,24 @@ export const defaultTheme: Theme = {
 // Active theme — the single import point for all game code.
 // Future: this could be swapped at runtime or driven by a selector.
 export const theme = defaultTheme;
+
+// ---------------------------------------------------------------------------
+// Typographic scale — three tiers, clamped for readability across screens.
+// Call once per scene with screen height, use the result for all text.
+// ---------------------------------------------------------------------------
+
+export interface TypeScale {
+  heading: number;  // titles, score feedback, play button
+  body: number;     // HUD text, settings items, labels
+  caption: number;  // wind value, dev buttons, nav icons, fine print
+}
+
+export function typeScale(screenHeight: number): TypeScale {
+  const clamp = (min: number, val: number, max: number) =>
+    Math.round(Math.max(min, Math.min(max, val)));
+  return {
+    heading: clamp(20, screenHeight * 0.032, 32),
+    body: clamp(12, screenHeight * 0.020, 20),
+    caption: clamp(10, screenHeight * 0.014, 16),
+  };
+}

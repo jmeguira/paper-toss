@@ -86,8 +86,9 @@ export class GameScene extends Phaser.Scene {
     const navH = Math.round(height * LAYOUT.NAV_PCT);
     const hudH = Math.round(height * LAYOUT.HUD_PCT);
 
-    // Nav bar (top row — hamburger, future home button)
+    // Nav bar (top row — home + hamburger)
     const navBar = new NavBar(this);
+    navBar.onHomeClick = () => this.returnToMenu();
     navBar.onMenuClick = () => settingsOverlay.show();
 
     // Wall panel — fills HUD zone, anchored below nav bar
