@@ -91,6 +91,14 @@ export interface Theme {
     buffer:   { fill: number; alpha: number };
   };
 
+  /** Landing feedback text — per-tier visual + timing config */
+  feedback: Record<string, {
+    color: string;
+    punchScale: number;   // 1.0 = no punch, >1.0 = scale punch on appear
+    holdMs: number;       // time at full alpha before fade
+    fadeMs: number;       // fade-out duration
+  }>;
+
   /** Wall-mounted info panel */
   wallPanel: {
     bg: number;
@@ -219,6 +227,14 @@ export const defaultTheme: Theme = {
       stroke: "#000000",
       strokeThickness: 3,
     },
+  },
+
+  feedback: {
+    PERFECT:   { color: "#ffcc44", punchScale: 1.5, holdMs: 400, fadeMs: 300 },
+    HIT:       { color: "#44ddcc", punchScale: 1.0, holdMs: 400, fadeMs: 300 },
+    NEAR_HIT:  { color: "#44ddcc", punchScale: 1.0, holdMs: 400, fadeMs: 300 },
+    NEAR_MISS: { color: "#DD459B", punchScale: 1.0, holdMs: 400, fadeMs: 300 },
+    MISS:      { color: "#DD459B", punchScale: 1.0, holdMs: 400, fadeMs: 300 },
   },
 
   zones: {

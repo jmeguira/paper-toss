@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { Depth, WALL_PANEL_W_PCT } from "../constants";
+import { Depth, LandingTier, WALL_PANEL_W_PCT } from "../constants";
 import { theme, typeScale } from "../theme";
 import { ScoreRow } from "../components/ScoreRow";
 import { WindDisplay } from "../components/WindDisplay";
@@ -19,6 +19,7 @@ const WIND_LABEL_OFFSET = 14;
  */
 export class WallPanel {
   private scoreRow: ScoreRow;
+  private feedbackZone: FeedbackZone;
   private windDisplay: WindDisplay;
 
   // Delegate callbacks
@@ -78,7 +79,7 @@ export class WallPanel {
     const feedbackTop = innerTop + topRowH + topRowGap;
     const feedbackBottom = windY - windRowGap;
     const feedbackH = Math.max(0, feedbackBottom - feedbackTop);
-    new FeedbackZone(scene, container, innerLeft, feedbackTop, innerW, feedbackH);
+    this.feedbackZone = new FeedbackZone(scene, container, innerLeft, feedbackTop, innerW, feedbackH);
 
     this.windDisplay = new WindDisplay(
       scene, container,
@@ -89,6 +90,7 @@ export class WallPanel {
 
   // --- Public API (delegates to components) ---
 
+  showFeedback(tier: LandingTier): void { this.feedbackZone.show(tier); }
   hit(): void { this.scoreRow.hit(); }
   miss(): void { this.scoreRow.miss(); }
   getStreak(): number { return this.scoreRow.getStreak(); }

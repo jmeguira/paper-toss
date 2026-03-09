@@ -55,6 +55,7 @@ export class GameScene extends Phaser.Scene {
     this.flight = new FlightAnimator(this, this.projectile);
     this.flight.onComplete = (result) => {
       const info = tierInfo(result.tier);
+      this.panel.showFeedback(result.tier);
       if (info.scores) {
         this.panel.hit();
       } else {
