@@ -14,7 +14,6 @@ export class Target {
   private scene: Phaser.Scene;
   private baseScaleX = 1;
   private baseScaleY = 1;
-  private currentZ = 0;
 
   constructor(scene: Phaser.Scene, targetZ: number) {
     this.scene = scene;
@@ -25,7 +24,6 @@ export class Target {
   }
 
   setDistance(z: number): void {
-    this.currentZ = z;
     const { width, height } = this.scene.scale;
     const scale = FOCAL_LENGTH / (FOCAL_LENGTH + z);
     const vanishY = height * LAYOUT.VANISH_Y_PCT;
