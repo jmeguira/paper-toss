@@ -84,6 +84,18 @@ export function tierInfo(tier: LandingTier) {
 })();
 
 export const LANDING_PAUSE_MS = 600;
+
+// ---------------------------------------------------------------------------
+// Juice intensity — logarithmic curve from streak count to 0–1 multiplier.
+// All juice effects scale by this value. Ceiling is tunable.
+// ---------------------------------------------------------------------------
+export const JUICE_STREAK_CEILING = 5;
+
+/** Returns 0–1 intensity based on current streak. Logarithmic curve. */
+export function juiceIntensity(streak: number): number {
+  if (streak <= 0) return 0;
+  return Math.min(1, Math.log(1 + streak) / Math.log(1 + JUICE_STREAK_CEILING));
+}
 export const MISS_BUFFER = 150; // clear-miss space beyond near-miss zone, both sides
 
 // ---------------------------------------------------------------------------

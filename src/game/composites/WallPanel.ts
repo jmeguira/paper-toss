@@ -22,16 +22,10 @@ export class WallPanel {
   private feedbackZone: FeedbackZone;
   private windDisplay: WindDisplay;
 
-  // Delegate callbacks
-  set onDifficultyClick(fn: (() => void) | undefined) {
-    this.scoreRow.onDifficultyClick = fn;
-  }
-
   constructor(
     scene: Phaser.Scene,
     topY: number,
     panelHeight: number,
-    difficultyLabel: string,
     bestScore: number,
   ) {
     const { width, height } = scene.scale;
@@ -72,8 +66,8 @@ export class WallPanel {
     // --- Components ---
     this.scoreRow = new ScoreRow(
       scene, container,
-      innerLeft, centerX, innerRight, innerTop,
-      difficultyLabel, bestScore,
+      innerLeft, innerRight, innerTop,
+      bestScore,
     );
 
     const feedbackTop = innerTop + topRowH + topRowGap;
@@ -90,11 +84,10 @@ export class WallPanel {
 
   // --- Public API (delegates to components) ---
 
-  showFeedback(tier: LandingTier): void { this.feedbackZone.show(tier); }
+  showFeedback(tier: LandingTier): void { this.feedbackZone.show(tier, this.scoreRow.getStreak()); }
   hit(): void { this.scoreRow.hit(); }
   miss(): void { this.scoreRow.miss(); }
   getStreak(): number { return this.scoreRow.getStreak(); }
   setBest(score: number): void { this.scoreRow.setBest(score); }
-  setDifficulty(label: string): void { this.scoreRow.setDifficulty(label); }
   updateWind(force: number, maxWind: number): void { this.windDisplay.update(force, maxWind); }
 }

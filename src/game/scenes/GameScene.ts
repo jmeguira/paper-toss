@@ -15,7 +15,7 @@ import { DevOverlay } from "../composites/DevOverlay";
 import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
-import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo } from "../constants";
+import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo, juiceIntensity } from "../constants";
 import { log } from "../systems/logger";
 
 export class GameScene extends Phaser.Scene {
@@ -55,15 +55,17 @@ export class GameScene extends Phaser.Scene {
     this.flight = new FlightAnimator(this, this.projectile);
     this.flight.onComplete = (result) => {
       const info = tierInfo(result.tier);
+      const streak = this.panel.getStreak();
       this.panel.showFeedback(result.tier);
       if (info.scores) {
         this.panel.hit();
       } else {
-        const isRecord = this.highScores.submit(this.difficulty.id, this.panel.getStreak());
+        const isRecord = this.highScores.submit(this.difficulty.id, streak);
         this.panel.miss();
         if (isRecord) this.panel.setBest(this.highScores.get(this.difficulty.id));
       }
 
+      this.landingCameraFx(result.tier, streak);
       log(`Landed: dist=${result.distance.toFixed(0)} ${info.label}`);
 
       // Brief pause, then reset with new wind
@@ -96,10 +98,8 @@ export class GameScene extends Phaser.Scene {
       this,
       navH,
       hudH,
-      this.difficulty.label,
       this.highScores.get(this.difficulty.id),
     );
-    this.panel.onDifficultyClick = () => this.cycleDifficulty();
 
     // Input systems
     this.swipeInput = new SwipeInput(this, this.projectile, this.throwAngle);
@@ -182,7 +182,6 @@ export class GameScene extends Phaser.Scene {
   private cycleDifficulty(): void {
     const idx = DIFFICULTIES.indexOf(this.difficulty);
     this.difficulty = DIFFICULTIES[(idx + 1) % DIFFICULTIES.length];
-    this.panel.setDifficulty(this.difficulty.label);
     this.panel.setBest(this.highScores.get(this.difficulty.id));
     this.target.setDistance(this.difficulty.targetZ);
     this.wind.generate(this.difficulty.targetZ);
@@ -202,6 +201,31 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.devOverlay.hide();
       this.angleBounds.hide();
+    }
+  }
+
+  /** Camera effects on landing — intensity scales with streak */
+  private landingCameraFx(tier: string, streak: number): void {
+    const cam = this.cameras.main;
+    const ji = juiceIntensity(streak);
+
+    if (tier === "PERFECT") {
+      // Zoom punch — subtle even at max
+      const zoomPeak = 1 + 0.015 * ji; // max 1.015
+      this.tweens.add({
+        targets: cam,
+        zoom: zoomPeak,
+        duration: 80,
+        yoyo: true,
+        ease: "Sine.easeOut",
+        onComplete: () => { cam.zoom = 1; },
+      });
+    } else if (tier === "NEAR_HIT") {
+      // Light shake — just grazed the rim, but you got it
+      cam.shake(100, 0.004 * ji);
+    } else if (tier === "NEAR_MISS") {
+      // Harder shake — so close, but no
+      cam.shake(150, 0.012 * ji);
     }
   }
 

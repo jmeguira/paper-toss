@@ -5,6 +5,13 @@
 // ---------------------------------------------------------------------------
 
 export interface Theme {
+  /** Juice palette — shared tier colors used across feedback, particles, etc. */
+  juice: {
+    perfect: string;   // gold
+    good: string;      // teal (HIT / NEAR HIT)
+    bad: string;       // pink (NEAR MISS / MISS)
+  };
+
   /** Canvas fallback color (Phaser backgroundColor) */
   canvas: string;
 
@@ -161,6 +168,12 @@ export interface Theme {
 // ---------------------------------------------------------------------------
 
 export const defaultTheme: Theme = {
+  juice: {
+    perfect: "#ffcc44",
+    good: "#44ddcc",
+    bad: "#DD459B",
+  },
+
   canvas: "#0a0a1e",
 
   sky: {

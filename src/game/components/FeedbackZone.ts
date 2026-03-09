@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { LandingTier } from "../constants";
+import { LandingTier, juiceIntensity } from "../constants";
 import { theme } from "../theme";
 
 /** Display label — collapse near tiers into their parent */
@@ -48,7 +48,7 @@ export class FeedbackZone {
     container.add(graphics);
   }
 
-  show(tier: LandingTier): void {
+  show(tier: LandingTier, streak = 0): void {
     // Kill any in-progress tweens/text
     if (this.text) {
       this.scene.tweens.killTweensOf(this.text);
@@ -77,9 +77,12 @@ export class FeedbackZone {
 
     this.container.add(this.text);
 
-    if (config.punchScale > 1) {
-      // Scale punch: instant appear oversized, ease down to 1.0, then fade
-      this.text.setScale(config.punchScale);
+    // Interpolate punch scale: config value is the ceiling, juice intensity scales it
+    const intensity = juiceIntensity(streak);
+    const effectiveScale = 1 + (config.punchScale - 1) * intensity;
+
+    if (effectiveScale > 1.01) {
+      this.text.setScale(effectiveScale);
       this.scene.tweens.add({
         targets: this.text,
         scale: 1,

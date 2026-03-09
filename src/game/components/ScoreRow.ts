@@ -1,30 +1,29 @@
 import Phaser from "phaser";
+import { juiceIntensity } from "../constants";
 import { theme, typeScale } from "../theme";
 
 /**
- * Horizontal row: streak (left) | best (center) | difficulty (right).
+ * Horizontal row: STREAK: n (left) | BEST: n (right).
  * Owns streak counter state. All game objects are added to the provided container.
+ * Scale pop targets the value text only — labels stay static.
  */
 export class ScoreRow {
-  private streakText: Phaser.GameObjects.Text;
-  private bestText: Phaser.GameObjects.Text;
-  private diffText: Phaser.GameObjects.Text;
+  private scene: Phaser.Scene;
+  private streakValue: Phaser.GameObjects.Text;
+  private bestValue: Phaser.GameObjects.Text;
   private streak = 0;
-
-  onDifficultyClick?: () => void;
 
   constructor(
     scene: Phaser.Scene,
     container: Phaser.GameObjects.Container,
     left: number,
-    center: number,
     right: number,
     y: number,
-    difficultyLabel: string,
     bestScore: number,
   ) {
+    this.scene = scene;
     const ts = typeScale(scene.scale.height);
-    const style: Phaser.Types.GameObjects.Text.TextStyle = {
+    const labelStyle: Phaser.Types.GameObjects.Text.TextStyle = {
       fontFamily: theme.ui.fontFamily,
       fontSize: `${ts.body}px`,
       color: theme.wallPanel.text.color,
@@ -32,28 +31,37 @@ export class ScoreRow {
       strokeThickness: theme.wallPanel.text.strokeThickness,
     };
 
-    this.streakText = scene.add.text(left, y, "streak:0", style);
-    container.add(this.streakText);
+    // --- Streak (left-aligned): STREAK: n ---
+    const streakLabel = scene.add.text(left, y, "STREAK:", labelStyle);
+    this.streakValue = scene.add.text(
+      streakLabel.x + streakLabel.width + 4, y,
+      "0", labelStyle,
+    );
+    container.add(streakLabel);
+    container.add(this.streakValue);
 
-    this.bestText = scene.add.text(center, y, `best:${bestScore}`, style);
-    this.bestText.setOrigin(0.5, 0);
-    container.add(this.bestText);
-
-    this.diffText = scene.add.text(right, y, difficultyLabel, style);
-    this.diffText.setOrigin(1, 0);
-    this.diffText.setInteractive({ useHandCursor: true });
-    this.diffText.on("pointerdown", () => this.onDifficultyClick?.());
-    container.add(this.diffText);
+    // --- Best (right-aligned): BEST: n ---
+    this.bestValue = scene.add.text(right, y, `${bestScore}`, labelStyle);
+    this.bestValue.setOrigin(1, 0);
+    const bestLabel = scene.add.text(
+      this.bestValue.x - this.bestValue.width - 4, y,
+      "BEST:", labelStyle,
+    );
+    bestLabel.setOrigin(1, 0);
+    container.add(bestLabel);
+    container.add(this.bestValue);
   }
 
   hit(): void {
     this.streak++;
-    this.streakText.setText(`streak:${this.streak}`);
+    this.streakValue.setText(`${this.streak}`);
+    const peak = 1 + 0.15 * juiceIntensity(this.streak);
+    this.scalePop(this.streakValue, peak);
   }
 
   miss(): void {
     this.streak = 0;
-    this.streakText.setText("streak:0");
+    this.streakValue.setText("0");
   }
 
   getStreak(): number {
@@ -61,10 +69,20 @@ export class ScoreRow {
   }
 
   setBest(score: number): void {
-    this.bestText.setText(`best:${score}`);
+    this.bestValue.setText(`${score}`);
+    const peak = 1 + 0.2 * juiceIntensity(this.streak);
+    this.scalePop(this.bestValue, peak);
   }
 
-  setDifficulty(label: string): void {
-    this.diffText.setText(label);
+  private scalePop(target: Phaser.GameObjects.Text, peakScale: number): void {
+    this.scene.tweens.killTweensOf(target);
+    target.setScale(1);
+    this.scene.tweens.chain({
+      targets: target,
+      tweens: [
+        { scale: peakScale, duration: 80, ease: "Quad.easeOut" },
+        { scale: 1, duration: 200, ease: "Sine.easeInOut" },
+      ],
+    });
   }
 }
