@@ -15,7 +15,7 @@ import { DevOverlay } from "../composites/DevOverlay";
 import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
-import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, PROJECTILE_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo } from "../constants";
+import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo } from "../constants";
 import { log } from "../systems/logger";
 
 export class GameScene extends Phaser.Scene {
@@ -112,7 +112,7 @@ export class GameScene extends Phaser.Scene {
 
     // Wind + dev overlay (buttons centered below ball)
     this.wind = new WindSystem();
-    const devBtnY = this.projectile.sprite.y + PROJECTILE_RADIUS + height * DEV_BUTTON_GAP_PCT;
+    const devBtnY = this.projectile.sprite.y + BALL_RADIUS + height * DEV_BUTTON_GAP_PCT;
     this.devOverlay = new DevOverlay(this, width / 2, devBtnY);
     this.devOverlay.onThrow = (angle) => {
       this.resetForNextShot();

@@ -166,6 +166,7 @@ The full feedback layer. Proportional, honest responses — the gap between tier
 - Ambient flow particles showing wind direction + strength
 - Wind source element (visible origin point) — design TBD
 - Existing arrow + number display stays
+- Wind indicator relocation — currently lives inside WallPanel, may move to buffer zone or court. Placement TBD
 
 **Parked juice ideas**
 - Vignette pulse — revisit if game moves to lives/HP model

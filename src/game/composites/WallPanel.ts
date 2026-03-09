@@ -1,12 +1,9 @@
 import Phaser from "phaser";
-import { Depth } from "../constants";
+import { Depth, WALL_PANEL_W_PCT } from "../constants";
 import { theme, typeScale } from "../theme";
 import { ScoreRow } from "../components/ScoreRow";
 import { WindDisplay } from "../components/WindDisplay";
 import { FeedbackZone } from "../components/FeedbackZone";
-
-// Panel width as fraction of screen width
-const PANEL_W_PCT = 0.88;
 
 // Internal layout (fractions of panel size)
 const PAD_X_PCT = 0.05;
@@ -40,7 +37,7 @@ export class WallPanel {
     const ts = typeScale(height);
 
     // Screen-space dimensions
-    const pw = Math.round(width * PANEL_W_PCT);
+    const pw = Math.round(width * WALL_PANEL_W_PCT);
     const ph = Math.round(panelHeight);
     const px = Math.round((width - pw) / 2);
 
