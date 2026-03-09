@@ -72,7 +72,7 @@ export class GameScene extends Phaser.Scene {
       this.landingTimer = this.time.delayedCall(LANDING_PAUSE_MS, () => {
         this.throwAngle.hide();
         const { width, height } = this.scale;
-        this.projectile.resetPosition(width, height);
+        this.projectile.resetPosition(width, height, this.panel.getStreak());
         this.wind.generate(this.difficulty.targetZ);
         this.panel.updateWind(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
         this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
@@ -160,7 +160,7 @@ export class GameScene extends Phaser.Scene {
 
     this.disableActiveMode();
     this.throwAngle.show(params.angle);
-    this.flight.play(result);
+    this.flight.play(result, this.panel.getStreak());
   }
 
   private enableActiveMode(): void {
@@ -226,6 +226,8 @@ export class GameScene extends Phaser.Scene {
     } else if (tier === "NEAR_MISS") {
       // Harder shake — so close, but no
       cam.shake(150, 0.012 * ji);
+    } else if (tier === "MISS") {
+      cam.shake(120, 0.008 * ji);
     }
   }
 

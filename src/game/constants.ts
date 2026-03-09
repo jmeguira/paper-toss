@@ -106,7 +106,7 @@ export const WIND_MIN = 250;
 // ---------------------------------------------------------------------------
 // Ball
 // ---------------------------------------------------------------------------
-export const BALL_RADIUS = 50;
+export const BALL_RADIUS = 35;
 export const BALL_PICKUP_RADIUS_PCT = 0.15;
 export const BALL_TOUCH_SCALE = 1.08;
 export const BALL_TOUCH_PULSE_MS = 80;
