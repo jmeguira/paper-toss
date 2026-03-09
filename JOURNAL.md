@@ -214,3 +214,9 @@
 - Wind visualization scoped: ambient particles + potential source element (design TBD)
 - Consolidated everything into PLAN.md "Juice" section, deleted NEXT_UP.md and JUICE_CATALOG.md
 - Added explicit code-guardrail to CLAUDE.md (no code until user gives green light)
+
+### Constants Cleanup
+- Reorganized `constants.ts` into labeled sections: projection, layout, flight, difficulty, target/scoring, wind, ball, input, rendering/dev, UI
+- Naming consistency: `FORWARD_SPEED` → `FLIGHT_FORWARD_SPEED`, `PROJECTILE_RADIUS` → `BALL_RADIUS`, `PANEL_W_PCT` → `WALL_PANEL_W_PCT`
+- Moved `NAV_PAD_X_PCT` into `LAYOUT` object, `MISS_BUFFER` to target/scoring section
+- Removed vestigial `NavBar.bottom` property (layout derives from `LAYOUT.NAV_PCT`)
