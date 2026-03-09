@@ -118,12 +118,68 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 - **Target elevation** — `TARGET_Y = 200` lifts target off ground plane
 - **VS Code + lint setup** — Prettier, ESLint, extensions, format-on-save
 
-### Next up (see NEXT_UP.md)
-- **Landing feedback** — tier text/animation in feedback zone (PERFECT/HIT/MISS)
-- **Wind particles** — ambient flow lines showing direction + strength
-- **Sound + haptics**
-- **Dev settings panel** — Live sliders for feel-based tuning
-- **Streak-driven difficulty** — replace difficulty tiers with progressive ramping (see Design Decisions)
+### Juice — Landing Feedback + Sound + Wind Visuals
+
+The full feedback layer. Proportional, honest responses — the gap between tiers is what makes the top feel special.
+
+**Visual — Shape & Motion**
+- Scale pop on streak counter (increment) and high score (when beaten)
+- Target ring wobble on NEAR HIT / NEAR MISS — exploring
+- Tweened text in feedback zone (eases in, not snaps)
+- Anticipation scale: tiny shrink before launch, ball grows during flight for weight
+
+**Visual — Screen-Level**
+- Screen shake on NEAR HIT / NEAR MISS only (ball grazed the ring) — capped intensity
+- Wall panel flash on landing (restricted to HUD, not full screen) — exploring
+- Chromatic aberration on NEAR MISS or MISS — glitchy error feel
+- Zoom punch on PERFECT only
+
+**Visual — Particles & Trails**
+- Particles tiered per landing: PERFECT full burst, HIT good, NEAR HIT kicks some up, MISS ball disintegrates/glitches out
+- Ghost trail: afterimages during flight to show the arc/curve
+- Impact rings: expanding ripple from landing point
+- Target channel: ball passes through visual channel on hits, channel responds per tier
+- Speed lines — maybe, need to see in practice
+
+**Visual — Color & Light**
+- Color flash/tint: target ring color-codes to tier, matches feedback zone
+- Rim glow: target ring glows on approach/contact — exploring
+- Grid pulse: grid lines subtly pulse tier color on landing
+
+**Temporal**
+- Hang at apex, slam home feel. Dive exponent handles it now. Time-based approach (stretching `t`) is the cleaner long-term lever if other effects need to sync to the same rhythm. Noting, not changing yet
+
+**Audio (procedural via Web Audio API)**
+- Distinct but related tones per tier. PERFECT = crisp, definitive, unmistakable
+- Pitch jitter on all tiers except PERFECT — PERFECT is always identical
+- Rising pitch on streak: success tone climbs with consecutive hits
+- Audio ducking: subtle dip at arc apex for tension, also landing SFX over ambient (when ambient exists)
+
+**Haptic (mobile)**
+- Impact vibration per tier — PERFECT is a clean tap, MISS buzzes
+- Tiered intensity — proportional, crisp not aggressive
+
+**Wind visualization**
+- Ambient flow particles showing wind direction + strength
+- Wind source element (visible origin point) — design TBD
+- Existing arrow + number display stays
+
+**Parked juice ideas**
+- Vignette pulse — revisit if game moves to lives/HP model
+- Ambient sound vs soundtrack — undecided, affects ducking
+- Speed lines — need to see in practice
+
+### Streak-driven difficulty
+- Replace difficulty tiers with progressive ramping based on streak
+- targetZ ramps gradually, up to a ceiling
+- targetX and launchX may vary per throw — every throw is a unique geometry problem
+- Wind range auto-scales via physics (longer flight → more drift)
+- One mode, one leaderboard — streak is the identity
+- See DESIGN.md for full decision
+
+### Parked
+- Dev settings panel — live sliders for feel-based tuning
+- Skin system (paper toss easter egg, etc.)
 
 ### v2 parking lot
 - Skins (baseball, paper toss aesthetic)
