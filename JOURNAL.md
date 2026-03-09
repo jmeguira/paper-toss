@@ -205,3 +205,12 @@
 - **WallPanel decomposition** — Split into ScoreRow (streak/best/difficulty + state), WindDisplay (arrow + label), FeedbackZone (bordered rect placeholder). WallPanel reduced from 198 to 95 lines
 - **Cleanup** — Removed unused `wallPanel.label` from theme, dead `ui.score.fontSize`, extra blank line in GameScene
 - **Design decision** — Streak-driven difficulty replaces tier presets. One mode, one leaderboard. targetZ/targetX/launchX ramp with streak
+
+### Juice Catalog Design Pass
+- Walked through full game juice taxonomy: shape/motion, screen-level, particles/trails, color/light, temporal, audio, haptics
+- Made per-technique decisions for each landing tier — what to use, where, and how
+- Design philosophy: proportional, honest feedback. Gap between tiers is the design. PERFECT earns full treatment, MISS gets ball disintegration
+- Key decisions: screen shake only on NEAR HIT/NEAR MISS (ring contact), zoom punch PERFECT only, chromatic aberration on MISS, ghost trail during flight, grid pulse on landing, procedural audio via Web Audio API, PERFECT tone always identical
+- Wind visualization scoped: ambient particles + potential source element (design TBD)
+- Consolidated everything into PLAN.md "Juice" section, deleted NEXT_UP.md and JUICE_CATALOG.md
+- Added explicit code-guardrail to CLAUDE.md (no code until user gives green light)

@@ -35,15 +35,18 @@ paper-toss/
       components/                  # Visual building blocks (one Graphics/Text, screen-space)
         AngleBounds.ts             # Faint ±60° cone lines from ball
         AngleIndicator.ts          # Oscillating needle for mechanical mode
+        DevThrowButtons.ts         # Row of tier buttons (P/H/NH/NM) for dev testing
+        FeedbackZone.ts            # Bordered rect placeholder for landing feedback
+        NavBar.ts                  # Home + hamburger buttons (top row)
+        ScoreRow.ts                # Streak, best score, difficulty label
         ThrowAngle.ts              # Post-throw arrow showing input angle
-        ZoneOverlay.ts             # Arc-sector visualization of landing zones
-        PerfectThrowButton.ts      # Dev button that fires the solved angle
         TouchButton.ts             # Reusable circular button with press/release tracking
-        WindIndicator.ts           # Arrow + strength display
-        ScoreDisplay.ts            # Streak counter
+        WindDisplay.ts             # Arrow + numeric label within a container
+        ZoneOverlay.ts             # Arc-sector visualization of landing zones
       composites/                  # Compose components into screen-level UI
-        DevOverlay.ts              # Dev-mode: ZoneOverlay + PerfectThrowButton
+        DevOverlay.ts              # Dev-mode: ZoneOverlay + tier throw buttons
         SettingsOverlay.ts         # Modal: mode toggle + back to menu
+        WallPanel.ts               # HUD panel: ScoreRow + FeedbackZone + WindDisplay
 ```
 
 ## Input Mechanic (the core)

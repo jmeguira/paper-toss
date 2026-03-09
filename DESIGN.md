@@ -151,10 +151,16 @@ Key distinctions:
 - **components** vs **composites** = leaf vs branch
 - **systems** = never touches the display list
 
+### Juice Philosophy
+- **Proportional, honest feedback** — the gap between tiers is what makes the top feel special. Absence of feedback is itself feedback.
+- Anti-patterns: aim assist, manufactured difficulty, every-hit-is-a-celebration, time pressure as fake difficulty
+- Full technique catalog with per-tier decisions in PLAN.md under "Juice" section
+- PERFECT earns the full treatment. MISS gets ball disintegration/glitch. The gradient between is the design.
+- Audio via procedural Web Audio API — PERFECT tone is always identical (crisp, unmistakable), all other tiers get pitch jitter
+- Rising pitch on streak — success tone climbs with consecutive hits
+
 ## Open Decisions (for later)
 - Play area aspect ratio (9:16? 9:19.5?)
 - Obstacle design and placement
 - Unlock system for projectile types
-- Visual polish direction (colors, effects, juice)
-- Sound design
-- Haptic feedback on throw/hit
+- Ambient sound vs soundtrack (affects audio ducking implementation)
