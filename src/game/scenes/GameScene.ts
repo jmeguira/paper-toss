@@ -16,6 +16,8 @@ import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
 import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo, juiceIntensity } from "../constants";
+import { spawnBallImpactRing } from "../components/ImpactRing";
+import { theme } from "../theme";
 import { log } from "../systems/logger";
 
 export class GameScene extends Phaser.Scene {
@@ -66,6 +68,15 @@ export class GameScene extends Phaser.Scene {
       }
 
       this.landingCameraFx(result.tier, streak);
+      spawnBallImpactRing(
+        this,
+        this.projectile.sprite.x,
+        this.projectile.sprite.y,
+        result.tier,
+        streak,
+        theme.target.squash,
+      );
+      this.target.onLanding(result.tier, streak);
       log(`Landed: dist=${result.distance.toFixed(0)} ${info.label}`);
 
       // Brief pause, then reset with new wind
@@ -209,25 +220,22 @@ export class GameScene extends Phaser.Scene {
     const cam = this.cameras.main;
     const ji = juiceIntensity(streak);
 
-    if (tier === "PERFECT") {
-      // Zoom punch — subtle even at max
-      const zoomPeak = 1 + 0.015 * ji; // max 1.015
+    const fx = theme.cameraFx[tier];
+    if (!fx) return;
+
+    if (fx.zoomPunch > 0) {
       this.tweens.add({
         targets: cam,
-        zoom: zoomPeak,
+        zoom: 1 + fx.zoomPunch * ji,
         duration: 80,
         yoyo: true,
         ease: "Sine.easeOut",
         onComplete: () => { cam.zoom = 1; },
       });
-    } else if (tier === "NEAR_HIT") {
-      // Light shake — just grazed the rim, but you got it
-      cam.shake(100, 0.004 * ji);
-    } else if (tier === "NEAR_MISS") {
-      // Harder shake — so close, but no
-      cam.shake(150, 0.012 * ji);
-    } else if (tier === "MISS") {
-      cam.shake(120, 0.008 * ji);
+    }
+
+    if (fx.shakeIntensity > 0) {
+      cam.shake(fx.shakeDuration, fx.shakeIntensity * ji);
     }
   }
 

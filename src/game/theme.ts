@@ -7,9 +7,12 @@
 export interface Theme {
   /** Juice palette — shared tier colors used across feedback, particles, etc. */
   juice: {
-    perfect: string;   // gold
-    good: string;      // teal (HIT / NEAR HIT)
-    bad: string;       // pink (NEAR MISS / MISS)
+    perfect: string;   // gold (CSS)
+    good: string;      // teal (CSS)
+    bad: string;       // pink (CSS)
+    perfectHex: number;
+    goodHex: number;
+    badHex: number;
   };
 
   /** Canvas fallback color (Phaser backgroundColor) */
@@ -98,6 +101,34 @@ export interface Theme {
     buffer:   { fill: number; alpha: number };
   };
 
+  /** Impact ring config — shared shape for ball and target rings */
+  impactRing: {
+    ball: {
+      radius: number;
+      lineWidth: number;
+      scaleBase: number;
+      scaleCeiling: number;
+      alphaBase: number;
+      alphaCeiling: number;
+      durationMs: number;
+    };
+    target: {
+      lineWidth: number;      // radius comes from target rim at runtime
+      scaleBase: number;
+      scaleCeiling: number;
+      alphaBase: number;
+      alphaCeiling: number;
+      durationMs: number;
+    };
+  };
+
+  /** Camera effects on landing — per-tier ceilings, scaled by juice intensity */
+  cameraFx: Record<string, {
+    zoomPunch: number;      // 0 = no zoom, >0 = max zoom offset at full juice
+    shakeIntensity: number; // 0 = no shake, >0 = max shake at full juice
+    shakeDuration: number;
+  }>;
+
   /** Landing feedback text — per-tier visual + timing config */
   feedback: Record<string, {
     color: string;
@@ -172,6 +203,9 @@ export const defaultTheme: Theme = {
     perfect: "#ffcc44",
     good: "#44ddcc",
     bad: "#DD459B",
+    perfectHex: 0xffcc44,
+    goodHex: 0x44ddcc,
+    badHex: 0xDD459B,
   },
 
   canvas: "#0a0a1e",
@@ -242,12 +276,40 @@ export const defaultTheme: Theme = {
     },
   },
 
+  impactRing: {
+    ball: {
+      radius: 8,
+      lineWidth: 2,
+      scaleBase: 1.3,
+      scaleCeiling: 2.0,
+      alphaBase: 0.3,
+      alphaCeiling: 0.8,
+      durationMs: 350,
+    },
+    target: {
+      lineWidth: 2,
+      scaleBase: 1.1,
+      scaleCeiling: 1.5,
+      alphaBase: 0.3,
+      alphaCeiling: 0.7,
+      durationMs: 400,
+    },
+  },
+
+  cameraFx: {
+    PERFECT:   { zoomPunch: 0.015, shakeIntensity: 0,     shakeDuration: 0 },
+    HIT:       { zoomPunch: 0.010, shakeIntensity: 0,     shakeDuration: 0 },
+    NEAR_HIT:  { zoomPunch: 0.006, shakeIntensity: 0.004, shakeDuration: 120 },
+    NEAR_MISS: { zoomPunch: 0,     shakeIntensity: 0.012, shakeDuration: 120 },
+    MISS:      { zoomPunch: 0,     shakeIntensity: 0.008, shakeDuration: 120 },
+  },
+
   feedback: {
-    PERFECT:   { color: "#ffcc44", punchScale: 1.5, holdMs: 400, fadeMs: 300 },
-    HIT:       { color: "#44ddcc", punchScale: 1.0, holdMs: 400, fadeMs: 300 },
-    NEAR_HIT:  { color: "#44ddcc", punchScale: 1.0, holdMs: 400, fadeMs: 300 },
-    NEAR_MISS: { color: "#DD459B", punchScale: 1.0, holdMs: 400, fadeMs: 300 },
-    MISS:      { color: "#DD459B", punchScale: 1.0, holdMs: 400, fadeMs: 300 },
+    PERFECT:   { color: "#ffcc44", punchScale: 1.5, holdMs: 400, fadeMs: 150 },
+    HIT:       { color: "#44ddcc", punchScale: 1.0, holdMs: 400, fadeMs: 150 },
+    NEAR_HIT:  { color: "#44ddcc", punchScale: 1.0, holdMs: 400, fadeMs: 150 },
+    NEAR_MISS: { color: "#DD459B", punchScale: 1.0, holdMs: 400, fadeMs: 150 },
+    MISS:      { color: "#DD459B", punchScale: 1.0, holdMs: 400, fadeMs: 150 },
   },
 
   zones: {
