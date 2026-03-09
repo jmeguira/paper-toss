@@ -159,6 +159,25 @@ Key distinctions:
 - Audio via procedural Web Audio API — PERFECT tone is always identical (crisp, unmistakable), all other tiers get pitch jitter
 - Rising pitch on streak — success tone climbs with consecutive hits
 
+### Juice Intensity System
+- `juiceIntensity(streak)` — logarithmic curve from 0–1, ceiling tunable (currently 5)
+- All visual effects multiply by this value: scale pops, camera effects, flight weight, impact rings
+- Early streaks ramp fast (biggest perceptual jump at 0→1), high streaks plateau
+- Single multiplier drives the entire feel — the game "wakes up" as the player's streak builds
+
+### Feedback Color Palette
+- `theme.juice` defines three semantic colors: `perfect` (gold #ffcc44), `good` (teal #44ddcc), `bad` (pink #DD459B)
+- HSL-matched: all three share similar saturation/lightness for palette cohesion
+- Used by feedback text, impact rings, target color flash — any tier-coded visual
+- Per-tier config in `theme.feedback` and `theme.cameraFx` for independent tuning
+
+### Landing Feedback Architecture
+- **Feedback text:** instant appear (no fade-in), punch scale on PERFECT only, timed hold + fade-out. Per-tier config in `theme.feedback`
+- **Camera effects:** zoom punch for scoring tiers (PERFECT > HIT > NEAR_HIT), screen shake for contact tiers (NEAR_HIT, NEAR_MISS, MISS). Config in `theme.cameraFx`
+- **Target reaction:** color flash synced with feedback hold duration, scale punch (two-stage tween), impact ring from rim. Only fires on NEAR_HIT or better
+- **Ball impact ring:** expanding circle at landing point, separate theme config from target ring
+- **Flight weight:** launch bump (1.12x, decays over 20% of flight) + mass accretion (grows toward landing, juice-scaled). Both cosmetic — multiply with perspective scale
+
 ## Open Decisions (for later)
 - Play area aspect ratio (9:16? 9:19.5?)
 - Obstacle design and placement

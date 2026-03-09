@@ -125,27 +125,30 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 
 The full feedback layer. Proportional, honest responses — the gap between tiers is what makes the top feel special.
 
+All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, ceiling at 5 streaks.
+
 **Visual — Shape & Motion**
-- Scale pop on streak counter (increment) and high score (when beaten)
+- ✅ Scale pop on streak counter (increment) and high score (when beaten)
 - Target ring wobble on NEAR HIT / NEAR MISS — exploring
-- Tweened text in feedback zone (eases in, not snaps)
-- Anticipation scale: tiny shrink before launch, ball grows during flight for weight
+- ✅ Tweened text in feedback zone (eases in, not snaps)
+- ✅ Flight weight: launch bump (1.12x decay) + mass accretion (1.1–1.8x juice-scaled)
+- ✅ Ball radius scales with juice intensity across throws
 
 **Visual — Screen-Level**
-- Screen shake on NEAR HIT / NEAR MISS only (ball grazed the ring) — capped intensity
+- ✅ Screen shake on NEAR HIT / NEAR MISS / MISS — tiered intensity
 - Wall panel flash on landing (restricted to HUD, not full screen) — exploring
 - Chromatic aberration on NEAR MISS or MISS — glitchy error feel
-- Zoom punch on PERFECT only
+- ✅ Zoom punch on PERFECT / HIT / NEAR HIT — stepped down per tier
 
 **Visual — Particles & Trails**
 - Particles tiered per landing: PERFECT full burst, HIT good, NEAR HIT kicks some up, MISS ball disintegrates/glitches out
 - Ghost trail: afterimages during flight to show the arc/curve
-- Impact rings: expanding ripple from landing point
+- ✅ Impact rings: expanding ripple from ball landing point + target rim
 - Target channel: ball passes through visual channel on hits, channel responds per tier
 - Speed lines — maybe, need to see in practice
 
 **Visual — Color & Light**
-- Color flash/tint: target ring color-codes to tier, matches feedback zone
+- ✅ Color flash/tint: target ring color-codes to tier, matches feedback zone
 - Rim glow: target ring glows on approach/contact — exploring
 - Grid pulse: grid lines subtly pulse tier color on landing
 

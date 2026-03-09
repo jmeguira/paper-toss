@@ -509,3 +509,38 @@
 - Generate sounds in code instead of loading audio files — no asset files, infinitely tunable, tiny footprint.
 - Pitch variation prevents "heard this 400 times" fatigue without needing multiple recordings.
 - Rising pitch on streak: each consecutive hit slightly higher — turns the streak counter into an audible crescendo.
+
+## Juice Implementation (Session 8)
+
+### Logarithmic juice intensity curve
+- `juiceIntensity(streak) = min(1, log(1+streak) / log(1+ceiling))` — all effects scale by this 0–1 value
+- Logarithmic means early streaks ramp fast (0→1 is biggest jump), high streaks plateau
+- Ceiling of 5 means streak 5 is already at full juice — tested from 15, felt too gradual
+- Single multiplier drives everything: scale pops, camera effects, flight weight, impact rings
+
+### Phaser tween chains vs yoyo
+- `tweens.chain({ tweens: [...] })` runs tweens sequentially — each starts when the previous ends
+- Better than `yoyo: true` for asymmetric animations: fast punch (80ms, Quad.easeOut) + slow settle (200ms, Sine.easeInOut)
+- `yoyo` gives symmetric in/out which feels "bouncy" (double overshoot). Chain gives "pop then relax"
+- `tweens.killTweensOf(target)` before starting a new chain prevents stacking if events fire rapidly
+
+### Camera effects — zoom punch and shake
+- `cam.shake(duration, intensity)` — Phaser built-in. Intensity is fraction of screen (0.01 = 1% displacement)
+- Zoom punch via tween on `cam.zoom`: tween to `1 + offset`, yoyo back. Reset in `onComplete` for safety
+- Both are presentation-only — camera effects don't affect game object positions or hit detection
+
+### Graphics redraw pattern
+- Live Graphics objects need `clear()` before redrawing — otherwise shapes accumulate
+- Pattern: `clear() → fillStyle() → fillCircle() → lineStyle() → strokeCircle()`
+- Used for dynamic visuals: streak-scaled ball radius, target color flash on landing
+- Different from sprites which just change properties (tint, scale, position)
+
+### HSL color matching for palette consistency
+- When adding a new color (miss pink) to an existing palette, match the HSL saturation and lightness of existing colors
+- Teal (#44ddcc): H=170° S=69% L=57%. Pink (#DD459B): H=330° S=69% L=57% — same vibrancy, different hue
+- Prevents one color feeling "louder" or "quieter" than others in the same feedback tier
+
+### Scale multiplication for perspective-matched effects
+- Impact rings near the target need to match the target's perspective squash (ellipse, not circle)
+- `setScale(scaleX, scaleY * squashFactor)` makes the ring expand as an ellipse matching the target's visual shape
+- Same principle applies to any effect spawned at a projected position — use the local perspective scale

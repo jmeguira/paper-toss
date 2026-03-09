@@ -220,3 +220,57 @@
 - Naming consistency: `FORWARD_SPEED` → `FLIGHT_FORWARD_SPEED`, `PROJECTILE_RADIUS` → `BALL_RADIUS`, `PANEL_W_PCT` → `WALL_PANEL_W_PCT`
 - Moved `NAV_PAD_X_PCT` into `LAYOUT` object, `MISS_BUFFER` to target/scoring section
 - Removed vestigial `NavBar.bottom` property (layout derives from `LAYOUT.NAV_PCT`)
+
+## 2026-03-09
+
+### Juice Design Pass — Landing Feedback Layer
+First implementation pass through the juice catalog. All effects scale with a logarithmic juice intensity curve driven by streak count.
+
+**Juice intensity system**
+- `juiceIntensity(streak)` — logarithmic 0–1 curve, ceiling at 5 streaks
+- All visual effects multiply by this value — low streaks get subtle feedback, high streaks get full treatment
+- Centralized in `constants.ts`, used across all juice components
+
+**Tweened landing feedback text** (FeedbackZone)
+- Animated text replaces empty bordered rect placeholder
+- Per-tier color from theme (gold/teal/pink), sized to 85% of zone height
+- NEAR_HIT → "HIT", NEAR_MISS → "MISS" label mapping
+- Punch scale on PERFECT (1.5x, juice-scaled), instant appear + timed fade-out
+
+**Score pop animations** (ScoreRow)
+- Streak and best values get scale-pop tweens on change
+- Two-stage chain: fast punch (Quad.easeOut) + slow settle (Sine.easeInOut)
+- Pop intensity scales with juice intensity
+- Labels uppercased (STREAK:/BEST:), difficulty display removed
+
+**Camera effects** (GameScene)
+- Zoom punch on PERFECT/HIT/NEAR_HIT (stepped down per tier)
+- Screen shake on NEAR_HIT/NEAR_MISS/MISS (intensity varies)
+- All config in `theme.cameraFx` — per-tier ceilings scaled by juice intensity
+
+**Flight weight** (FlightAnimator)
+- Launch bump: 1.12x scale at launch, decays over first 20% of flight
+- Mass accretion: ball grows toward landing (1.1–1.8x, juice-scaled)
+- Ball radius scales with juice intensity across throws (Projectile)
+
+**Impact rings** (ImpactRing component)
+- Ball impact ring: expanding circle at landing point
+- Target impact ring: expanding from rim, perspective-squashed
+- Separate theme configs for ball vs target (independently tunable)
+- `tierColor()` helper shared with Target
+
+**Target landing reaction** (Target)
+- Color flash synced with feedback text hold duration
+- Scale punch (1.05–1.2x, juice-scaled) via two-stage tween chain
+- Spawns target impact ring at rim radius
+
+**Theme additions**
+- `juice` palette: gold/teal/pink in CSS string + hex number formats
+- `feedback` config: per-tier color, punchScale, holdMs, fadeMs
+- `cameraFx` config: per-tier zoom punch, shake intensity/duration
+- `impactRing` config: separate ball and target sub-configs
+
+**Cleanup**
+- Removed touch pulse on swipe pickup (SwipeInput)
+- Removed dead constants (`BALL_TOUCH_SCALE`, `BALL_TOUCH_PULSE_MS`)
+- Removed dead `currentZ` field from Target
