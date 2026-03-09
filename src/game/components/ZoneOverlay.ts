@@ -4,7 +4,7 @@ import {
   ANGLE_BOUNDS_LENGTH_PCT,
   LAUNCH_ANGLE_MAX,
 } from "../constants";
-import { resolveZones } from "../systems/ShotResolver";
+import { ZoneInfo } from "../systems/ShotResolver";
 import { theme } from "../theme";
 
 /** Convert our angle convention (0 = up, + = right) to canvas (0 = right, + = CW) */
@@ -14,14 +14,11 @@ function toCanvas(angle: number): number {
 
 /**
  * Arc-sector visualization of all landing zones.
- * Pure visual component — knows how to draw zones, nothing else.
+ * Pure visual component — receives pre-computed ZoneInfo, just draws.
  */
 export class ZoneOverlay {
   private graphics: Phaser.GameObjects.Graphics;
   private scene: Phaser.Scene;
-
-  /** Solved angle from the most recent update — exposed for consumers. */
-  public solvedAngle = 0;
 
   constructor(scene: Phaser.Scene, depth: number) {
     this.scene = scene;
@@ -29,14 +26,11 @@ export class ZoneOverlay {
     this.graphics.setDepth(depth);
   }
 
-  update(windForce: number, targetZ: number): void {
+  draw(zones: ZoneInfo): void {
     const { width, height } = this.scene.scale;
     const originX = width / 2;
     const originY = height * BALL_REST_Y_PCT;
     const arcRadius = height * ANGLE_BOUNDS_LENGTH_PCT * 0.8;
-
-    const zones = resolveZones(targetZ, windForce);
-    this.solvedAngle = zones.solvedAngle;
 
     const [perfL, perfR] = zones.edges.get("PERFECT")!;
     const [hitL, hitR] = zones.edges.get("HIT")!;

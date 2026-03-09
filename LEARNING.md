@@ -469,8 +469,43 @@
 - `Phaser.AUTO` picks WebGL when available. For a 2D game with no WebGL-specific features, `Phaser.CANVAS` is often better — true curves, no polygon artifacts.
 - `antialias: true` in WebGL enables MSAA (smooths polygon edges) but doesn't add more segments to circle approximations.
 
+### Getter in `as const` objects
+- `LAYOUT` uses a `get VANISH_Y_PCT()` getter inside an `as const` object — a computed property that derives from sibling values
+- Called like a regular property (`LAYOUT.VANISH_Y_PCT`), computed on access
+- Python equivalent: `@property` on a frozen dataclass
+- Useful when one value must always equal the sum of others — structurally impossible to drift
+
+### Typographic scale pattern
+- Define font size tiers as clamped functions of screen height: `clamp(min, height * factor, max)`
+- All text in the app pulls from the same three tiers (heading/body/caption)
+- Same idea as CSS `clamp()` or a design system's type scale — consistency by construction
+- Avoids the scattered-magic-numbers problem where every component invents its own font math
+
 ### Procedural textures vs live Graphics
 - **`generateTexture()`** rasterizes a Graphics object into a fixed-resolution bitmap sprite. The bitmap is locked to that pixel count — scaling it (projection, retina screens) reveals the jagged polygon edges and resolution limits.
 - **Live Graphics objects** are re-rendered by Canvas 2D every frame at native resolution. For simple shapes (circles, lines), the per-frame cost is negligible.
 - **Rule of thumb:** use live Graphics for a handful of simple shapes. Use textures/sprites for complex visuals, sprite sheets, or when you need hundreds of identical instances (particles).
 - `window.devicePixelRatio` matters for textures (a 3x retina phone needs 3x pixels) but is irrelevant for live Graphics (Canvas 2D handles it natively).
+
+## Game Juice / Feedback Design
+
+### The "Juice It or Lose It" taxonomy
+- GDC 2012 talk (Jonasson & Purho) took Breakout and layered feedback until it felt modern. Same mechanics, same rules — personality lives in feedback.
+- Categories: shape/motion (squash/stretch, scale pop), screen-level (shake, flash, zoom punch), particles/trails, color/light, temporal (hit stop, slow-mo, speed ramp), audio, haptics, UI/numbers.
+- Mobile amplifies this — input vocabulary is tap/swipe/hold, so the game's personality is entirely in what happens *after* the input.
+- Vlambeer (Dutch indie studio — Nuclear Throne, Ridiculous Fishing) popularized screen shake and "game feel" as a design discipline.
+
+### Proportional feedback as design principle
+- If feedback is proportional to actual difficulty, it's honest communication. If every action gets maximum stimulation, it's manipulation.
+- The *gap* between tiers is the design — PERFECT earns full treatment, lower tiers get progressively less, absence of reward IS the punishment for MISS.
+- Anti-patterns: aim assist, manufactured difficulty, every-hit-is-a-celebration, over-the-top effects on trivial actions.
+
+### Dive exponent vs time manipulation
+- Dive exponent warps *where the ball is* at each time step. Time manipulation warps *how fast moments pass* along the same path.
+- Visually identical if tuned the same, but time-based is cleaner for syncing multiple effects (shake, particles, sound) to the same rhythm.
+- Both are presentation-layer tricks on top of pre-computed analytical flight — landing result is never affected.
+
+### Procedural audio via Web Audio API
+- Generate sounds in code instead of loading audio files — no asset files, infinitely tunable, tiny footprint.
+- Pitch variation prevents "heard this 400 times" fatigue without needing multiple recordings.
+- Rising pitch on streak: each consecutive hit slightly higher — turns the streak counter into an audible crescendo.

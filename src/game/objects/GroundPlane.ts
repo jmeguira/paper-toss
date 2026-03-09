@@ -1,8 +1,9 @@
 import Phaser from "phaser";
 import {
   FOCAL_LENGTH,
-  VANISH_Y_PCT,
+  LAYOUT,
   GROUND_MAX_Z,
+  Depth,
 } from "../constants";
 import { theme } from "../theme";
 
@@ -15,13 +16,14 @@ export class GroundPlane {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.graphics = scene.add.graphics();
+    this.graphics.setDepth(Depth.GRID);
     this.draw();
   }
 
   draw(): void {
     const { width, height } = this.scene.scale;
     const vanishX = width / 2;
-    const vanishY = height * VANISH_Y_PCT;
+    const vanishY = height * LAYOUT.VANISH_Y_PCT;
     const f = FOCAL_LENGTH;
     const wallZ = GROUND_MAX_Z;
     const wallScale = f / (f + wallZ);

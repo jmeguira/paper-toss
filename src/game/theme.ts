@@ -91,6 +91,24 @@ export interface Theme {
     buffer:   { fill: number; alpha: number };
   };
 
+  /** Wall-mounted info panel */
+  wallPanel: {
+    bg: number;
+    bgAlpha: number;
+    border: number;
+    borderAlpha: number;
+    borderWidth: number;
+    text: {
+      color: string;
+      stroke: string;
+      strokeThickness: number;
+    };
+    feedbackZone: {
+      border: number;
+      borderAlpha: number;
+    };
+  };
+
   /** UI styling — fonts, text, buttons, panels */
   ui: {
     fontFamily: string;
@@ -212,6 +230,23 @@ export const defaultTheme: Theme = {
     buffer:   { fill: 0x4488aa, alpha: 0.12 },
   },
 
+  wallPanel: {
+    bg: 0x0d1520,              // slightly lighter than canvas
+    bgAlpha: 1,
+    border: 0x2a8888,          // teal, matches grid
+    borderAlpha: 0.4,
+    borderWidth: 1,
+    text: {
+      color: "#e0e0e0",        // uniform — same as ui.text.primary
+      stroke: "#000000",
+      strokeThickness: 2,
+    },
+    feedbackZone: {
+      border: 0x2a8888,
+      borderAlpha: 0.15,
+    },
+  },
+
   ui: {
     fontFamily: "monospace",
     text: {
@@ -252,3 +287,24 @@ export const defaultTheme: Theme = {
 // Active theme — the single import point for all game code.
 // Future: this could be swapped at runtime or driven by a selector.
 export const theme = defaultTheme;
+
+// ---------------------------------------------------------------------------
+// Typographic scale — three tiers, clamped for readability across screens.
+// Call once per scene with screen height, use the result for all text.
+// ---------------------------------------------------------------------------
+
+export interface TypeScale {
+  heading: number;  // titles, score feedback, play button
+  body: number;     // HUD text, settings items, labels
+  caption: number;  // wind value, dev buttons, nav icons, fine print
+}
+
+export function typeScale(screenHeight: number): TypeScale {
+  const clamp = (min: number, val: number, max: number) =>
+    Math.round(Math.max(min, Math.min(max, val)));
+  return {
+    heading: clamp(20, screenHeight * 0.032, 32),
+    body: clamp(12, screenHeight * 0.020, 20),
+    caption: clamp(10, screenHeight * 0.014, 16),
+  };
+}

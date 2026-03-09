@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { BALL_REST_Y_PCT, PROJECTILE_RADIUS } from "../constants";
+import { BALL_REST_Y_PCT, BALL_RADIUS, Depth } from "../constants";
 import { theme } from "../theme";
 
 export class Projectile {
@@ -17,8 +17,9 @@ export class Projectile {
 
     this.sprite = scene.add.graphics();
     this.sprite.fillStyle(theme.ball.base);
-    this.sprite.fillCircle(0, 0, PROJECTILE_RADIUS);
+    this.sprite.fillCircle(0, 0, BALL_RADIUS);
     this.sprite.setPosition(this.restX, this.restY);
+    this.sprite.setDepth(Depth.GAME);
   }
 
   /** Hard reset — no animation, used on resize or mode switch */

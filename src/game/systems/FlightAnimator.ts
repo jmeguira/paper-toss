@@ -2,10 +2,11 @@ import { Projectile } from "../objects/Projectile";
 import { ShotResult } from "./ShotResolver";
 import {
   FOCAL_LENGTH,
-  VANISH_Y_PCT,
+  LAYOUT,
   FLIGHT_GRAVITY,
   ARC_SCALE,
   DIVE_EXPONENT,
+  TARGET_Y,
 } from "../constants";
 
 export class FlightAnimator {
@@ -78,13 +79,14 @@ export class FlightAnimator {
     const wx = this.wx0 + this.vx0 * t + 0.5 * this.wind * t * t;
     const wyRaw = this.wy0 + this.vy0 * t - 0.5 * FLIGHT_GRAVITY * t * t;
     // Scale only the arc hump, not the endpoints.
-    // Baseline = straight line from wy0 to 0 over the flight.
-    const baseline = this.wy0 * (1 - t / this.duration);
+    // Baseline = straight line from wy0 to TARGET_Y over the flight.
+    const p_t = t / this.duration;
+    const baseline = this.wy0 * (1 - p_t) + TARGET_Y * p_t;
     const wy = baseline + (wyRaw - baseline) * ARC_SCALE;
     const wz = this.vz * t;
 
     const { width, height } = this.scene.scale;
-    const vanishY = height * VANISH_Y_PCT;
+    const vanishY = height * LAYOUT.VANISH_Y_PCT;
 
     const scale = FOCAL_LENGTH / (FOCAL_LENGTH + wz);
     const screenX = width / 2 + wx * scale;

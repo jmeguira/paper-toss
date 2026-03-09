@@ -35,15 +35,18 @@ paper-toss/
       components/                  # Visual building blocks (one Graphics/Text, screen-space)
         AngleBounds.ts             # Faint ±60° cone lines from ball
         AngleIndicator.ts          # Oscillating needle for mechanical mode
+        DevThrowButtons.ts         # Row of tier buttons (P/H/NH/NM) for dev testing
+        FeedbackZone.ts            # Bordered rect placeholder for landing feedback
+        NavBar.ts                  # Home + hamburger buttons (top row)
+        ScoreRow.ts                # Streak, best score, difficulty label
         ThrowAngle.ts              # Post-throw arrow showing input angle
-        ZoneOverlay.ts             # Arc-sector visualization of landing zones
-        PerfectThrowButton.ts      # Dev button that fires the solved angle
         TouchButton.ts             # Reusable circular button with press/release tracking
-        WindIndicator.ts           # Arrow + strength display
-        ScoreDisplay.ts            # Streak counter
+        WindDisplay.ts             # Arrow + numeric label within a container
+        ZoneOverlay.ts             # Arc-sector visualization of landing zones
       composites/                  # Compose components into screen-level UI
-        DevOverlay.ts              # Dev-mode: ZoneOverlay + PerfectThrowButton
+        DevOverlay.ts              # Dev-mode: ZoneOverlay + tier throw buttons
         SettingsOverlay.ts         # Modal: mode toggle + back to menu
+        WallPanel.ts               # HUD panel: ScoreRow + FeedbackZone + WindDisplay
 ```
 
 ## Input Mechanic (the core)
@@ -107,19 +110,84 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 - Canvas renderer (true anti-aliased curves vs WebGL polygon approximation)
 - Live Graphics objects for ball/target (native device resolution, no procedural textures)
 
-### Next up (see NEXT_UP.md)
-- **Target elevation** — vertical ring/portal with world-space Y height
-- **Landing feedback** — tier text on back wall (PERFECT/HIT/MISS)
-- **Wind particles** — ambient flow lines showing direction + strength
-- **Sound + haptics**
-- **Dev settings panel** — Live sliders for feel-based tuning
-- ~~**Start screen + high score persistence**~~ ✅ — StartScene with difficulty selector + high scores, HighScoreStore (localStorage), settings overlay with mode toggle, hamburger menu, Depth enum
+### HUD + layout system ✅
+- **Percentage-based vertical layout** — `LAYOUT` constant: NAV (7%) → HUD (20%) → Buffer (8%) → Playable (65%). `VANISH_Y_PCT` derived as getter
+- **Screen-space WallPanel** — sized by pixel budget, not world-space projection. Works across SE to Pro Max
+- **Typographic scale** — `typeScale(screenHeight)` returns heading/body/caption sizes. All text uses it, zero hardcoded px values
+- **WallPanel decomposition** — split into ScoreRow, WindDisplay, FeedbackZone components. WallPanel is thin composite
+- **NavBar** — home button + hamburger, heading-size icons
+- **Dev throw buttons** — P/H/NH/NM tier buttons replace single Perfect button
+- **Depth layers** — GRID (0), WALL (1), GAME (10) added to Depth enum
+- **Target elevation** — `TARGET_Y = 200` lifts target off ground plane
+- **VS Code + lint setup** — Prettier, ESLint, extensions, format-on-save
+
+### Juice — Landing Feedback + Sound + Wind Visuals
+
+The full feedback layer. Proportional, honest responses — the gap between tiers is what makes the top feel special.
+
+**Visual — Shape & Motion**
+- Scale pop on streak counter (increment) and high score (when beaten)
+- Target ring wobble on NEAR HIT / NEAR MISS — exploring
+- Tweened text in feedback zone (eases in, not snaps)
+- Anticipation scale: tiny shrink before launch, ball grows during flight for weight
+
+**Visual — Screen-Level**
+- Screen shake on NEAR HIT / NEAR MISS only (ball grazed the ring) — capped intensity
+- Wall panel flash on landing (restricted to HUD, not full screen) — exploring
+- Chromatic aberration on NEAR MISS or MISS — glitchy error feel
+- Zoom punch on PERFECT only
+
+**Visual — Particles & Trails**
+- Particles tiered per landing: PERFECT full burst, HIT good, NEAR HIT kicks some up, MISS ball disintegrates/glitches out
+- Ghost trail: afterimages during flight to show the arc/curve
+- Impact rings: expanding ripple from landing point
+- Target channel: ball passes through visual channel on hits, channel responds per tier
+- Speed lines — maybe, need to see in practice
+
+**Visual — Color & Light**
+- Color flash/tint: target ring color-codes to tier, matches feedback zone
+- Rim glow: target ring glows on approach/contact — exploring
+- Grid pulse: grid lines subtly pulse tier color on landing
+
+**Temporal**
+- Hang at apex, slam home feel. Dive exponent handles it now. Time-based approach (stretching `t`) is the cleaner long-term lever if other effects need to sync to the same rhythm. Noting, not changing yet
+
+**Audio (procedural via Web Audio API)**
+- Distinct but related tones per tier. PERFECT = crisp, definitive, unmistakable
+- Pitch jitter on all tiers except PERFECT — PERFECT is always identical
+- Rising pitch on streak: success tone climbs with consecutive hits
+- Audio ducking: subtle dip at arc apex for tension, also landing SFX over ambient (when ambient exists)
+
+**Haptic (mobile)**
+- Impact vibration per tier — PERFECT is a clean tap, MISS buzzes
+- Tiered intensity — proportional, crisp not aggressive
+
+**Wind visualization**
+- Ambient flow particles showing wind direction + strength
+- Wind source element (visible origin point) — design TBD
+- Existing arrow + number display stays
+- Wind indicator relocation — currently lives inside WallPanel, may move to buffer zone or court. Placement TBD
+
+**Parked juice ideas**
+- Vignette pulse — revisit if game moves to lives/HP model
+- Ambient sound vs soundtrack — undecided, affects ducking
+- Speed lines — need to see in practice
+
+### Streak-driven difficulty
+- Replace difficulty tiers with progressive ramping based on streak
+- targetZ ramps gradually, up to a ceiling
+- targetX and launchX may vary per throw — every throw is a unique geometry problem
+- Wind range auto-scales via physics (longer flight → more drift)
+- One mode, one leaderboard — streak is the identity
+- See DESIGN.md for full decision
+
+### Parked
+- Dev settings panel — live sliders for feel-based tuning
+- Skin system (paper toss easter egg, etc.)
 
 ### v2 parking lot
 - Skins (baseball, paper toss aesthetic)
 - Alternative game modes
-- Lateral launch point (re-enable L/R buttons)
-- Moving targets
 - Power mechanic (swipe speed, separate UI, or fixed)
 - Spin mechanic (curved swipe → curved flight)
 - Projectile types (Heavy/Balanced/Flippy) with unlock system

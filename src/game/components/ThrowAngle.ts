@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { BALL_REST_Y_PCT, ANGLE_BOUNDS_LENGTH_PCT } from "../constants";
+import { BALL_REST_Y_PCT, ANGLE_BOUNDS_LENGTH_PCT, Depth } from "../constants";
 import { theme } from "../theme";
 
 export class ThrowAngle {
@@ -9,6 +9,7 @@ export class ThrowAngle {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.graphics = scene.add.graphics();
+    this.graphics.setDepth(Depth.GAME);
     this.graphics.setVisible(false);
   }
 

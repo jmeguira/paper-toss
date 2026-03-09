@@ -1,40 +1,65 @@
-// Camera / fake-3D projection
-export const FOCAL_LENGTH = 250;
-export const VANISH_Y_PCT = 0.35;
+// ---------------------------------------------------------------------------
+// Projection
+// ---------------------------------------------------------------------------
+export const FOCAL_LENGTH = 225;
+export const GROUND_MAX_Z = 2000; // back wall depth
 
-// Flight physics
-export const FORWARD_SPEED = 810;
+// ---------------------------------------------------------------------------
+// Layout — fractions of screen height/width, top to bottom.
+// Everything above VANISH_Y_PCT is UI; everything below is playable space.
+// ---------------------------------------------------------------------------
+export const LAYOUT = {
+  NAV_PCT: 0.07,
+  NAV_PAD_X_PCT: 0.04, // horizontal padding for nav bar icons
+  HUD_PCT: 0.2,
+  BUFFER_PCT: 0.08,
+  get VANISH_Y_PCT() {
+    return this.NAV_PCT + this.HUD_PCT + this.BUFFER_PCT;
+  },
+} as const;
+
+export const BALL_REST_Y_PCT = 0.85;
+export const ANGLE_BOUNDS_LENGTH_PCT = 0.28;
+
+// ---------------------------------------------------------------------------
+// Flight — physics + animation
+// ---------------------------------------------------------------------------
+export const FLIGHT_FORWARD_SPEED = 810;
 export const FLIGHT_SPEED = 1100;
 export const FLIGHT_LATERAL_MULT = 2.0;
 export const FLIGHT_GRAVITY = 2000;
 
-// Flight animation (cosmetic only — never affects landing result)
-export const ARC_SCALE = 1.5; // visual height multiplier on the arc
+// Cosmetic only — never affects landing result
+export const ARC_SCALE = 1.2; // visual height multiplier on the arc
 export const DIVE_EXPONENT = 1.7; // >1 = hang at peak, dive into target
 
 /** Flight duration for a given target distance.
  *  Distance is the single difficulty knob — everything else derives. */
 export function flightTime(targetZ: number): number {
-  return targetZ / FORWARD_SPEED;
+  return targetZ / FLIGHT_FORWARD_SPEED;
 }
 
-// Difficulty presets — targetZ is the only knob
+// ---------------------------------------------------------------------------
+// Difficulty
+// ---------------------------------------------------------------------------
 export const DIFFICULTIES = [
-  { id: "EASY", label: "Easy", targetZ: 750 },
+  { id: "EASY", label: "Easy", targetZ: 600 },
   { id: "MEDIUM", label: "Medium", targetZ: 1000 },
-  { id: "HARD", label: "Hard", targetZ: 1250 },
+  { id: "HARD", label: "Hard", targetZ: 1400 },
 ] as const;
 export type DifficultyId = (typeof DIFFICULTIES)[number]["id"];
 export const DEFAULT_DIFFICULTY = DIFFICULTIES[1]; // Medium
 
-// Hit detection — landing tiers ordered innermost → outermost
-// Single source of truth: add/remove/rename tiers here, everything else derives.
-export const TARGET_RADIUS = 275;
+// ---------------------------------------------------------------------------
+// Target & scoring
+// ---------------------------------------------------------------------------
+export const TARGET_Y = 200; // world-space elevation (cosmetic, not hit detection)
+export const TARGET_RADIUS = 260;
 export const LANDING_TIERS = [
   { id: "PERFECT", label: "PERFECT", pct: 0.1, scores: true },
-  { id: "HIT", label: "HIT", pct: 0.6, scores: true },
-  { id: "NEAR_HIT", label: "NEAR HIT", pct: 1.0, scores: true },
-  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.4, scores: false },
+  { id: "HIT", label: "HIT", pct: 0.7, scores: true },
+  { id: "NEAR_HIT", label: "NEAR HIT", pct: 1, scores: true },
+  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.3, scores: false },
   { id: "MISS", label: "MISS", pct: Infinity, scores: false },
 ] as const;
 export type LandingTier = (typeof LANDING_TIERS)[number]["id"];
@@ -54,28 +79,31 @@ export function tierInfo(tier: LandingTier) {
     }
   }
   if (isFinite(LANDING_TIERS[LANDING_TIERS.length - 1].pct)) {
-    throw new Error(
-      "LANDING_TIERS: last tier must have pct = Infinity (catch-all)",
-    );
+    throw new Error("LANDING_TIERS: last tier must have pct = Infinity (catch-all)");
   }
 })();
 
 export const LANDING_PAUSE_MS = 600;
-
-// Wind
-export const WIND_MIN = 250;
 export const MISS_BUFFER = 150; // clear-miss space beyond near-miss zone, both sides
 
-// Ground plane / back wall depth
-export const GROUND_MAX_Z = 2000;
+// ---------------------------------------------------------------------------
+// Wind
+// ---------------------------------------------------------------------------
+export const WIND_MIN = 250;
 
-// Dev mode
-export const DEV_MODE = true;
+// ---------------------------------------------------------------------------
+// Ball
+// ---------------------------------------------------------------------------
+export const BALL_RADIUS = 50;
+export const BALL_PICKUP_RADIUS_PCT = 0.15;
+export const BALL_TOUCH_SCALE = 1.08;
+export const BALL_TOUCH_PULSE_MS = 80;
 
-// Projectile
-export const PROJECTILE_RADIUS = 50;
+// ---------------------------------------------------------------------------
+// Input
+// ---------------------------------------------------------------------------
 
-// Swipe input
+// Swipe
 export const SWIPE_MIN_SPEED = 300;
 export const SWIPE_MAX_SAMPLES = 60;
 export const SWIPE_TRIM_END = 2; // discard last N points (finger-lift noise)
@@ -84,35 +112,32 @@ export const SWIPE_FIT_POINTS = 12; // points used for angle/speed calculation
 // Shared launch bounds
 export const LAUNCH_ANGLE_MAX = (60 * Math.PI) / 180; // ±60° from vertical
 
-// Ball
-export const BALL_PICKUP_RADIUS_PCT = 0.15;
-export const BALL_REST_Y_PCT = 0.85;
-
-// Flick pulse feedback (v1 swipe mode)
-export const BALL_TOUCH_SCALE = 1.08;
-export const BALL_TOUCH_PULSE_MS = 80;
-
-// Angle bounds cone
-export const ANGLE_BOUNDS_LENGTH_PCT = 0.28;
-
 // Mechanical mode
 export const MECH_LAUNCH_SIZE = 80;
 export const MECH_ANGLE_SWEEP_SPEED = 2.0;
 export const MECH_INDICATOR_RADIUS = 80;
 
-// Mode toggle
-export const MODE_TOGGLE_SIZE = 40;
-export const MODE_TOGGLE_MARGIN = 16;
+// ---------------------------------------------------------------------------
+// Rendering & dev
+// ---------------------------------------------------------------------------
+export const DEV_MODE = true;
 
 // Z-ordering layers — higher draws on top
 // Components offset within their tier as needed (e.g. Depth.DEV + 1)
 export const enum Depth {
-  HUD = 100, // score, wind indicator, start screen UI
+  GRID = 0, // ground plane / wall grid lines (furthest back)
+  WALL = 1, // wall-mounted panel (above grid, behind game objects)
+  GAME = 10, // projectile, target, flight trail, angle indicators
+  HUD = 100, // start screen UI
   DEV = 200, // dev overlay graphics + buttons
-  CONTROLS = 300, // difficulty label, hamburger
+  CONTROLS = 300, // hamburger
   OVERLAY = 500, // modal overlays (backdrop, panel, contents)
 }
 
-// Settings overlay
-export const OVERLAY_PANEL_W_PCT = 0.8; // fraction of screen width
-export const OVERLAY_PANEL_H_PCT = 0.4; // fraction of screen height
+// ---------------------------------------------------------------------------
+// UI
+// ---------------------------------------------------------------------------
+export const WALL_PANEL_W_PCT = 0.88; // HUD panel width
+export const DEV_BUTTON_GAP_PCT = 0.02; // gap between ball and dev buttons
+export const OVERLAY_PANEL_W_PCT = 0.8; // settings overlay width
+export const OVERLAY_PANEL_H_PCT = 0.4; // settings overlay height

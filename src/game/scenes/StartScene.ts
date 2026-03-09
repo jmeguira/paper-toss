@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY } from "../constants";
 import { HighScoreStore } from "../systems/HighScoreStore";
-import { theme } from "../theme";
+import { theme, typeScale } from "../theme";
 
 export class StartScene extends Phaser.Scene {
   private highScores!: HighScoreStore;
@@ -16,13 +16,14 @@ export class StartScene extends Phaser.Scene {
   create(): void {
     this.highScores = new HighScoreStore();
     const { width, height } = this.scale;
+    const ts = typeScale(height);
     const cx = width / 2;
 
     // Title
     this.add
       .text(cx, height * 0.2, "PAPER TOSS", {
         fontFamily: theme.ui.fontFamily,
-        fontSize: "36px",
+        fontSize: `${ts.heading}px`,
         color: theme.ui.text.primary,
         stroke: theme.ui.score.stroke,
         strokeThickness: theme.ui.score.strokeThickness,
@@ -39,7 +40,7 @@ export class StartScene extends Phaser.Scene {
       const btn = this.add
         .text(startX + i * buttonSpacing, buttonY, diff.label, {
           fontFamily: theme.ui.fontFamily,
-          fontSize: "20px",
+          fontSize: `${ts.body}px`,
           color: theme.ui.text.secondary,
           backgroundColor: theme.ui.button.bgMuted,
           padding: { x: 10, y: 8 },
@@ -56,7 +57,7 @@ export class StartScene extends Phaser.Scene {
     this.highScoreLabel = this.add
       .text(cx, height * 0.55, "", {
         fontFamily: theme.ui.fontFamily,
-        fontSize: "18px",
+        fontSize: `${ts.body}px`,
         color: theme.ui.text.dim,
       })
       .setOrigin(0.5)
@@ -66,7 +67,7 @@ export class StartScene extends Phaser.Scene {
     const playBtn = this.add
       .text(cx, height * 0.7, "PLAY", {
         fontFamily: theme.ui.fontFamily,
-        fontSize: "28px",
+        fontSize: `${ts.heading}px`,
         color: theme.ui.text.primary,
         backgroundColor: theme.ui.button.bg,
         padding: { x: 32, y: 14 },
