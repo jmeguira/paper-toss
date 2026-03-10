@@ -10,9 +10,11 @@ export interface Theme {
     perfect: string;   // gold (CSS)
     good: string;      // teal (CSS)
     bad: string;       // pink (CSS)
+    neutral: string;   // off-white (CSS) — resting state for target, scores, HUD text
     perfectHex: number;
     goodHex: number;
     badHex: number;
+    neutralHex: number;
   };
 
   /** Canvas fallback color (Phaser backgroundColor) */
@@ -198,80 +200,104 @@ export interface Theme {
 // Teal/cyan world, warm orange player elements. Soft glow, not neon.
 // ---------------------------------------------------------------------------
 
+// Hex-to-CSS converter — define each color once as a number, derive strings.
+const css = (hex: number) => `#${hex.toString(16).padStart(6, "0")}`;
+
+// Raw palette — single source of truth for every color in the theme.
+const GOLD    = 0xffcc44;  // perfect / reward
+const TEAL    = 0x44ddcc;  // good / environment
+const PINK    = 0xdd459b;  // bad / error
+const NEUTRAL = 0xddd8cc;  // resting state — target, scores, HUD text
+const ORANGE  = 0xe8884a;  // player — ball, throw arrow, GO button
+const GRID    = 0x2a8888;  // muted teal — grid lines, borders
+const VOID    = 0x0a0a1e;  // near-black canvas / sky top
+const DEEP    = 0x0f1a2a;  // deep ocean — sky bottom / panels
+const WIND_C  = 0xcccccc;  // wind arrow — neutral gray
+const BLACK   = 0x000000;
+const PANEL   = 0x0d1520;  // wall panel bg — slightly lighter than canvas
+const DIM_TEAL_1 = "#778888"; // muted teal-gray (secondary text)
+const DIM_TEAL_2 = "#556666"; // subtle (dim text)
+const BTN_BG     = "#1a4444"; // dark teal button
+const BTN_HOVER  = "#1a444488";
+const BTN_MUTED  = "#00000066";
+const BTN_TOGGLE = "#1a3a3a88";
+
 export const defaultTheme: Theme = {
   juice: {
-    perfect: "#ffcc44",
-    good: "#44ddcc",
-    bad: "#DD459B",
-    perfectHex: 0xffcc44,
-    goodHex: 0x44ddcc,
-    badHex: 0xDD459B,
+    perfect: css(GOLD),
+    good: css(TEAL),
+    bad: css(PINK),
+    neutral: css(NEUTRAL),
+    perfectHex: GOLD,
+    goodHex: TEAL,
+    badHex: PINK,
+    neutralHex: NEUTRAL,
   },
 
-  canvas: "#0a0a1e",
+  canvas: css(VOID),
 
   sky: {
-    top: 0x0a0a1e,           // near-black with blue undertone
-    bottom: 0x0f1a2a,        // deep ocean blue-black
+    top: VOID,
+    bottom: DEEP,
   },
 
   horizon: {
-    color: 0x2a8888,         // soft teal glow
+    color: GRID,
     alpha: 0.2,
     heightPct: 0.06,
   },
 
   ground: {
-    lineColor: 0x2a8888,     // teal grid — bioluminescent skeleton
+    lineColor: GRID,
     alphaFar: 0.06,
     alphaNear: 0.3,
   },
 
   ball: {
-    base: 0xe8884a,          // warm amber-orange
-    highlight: 0xffbb77,     // bright highlight (sphere step)
-    shadow: 0x994422,        // deep warm shadow (sphere step)
-    glow: 0xe8884a,          // orange glow (sphere step)
+    base: ORANGE,
+    highlight: 0xffbb77,
+    shadow: 0x994422,
+    glow: ORANGE,
     glowAlpha: 0.12,
   },
 
   target: {
-    primary: 0x44ddcc,       // cyan-teal — "destination"
+    primary: NEUTRAL,
     fillAlpha: 0.25,
     rimWidth: 30,
     squash: 0.4,
   },
 
   trail: {
-    color: 0xe8884a,         // matches ball
+    color: ORANGE,
     alpha: 0.25,
     count: 12,
   },
 
   angleBounds: {
-    color: 0x44ddcc,         // teal, part of the world
+    color: TEAL,
     alpha: 0.06,
   },
 
   throwAngle: {
-    color: 0xe8884a,         // orange — "your" color
+    color: ORANGE,
     alpha: 0.5,
     width: 2,
   },
 
   angleIndicator: {
-    arcColor: 0x44ddcc,      // teal arc
+    arcColor: TEAL,
     arcAlpha: 0.12,
-    needleColor: 0xe8884a,   // orange needle — player's indicator
+    needleColor: ORANGE,
     needleAlpha: 0.8,
   },
 
   wind: {
-    arrowColor: 0xcccccc,    // neutral — not teal or orange
+    arrowColor: WIND_C,
     arrowWidth: 3,
     label: {
-      color: "#cccccc",
-      stroke: "#000000",
+      color: css(WIND_C),
+      stroke: css(BLACK),
       strokeThickness: 3,
     },
   },
@@ -305,35 +331,35 @@ export const defaultTheme: Theme = {
   },
 
   feedback: {
-    PERFECT:   { color: "#ffcc44", punchScale: 1.5, holdMs: 400, fadeMs: 150 },
-    HIT:       { color: "#44ddcc", punchScale: 1.0, holdMs: 400, fadeMs: 150 },
-    NEAR_HIT:  { color: "#44ddcc", punchScale: 1.0, holdMs: 400, fadeMs: 150 },
-    NEAR_MISS: { color: "#DD459B", punchScale: 1.0, holdMs: 400, fadeMs: 150 },
-    MISS:      { color: "#DD459B", punchScale: 1.0, holdMs: 400, fadeMs: 150 },
+    PERFECT:   { color: css(GOLD), punchScale: 1.5, holdMs: 400, fadeMs: 150 },
+    HIT:       { color: css(TEAL), punchScale: 1.0, holdMs: 400, fadeMs: 150 },
+    NEAR_HIT:  { color: css(TEAL), punchScale: 1.0, holdMs: 400, fadeMs: 150 },
+    NEAR_MISS: { color: css(PINK), punchScale: 1.0, holdMs: 400, fadeMs: 150 },
+    MISS:      { color: css(PINK), punchScale: 1.0, holdMs: 400, fadeMs: 150 },
   },
 
   zones: {
-    perfect:  { fill: 0xffcc44, alpha: 0.4 },
-    hit:      { fill: 0x44ddcc, alpha: 0.25, edge: 0x44ddcc, edgeAlpha: 0.4 },
-    nearHit:  { fill: 0x44ddcc, alpha: 0.12, edge: 0x44ddcc, edgeAlpha: 0.2 },
-    nearMiss: { fill: 0xe8884a, alpha: 0.15, edge: 0xe8884a, edgeAlpha: 0.3 },
+    perfect:  { fill: GOLD, alpha: 0.4 },
+    hit:      { fill: TEAL, alpha: 0.25, edge: TEAL, edgeAlpha: 0.4 },
+    nearHit:  { fill: TEAL, alpha: 0.12, edge: TEAL, edgeAlpha: 0.2 },
+    nearMiss: { fill: ORANGE, alpha: 0.15, edge: ORANGE, edgeAlpha: 0.3 },
     miss:     { fill: 0xff4444, alpha: 0.06 },
     buffer:   { fill: 0x4488aa, alpha: 0.12 },
   },
 
   wallPanel: {
-    bg: 0x0d1520,              // slightly lighter than canvas
+    bg: PANEL,
     bgAlpha: 1,
-    border: 0x2a8888,          // teal, matches grid
+    border: GRID,
     borderAlpha: 0.4,
     borderWidth: 1,
     text: {
-      color: "#e0e0e0",        // uniform — same as ui.text.primary
-      stroke: "#000000",
+      color: css(NEUTRAL),
+      stroke: css(BLACK),
       strokeThickness: 2,
     },
     feedbackZone: {
-      border: 0x2a8888,
+      border: GRID,
       borderAlpha: 0.15,
     },
   },
@@ -341,36 +367,36 @@ export const defaultTheme: Theme = {
   ui: {
     fontFamily: "monospace",
     text: {
-      primary: "#e0e0e0",    // soft white — not harsh pure white
-      secondary: "#778888",  // muted teal-gray
-      dim: "#556666",        // subtle
-      accent: "#44ddcc",     // teal accent
+      primary: css(NEUTRAL),
+      secondary: DIM_TEAL_1,
+      dim: DIM_TEAL_2,
+      accent: css(TEAL),
     },
     score: {
       fontSize: "48px",
-      stroke: "#000000",
+      stroke: css(BLACK),
       strokeThickness: 4,
     },
     button: {
-      bg: "#1a4444",         // dark teal
-      bgHover: "#1a444488",
-      bgMuted: "#00000066",
-      bgToggle: "#1a3a3a88",
+      bg: BTN_BG,
+      bgHover: BTN_HOVER,
+      bgMuted: BTN_MUTED,
+      bgToggle: BTN_TOGGLE,
     },
     panel: {
-      bg: 0x0f1a2a,          // matches sky bottom
+      bg: DEEP,
       bgAlpha: 0.95,
     },
     overlay: {
-      backdropColor: 0x000000,
+      backdropColor: BLACK,
       backdropAlpha: 0.6,
     },
     goButton: {
-      color: 0xe8884a,       // orange — player action
+      color: ORANGE,
     },
     devButton: {
-      color: "#44ddcc",
-      bg: "#00000066",
+      color: css(TEAL),
+      bg: BTN_MUTED,
     },
   },
 };

@@ -60,11 +60,11 @@ export class GameScene extends Phaser.Scene {
       const streak = this.panel.getStreak();
       this.panel.showFeedback(result.tier);
       if (info.scores) {
-        this.panel.hit();
+        this.panel.hit(result.tier);
       } else {
         const isRecord = this.highScores.submit(this.difficulty.id, streak);
         this.panel.miss();
-        if (isRecord) this.panel.setBest(this.highScores.get(this.difficulty.id));
+        if (isRecord) this.panel.setBest(this.highScores.get(this.difficulty.id), result.tier);
       }
 
       this.landingCameraFx(result.tier, streak);

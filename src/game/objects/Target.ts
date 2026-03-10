@@ -36,11 +36,10 @@ export class Target {
     this.sprite.setScale(this.baseScaleX, this.baseScaleY);
   }
 
-  /** React to a landing — punch, color flash, impact ring. NEAR_HIT or better only. */
+  /** React to a landing — color flash always (except MISS), punch + ring on NEAR_HIT or better. */
   onLanding(tier: LandingTier, streak: number): void {
-    if (tier === "NEAR_MISS" || tier === "MISS") return;
+    if (tier === "MISS") return;
 
-    const ji = juiceIntensity(streak);
     const color = tierColor(tier);
 
     // Color flash — synced with feedback text hold duration
@@ -50,7 +49,11 @@ export class Target {
       this.drawRing(theme.target.primary);
     });
 
+    // NEAR_MISS gets the color pulse only — no punch or ring
+    if (tier === "NEAR_MISS") return;
+
     // Scale punch
+    const ji = juiceIntensity(streak);
     const punch = PUNCH_BASE + (PUNCH_CEILING - PUNCH_BASE) * ji;
     this.scene.tweens.killTweensOf(this.sprite);
     this.scene.tweens.chain({

@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { juiceIntensity } from "../constants";
+import { LandingTier, juiceIntensity } from "../constants";
 import { theme, typeScale } from "../theme";
 
 /**
@@ -52,11 +52,12 @@ export class ScoreRow {
     container.add(this.bestValue);
   }
 
-  hit(): void {
+  hit(tier: LandingTier): void {
     this.streak++;
     this.streakValue.setText(`${this.streak}`);
     const peak = 1 + 0.15 * juiceIntensity(this.streak);
     this.scalePop(this.streakValue, peak);
+    this.colorFlash(this.streakValue, tier);
   }
 
   miss(): void {
@@ -68,10 +69,13 @@ export class ScoreRow {
     return this.streak;
   }
 
-  setBest(score: number): void {
+  setBest(score: number, tier?: LandingTier): void {
     this.bestValue.setText(`${score}`);
-    const peak = 1 + 0.2 * juiceIntensity(this.streak);
-    this.scalePop(this.bestValue, peak);
+    if (tier) {
+      const peak = 1 + 0.2 * juiceIntensity(this.streak);
+      this.scalePop(this.bestValue, peak);
+      this.colorFlash(this.bestValue, tier);
+    }
   }
 
   private scalePop(target: Phaser.GameObjects.Text, peakScale: number): void {
@@ -83,6 +87,16 @@ export class ScoreRow {
         { scale: peakScale, duration: 80, ease: "Quad.easeOut" },
         { scale: 1, duration: 200, ease: "Sine.easeInOut" },
       ],
+    });
+  }
+
+  /** Flash the text to the tier's feedback color, then fade back to neutral. Synced with feedback text timing. */
+  private colorFlash(target: Phaser.GameObjects.Text, tier: LandingTier): void {
+    const config = theme.feedback[tier];
+    if (!config) return;
+    target.setColor(config.color);
+    this.scene.time.delayedCall(config.holdMs, () => {
+      target.setColor(theme.juice.neutral);
     });
   }
 }

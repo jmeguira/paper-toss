@@ -85,9 +85,9 @@ export class WallPanel {
   // --- Public API (delegates to components) ---
 
   showFeedback(tier: LandingTier): void { this.feedbackZone.show(tier, this.scoreRow.getStreak()); }
-  hit(): void { this.scoreRow.hit(); }
+  hit(tier: LandingTier): void { this.scoreRow.hit(tier); }
   miss(): void { this.scoreRow.miss(); }
   getStreak(): number { return this.scoreRow.getStreak(); }
-  setBest(score: number): void { this.scoreRow.setBest(score); }
+  setBest(score: number, tier?: LandingTier): void { this.scoreRow.setBest(score, tier); }
   updateWind(force: number, maxWind: number): void { this.windDisplay.update(force, maxWind); }
 }
