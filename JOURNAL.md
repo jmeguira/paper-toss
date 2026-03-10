@@ -274,3 +274,43 @@ First implementation pass through the juice catalog. All effects scale with a lo
 - Removed touch pulse on swipe pickup (SwipeInput)
 - Removed dead constants (`BALL_TOUCH_SCALE`, `BALL_TOUCH_PULSE_MS`)
 - Removed dead `currentZ` field from Target
+
+**Neutral palette + score flash** (ScoreRow, Target, theme)
+- Unified off-white neutral color (`NEUTRAL = 0xddd8cc`) across target ring resting state, HUD text, score numbers
+- Score numbers flash tier feedback color on scoring, synced with feedback text hold duration
+- Target NEAR_MISS gets color pulse (pink) but no punch or impact ring
+- `theme.juice.neutral`/`neutralHex` added to Theme interface
+
+**Theme palette consolidation** (theme.ts)
+- `css()` helper: define each color once as hex number, derive CSS strings
+- Raw palette constants at top of file: GOLD, TEAL, PINK, NEUTRAL, ORANGE, GRID, VOID, DEEP, etc.
+- All inline hex/CSS values replaced with constant references — zero duplicate color definitions
+
+**Glitch effect** (GlitchFx component)
+- Chromatic aberration: 3 RGB-offset full-screen rects
+- Staggered scan-line fracture: 12 full-width slices with random height/position, jittered timing
+- Fires on MISS (full intensity) and NEAR_MISS (50% intensity)
+- Nothing at streak 0 — scales with juice intensity. Duration 140–260ms
+- All constants in `theme.glitch`
+
+**Flight trail** (FlightTrail component, FlightAnimator)
+- Ring buffer of squashed afterimage ellipses during flight
+- Stroke-only circles with bright channel dots at top/bottom poles
+- Alpha, fade duration, and max count all scale with juice intensity (30–100%)
+- Per-shape alpha via fillStyle for independent body/channel dot brightness
+
+**Target channel** (Target)
+- 5-layer draw: bottom exit ring, opaque dark backdrop (obscures grid/wall), vortex depth rings, channel side lines, top target ring
+- Channel narrows toward base (spread: 0.6), length compensated for squash
+- Vortex rings: 5 concentric circles interpolating down the channel, fading deeper
+
+**Ball fade-through** (FlightAnimator)
+- Ball dissolves as it passes through target ring — starts at 92% linear flight progress
+- Uses un-warped linear progress (not dive-warped time) for consistent fade timing
+- `Projectile.resetPosition()` now restores alpha
+
+**Design discussions parked for next session**
+- Particle vortex inside target channel (gravity well black hole aesthetic)
+- Pulsing vortex rings as constant heartbeat (target feels alive)
+- Ground/wall lines pulse with landing feedback (separate from target heartbeat)
+- Three-layer Graphics split vs per-frame redraw for animated vortex

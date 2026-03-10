@@ -544,3 +544,29 @@
 - Impact rings near the target need to match the target's perspective squash (ellipse, not circle)
 - `setScale(scaleX, scaleY * squashFactor)` makes the ring expand as an ellipse matching the target's visual shape
 - Same principle applies to any effect spawned at a projected position — use the local perspective scale
+
+### Phaser Graphics color system — hex numbers vs CSS strings
+- `fillStyle()`, `lineStyle()` etc. use `number` (0xRRGGBB) — Phaser's native Graphics format
+- `Phaser.GameObjects.Text` config uses `string` ("#RRGGBB") — CSS format
+- Define each color once as a hex number, derive CSS with `css()`: `const css = (hex: number) => '#${hex.toString(16).padStart(6, "0")}'`
+- Eliminates duplicate color definitions and keeps the palette as a single source of truth
+
+### Canvas 2D drawing order
+- Later draws cover earlier ones — no z-index within a single Graphics object
+- Used for the target channel: dark backdrop fills cover grid lines, top ring drawn last to sit on top of everything
+- To layer effects between backdrop and top ring, need either separate Graphics objects or per-frame full redraw
+
+### Phaser fillStyle alpha clamping
+- `fillStyle(color, alpha)` clamps alpha to 0–1. Setting shape alpha > 1 to "boost" relative to object alpha doesn't work
+- To have independent alphas on shapes within one Graphics, set object alpha to 1.0 and control each shape's alpha via fillStyle/lineStyle parameters
+- Used in flight trail: channel dots need higher alpha than body outline, both on same Graphics object
+
+### Ring buffer pattern for trails
+- Fixed-size pool that evicts oldest when at capacity: `while (this.ghosts.length >= maxCount) { shift + destroy }`
+- Like Python's `deque(maxlen=N)` but with manual cleanup (destroy Phaser objects, kill tweens)
+- Capacity can be dynamic (scaled by juice intensity) — just re-check the max each stamp
+
+### Linear vs warped flight progress
+- `DIVE_EXPONENT` warps *where the ball is* at each timestep — slow start, fast finish
+- Ball fade uses un-warped linear progress so it starts fading at a consistent point regardless of dive acceleration
+- `evaluate(t, linearP)` takes both: `t` for position calculation, `linearP` for fade timing

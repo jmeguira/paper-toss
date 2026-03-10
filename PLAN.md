@@ -129,22 +129,25 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 
 **Visual — Shape & Motion**
 - ✅ Scale pop on streak counter (increment) and high score (when beaten)
-- Target ring wobble on NEAR HIT / NEAR MISS — exploring
+- ✅ Target NEAR_MISS color pulse (pink flash, no punch/ring)
+- ✅ Neutral palette unification (off-white for target ring, scores, HUD text at rest)
+- ✅ Score number color flash synced with feedback text timing
 - ✅ Tweened text in feedback zone (eases in, not snaps)
 - ✅ Flight weight: launch bump (1.12x decay) + mass accretion (1.1–1.8x juice-scaled)
 - ✅ Ball radius scales with juice intensity across throws
 
 **Visual — Screen-Level**
 - ✅ Screen shake on NEAR HIT / NEAR MISS / MISS — tiered intensity
-- Wall panel flash on landing (restricted to HUD, not full screen) — exploring
-- Chromatic aberration on NEAR MISS or MISS — glitchy error feel
+- ✅ Theme palette consolidation: single-source color constants with `css()` converter
+- ✅ Glitch effect (chromatic aberration + scan-line fracture) on MISS/NEAR_MISS — juice-scaled
 - ✅ Zoom punch on PERFECT / HIT / NEAR HIT — stepped down per tier
 
 **Visual — Particles & Trails**
 - Particles tiered per landing: PERFECT full burst, HIT good, NEAR HIT kicks some up, MISS ball disintegrates/glitches out
-- Ghost trail: afterimages during flight to show the arc/curve
+- ✅ Ghost trail: squashed afterimage rings with channel dots, juice-scaled intensity/length
 - ✅ Impact rings: expanding ripple from ball landing point + target rim
-- Target channel: ball passes through visual channel on hits, channel responds per tier
+- ✅ Target channel: conical funnel with dark backdrop, bottom exit ring, vortex depth rings, side lines
+- ✅ Ball fade-through: ball dissolves as it passes through target ring (basketball hoop feel)
 - Speed lines — maybe, need to see in practice
 
 **Visual — Color & Light**
@@ -171,7 +174,15 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 - Existing arrow + number display stays
 - Wind indicator relocation — currently lives inside WallPanel, may move to buffer zone or court. Placement TBD
 
+**Next up — Target vortex + living target**
+- Particle vortex inside target channel: small dots spawning at rim, spiraling inward/downward into dark void, shrinking + fading as they descend. Black hole gravity well aesthetic.
+- Pulsing vortex rings: existing depth rings oscillate alpha on a sine wave — constant heartbeat effect. Target feels alive and hungry.
+- Ground/wall pulse on landing: grid lines subtly pulse tier color on feedback (separate from target heartbeat).
+- Requires `Target.update(delta)` per-frame loop. Three-layer Graphics split (backdrop → vortex particles → top ring) or single Graphics with per-frame redraw.
+
 **Parked juice ideas**
+- Target ring wobble on NEAR HIT / NEAR MISS — exploring
+- Wall panel flash on landing — exploring
 - Vignette pulse — revisit if game moves to lives/HP model
 - Ambient sound vs soundtrack — undecided, affects ducking
 - Speed lines — need to see in practice
