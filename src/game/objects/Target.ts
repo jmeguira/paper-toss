@@ -89,9 +89,46 @@ export class Target {
 
   private drawRing(color: number): void {
     this.sprite.clear();
+    const ch = theme.target.channel;
+    const r = TARGET_RADIUS;
+    const endY = r * ch.length / theme.target.squash;
+    const endR = r * ch.spread;
+
+    const chStroke = theme.target.rimWidth * ch.strokeScale;
+    const chAlpha = ch.alphaScale;
+
+    // 1. Bottom exit ring — opaque dark fill, subtler stroke than top ring
+    this.sprite.fillStyle(ch.bgColor, ch.bgAlpha);
+    this.sprite.fillCircle(0, endY, endR);
+    this.sprite.lineStyle(chStroke, color, chAlpha);
+    this.sprite.strokeCircle(0, endY, endR);
+
+    // 2. Opaque backdrop — trapezoid narrowing from rim to bottom.
+    //    Covers the top half of the bottom ring + grid/wall lines.
+    this.sprite.fillStyle(ch.bgColor, ch.bgAlpha);
+    this.sprite.fillTriangle(-r, 0, r, 0, endR, endY);
+    this.sprite.fillTriangle(-r, 0, endR, endY, -endR, endY);
+    this.sprite.fillCircle(0, 0, r);
+
+    // 3. Vortex depth rings — evenly spaced down the channel, fading deeper
+    for (let i = 1; i <= ch.vortexRings; i++) {
+      const t = i / (ch.vortexRings + 1);
+      const ringY = endY * t;
+      const ringR = r + (endR - r) * t;
+      const ringAlpha = ch.vortexAlpha * (1 - t);
+      this.sprite.lineStyle(ch.vortexWidth, color, ringAlpha);
+      this.sprite.strokeCircle(0, ringY, ringR);
+    }
+
+    // 4. Channel side lines — subtler than target rim
+    this.sprite.lineStyle(chStroke, color, chAlpha);
+    this.sprite.lineBetween(-r, 0, -endR, endY);
+    this.sprite.lineBetween(r, 0, endR, endY);
+
+    // 5. Top target ring — drawn last, on top of everything
     this.sprite.fillStyle(color, theme.target.fillAlpha);
-    this.sprite.fillCircle(0, 0, TARGET_RADIUS);
+    this.sprite.fillCircle(0, 0, r);
     this.sprite.lineStyle(theme.target.rimWidth, color, 1);
-    this.sprite.strokeCircle(0, 0, TARGET_RADIUS);
+    this.sprite.strokeCircle(0, 0, r);
   }
 }

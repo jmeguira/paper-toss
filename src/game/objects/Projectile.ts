@@ -31,6 +31,7 @@ export class Projectile {
     this.restY = height * BALL_REST_Y_PCT;
     this.sprite.setPosition(this.restX, this.restY);
     this.sprite.setScale(1);
+    this.sprite.setAlpha(1);
     this.sprite.setVisible(true);
     this.drawBall(streak);
   }

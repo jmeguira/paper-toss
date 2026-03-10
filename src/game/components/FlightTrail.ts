@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { BALL_RADIUS, Depth } from "../constants";
+import { BALL_RADIUS, Depth, juiceIntensity } from "../constants";
 import { theme } from "../theme";
 
 /**
@@ -14,23 +14,34 @@ import { theme } from "../theme";
 export class FlightTrail {
   private scene: Phaser.Scene;
   private ghosts: Phaser.GameObjects.Graphics[] = [];
-  private maxCount: number;
+  private streak = 0;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    this.maxCount = theme.trail.count;
+  }
+
+  /** Set the current streak — controls trail intensity and length. */
+  setStreak(streak: number): void {
+    this.streak = streak;
   }
 
   /** Stamp a ghost at the ball's current screen position and scale. */
   stamp(x: number, y: number, scale: number): void {
+    const ji = juiceIntensity(this.streak);
+    const t = theme.trail;
+
+    // At streak 0, minimal trail — scale alpha and fade with juice
+    const alphaScale = 0.3 + 0.7 * ji;    // 30% at streak 0, 100% at full juice
+    const fadeScale = 0.4 + 0.6 * ji;     // 40% duration at streak 0, 100% at full juice
+    const maxCount = Math.round(t.count * (0.3 + 0.7 * ji));
+
     // Evict oldest if at capacity
-    if (this.ghosts.length >= this.maxCount) {
+    while (this.ghosts.length >= maxCount) {
       const old = this.ghosts.shift()!;
       this.scene.tweens.killTweensOf(old);
       old.destroy();
     }
 
-    const t = theme.trail;
     const r = BALL_RADIUS * t.sizePct;
     const channelR = t.channelDotRadius;
 
@@ -40,21 +51,21 @@ export class FlightTrail {
     gfx.setScale(scale, scale * t.squash);
 
     // Outline only — no fill
-    gfx.lineStyle(t.strokeWidth, t.color, t.alpha);
+    gfx.lineStyle(t.strokeWidth, t.color, t.alpha * alphaScale);
     gfx.strokeCircle(0, 0, r);
 
     // Channel dots at top/bottom poles — brighter
-    gfx.fillStyle(t.color, t.channelAlpha);
+    gfx.fillStyle(t.color, t.channelAlpha * alphaScale);
     gfx.fillCircle(0, -r, channelR);
     gfx.fillCircle(0, r, channelR);
 
     this.ghosts.push(gfx);
 
-    // Fade the entire object — both body and dots scale proportionally
+    // Fade the entire object
     this.scene.tweens.add({
       targets: gfx,
       alpha: 0,
-      duration: t.fadeMs,
+      duration: t.fadeMs * fadeScale,
       ease: "Sine.easeIn",
       onComplete: () => {
         const idx = this.ghosts.indexOf(gfx);

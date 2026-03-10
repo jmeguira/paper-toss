@@ -52,6 +52,17 @@ export interface Theme {
     fillAlpha: number;      // inner fill opacity
     rimWidth: number;
     squash: number;         // Y scale multiplier — <1 = ellipse wider than tall
+    channel: {
+      length: number;       // how far the guide lines extend (in target-radius units)
+      spread: number;       // end width as fraction of rim width (<1 = narrows)
+      bgColor: number;      // opaque backdrop to obscure grid/wall
+      bgAlpha: number;
+      strokeScale: number;  // line/rim width as fraction of target rimWidth
+      alphaScale: number;   // stroke alpha as fraction of target rim alpha (1.0)
+      vortexRings: number;  // number of depth rings inside the channel
+      vortexAlpha: number;  // starting alpha for topmost vortex ring (fades deeper)
+      vortexWidth: number;  // stroke width for vortex rings
+    };
   };
 
   /** Flight trail — afterimage ghosts during flight */
@@ -290,6 +301,17 @@ export const defaultTheme: Theme = {
     fillAlpha: 0.25,
     rimWidth: 30,
     squash: 0.4,
+    channel: {
+      length: 1.2,
+      spread: 0.6,
+      bgColor: VOID,
+      bgAlpha: 1.0,
+      strokeScale: 0.5,
+      alphaScale: 0.4,
+      vortexRings: 5,
+      vortexAlpha: 0.5,
+      vortexWidth: 2,
+    },
   },
 
   trail: {

@@ -33,6 +33,7 @@ export class FlightAnimator {
   private static readonly LAUNCH_BUMP = 1.12;       // brief grow on launch
   private static readonly ACCRETE_BASE = 1.1;       // min landing weight (streak 0)
   private static readonly ACCRETE_CEILING = 1.8;    // max landing weight (full juice)
+  private static readonly FADE_START = 0.92;        // linear progress where ball starts fading (at the target ring)
 
   // The result we're animating — passed through to onComplete
   private result: ShotResult | null = null;
@@ -60,6 +61,7 @@ export class FlightAnimator {
 
     this.elapsed = 0;
     this.flying = true;
+    this.trail.setStreak(streak);
 
     this.projectile.sprite.setVisible(true);
     this.projectile.sprite.setScale(1);
@@ -73,7 +75,7 @@ export class FlightAnimator {
     if (this.elapsed >= this.duration) {
       this.elapsed = this.duration;
       this.flying = false;
-      this.evaluate(this.duration);
+      this.evaluate(this.duration, 1);
       this.onComplete?.(this.result!);
       return;
     }
@@ -82,11 +84,12 @@ export class FlightAnimator {
     // Exponent > 1 = slow start, fast finish (hang then dive).
     const p = this.elapsed / this.duration;
     const warped = Math.pow(p, DIVE_EXPONENT) * this.duration;
-    this.evaluate(warped);
+    this.evaluate(warped, p);
   }
 
-  /** Evaluate the parametric path at time t and project to screen. */
-  private evaluate(t: number): void {
+  /** Evaluate the parametric path at time t and project to screen.
+   *  linearP is the un-warped 0–1 progress for fade timing. */
+  private evaluate(t: number, linearP: number): void {
     const wx = this.wx0 + this.vx0 * t + 0.5 * this.wind * t * t;
     const wyRaw = this.wy0 + this.vy0 * t - 0.5 * FLIGHT_GRAVITY * t * t;
     // Scale only the arc hump, not the endpoints.
@@ -120,6 +123,16 @@ export class FlightAnimator {
     this.projectile.sprite.setPosition(screenX, screenY);
     const finalScale = perspScale * bump * accrete;
     this.projectile.sprite.setScale(finalScale);
+
+    // Ball fades out as it drops into the target — starts at FADE_START, gone by landing
+    const fadeStart = FlightAnimator.FADE_START;
+    if (linearP >= fadeStart) {
+      const fadePct = (linearP - fadeStart) / (1 - fadeStart);
+      this.projectile.sprite.setAlpha(1 - fadePct);
+    } else {
+      this.projectile.sprite.setAlpha(1);
+    }
+
     this.trail.stamp(screenX, screenY, perspScale);
   }
 
