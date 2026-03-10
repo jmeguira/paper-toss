@@ -1,5 +1,6 @@
 import { Projectile } from "../objects/Projectile";
 import { ShotResult } from "./ShotResolver";
+import { FlightTrail } from "../components/FlightTrail";
 import {
   FOCAL_LENGTH,
   LAYOUT,
@@ -35,12 +36,14 @@ export class FlightAnimator {
 
   // The result we're animating — passed through to onComplete
   private result: ShotResult | null = null;
+  private trail: FlightTrail;
 
   public onComplete: ((result: ShotResult) => void) | null = null;
 
   constructor(scene: Phaser.Scene, projectile: Projectile) {
     this.scene = scene;
     this.projectile = projectile;
+    this.trail = new FlightTrail(scene);
   }
 
   play(result: ShotResult, streak = 0): void {
@@ -115,12 +118,15 @@ export class FlightAnimator {
     const accrete = 1 + (landScale - 1) * p_t;
 
     this.projectile.sprite.setPosition(screenX, screenY);
-    this.projectile.sprite.setScale(perspScale * bump * accrete);
+    const finalScale = perspScale * bump * accrete;
+    this.projectile.sprite.setScale(finalScale);
+    this.trail.stamp(screenX, screenY, perspScale);
   }
 
   /** Abort the current flight without firing onComplete. */
   stop(): void {
     this.flying = false;
+    this.trail.clear();
   }
 
   get isFlying(): boolean {
