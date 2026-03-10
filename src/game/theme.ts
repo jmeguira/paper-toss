@@ -124,6 +124,24 @@ export interface Theme {
     };
   };
 
+  /** Glitch effect on miss — chromatic aberration + scan-line fracture */
+  glitch: {
+    durationBase: number;       // total window at low juice (ms)
+    durationCeiling: number;    // total window at full juice (ms)
+    staggerPct: number;         // max slice delay as fraction of duration
+    chromatic: {
+      offsetCeiling: number;    // max horizontal px shift per RGB channel
+      alphaCeiling: number;
+    };
+    slices: {
+      count: number;
+      hMinPct: number;          // min slice height (fraction of screen)
+      hMaxPct: number;          // max slice height
+      offsetCeiling: number;    // max horizontal px shift
+      alphaCeiling: number;
+    };
+  };
+
   /** Camera effects on landing — per-tier ceilings, scaled by juice intensity */
   cameraFx: Record<string, {
     zoomPunch: number;      // 0 = no zoom, >0 = max zoom offset at full juice
@@ -319,6 +337,23 @@ export const defaultTheme: Theme = {
       alphaBase: 0.3,
       alphaCeiling: 0.7,
       durationMs: 400,
+    },
+  },
+
+  glitch: {
+    durationBase: 140,
+    durationCeiling: 260,
+    staggerPct: 0.5,
+    chromatic: {
+      offsetCeiling: 14,
+      alphaCeiling: 0.3,
+    },
+    slices: {
+      count: 12,
+      hMinPct: 0.005,
+      hMaxPct: 0.08,
+      offsetCeiling: 12,
+      alphaCeiling: 0.2,
     },
   },
 

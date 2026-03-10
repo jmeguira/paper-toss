@@ -17,6 +17,7 @@ import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
 import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo, juiceIntensity } from "../constants";
 import { spawnBallImpactRing } from "../components/ImpactRing";
+import { spawnGlitch } from "../components/GlitchFx";
 import { theme } from "../theme";
 import { log } from "../systems/logger";
 
@@ -71,6 +72,9 @@ export class GameScene extends Phaser.Scene {
       }
 
       this.landingCameraFx(result.tier, streak);
+      if (result.tier === "MISS" || result.tier === "NEAR_MISS") {
+        spawnGlitch(this, streak, result.tier === "MISS");
+      }
       spawnBallImpactRing(
         this,
         this.projectile.sprite.x,
