@@ -155,4 +155,3 @@ export const enum Depth {
 export const WALL_PANEL_W_PCT = 0.88; // HUD panel width
 export const DEV_BUTTON_GAP_PCT = 0.02; // gap between ball and dev buttons
 export const OVERLAY_PANEL_W_PCT = 0.8; // settings overlay width
-export const OVERLAY_PANEL_H_PCT = 0.4; // settings overlay height

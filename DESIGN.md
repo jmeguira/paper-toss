@@ -205,6 +205,33 @@ Key distinctions:
 - Everything scales with juice intensity: alpha (30–100%), count, fade duration
 - Per-shape alpha via fillStyle (not object alpha) for independent body/channel dot brightness
 
+### Juice Flags & Dev Panel
+- `juiceFlags` — per-effect runtime boolean toggles, checked at each trigger point with early return
+- `juiceOverride` — when enabled, `juiceIntensity()` returns fixed value instead of computing from streak
+- Dev tab in settings overlay (DEV_MODE only) with categorized toggles and JI slider
+- All 11 effects independently toggleable: wind particles, speed lines, flight trail, flight weight, ball fade, impact rings, target reaction, camera FX, glitch, score pop, feedback text
+
+### Speed Lines
+- Velocity-oriented streaks behind ball during flight (SpeedLines component)
+- Spawned opposite to velocity vector with perpendicular spread
+- Orange color, intensity from screen-space speed × juice intensity
+- Per-line fade, hard cap on active count
+
+### Wind Particles
+- Directional dots showing wind force during flight (WindParticles component)
+- Speed distributed around wind-proportional base (gaussian-ish via Irwin-Hall)
+- Size variation + 12% large particle variants for visual interest
+- Cross-screen alpha fade (bright upwind, dims downwind)
+- Active only during flight, graceful fade-out after, zero cost between throws
+
+### Energy Discharge Concept (planned)
+- **Ball charge:** glow expands and brightens during flight as ball moves through the field
+- **Channel rework:** animated energy structure that pulses as ball approaches
+- **Grid discharge:** on scoring hit, energy flows from landing point along grid lines — lightning-walk paths with heads + trails
+- **Miss dispersion:** unfocused energy burst that dissipates without flowing through grid
+- Near miss = miss behavior (no energy flows through channel)
+- Each energy path has its own head and ghost trail that dissipates over time
+
 ## Open Decisions (for later)
 - Play area aspect ratio (9:16? 9:19.5?)
 - Obstacle design and placement

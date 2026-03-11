@@ -314,3 +314,50 @@ First implementation pass through the juice catalog. All effects scale with a lo
 - Pulsing vortex rings as constant heartbeat (target feels alive)
 - Ground/wall lines pulse with landing feedback (separate from target heartbeat)
 - Three-layer Graphics split vs per-frame redraw for animated vortex
+
+## 2026-03-11
+
+### Speed Lines, Wind Particles, Dev Panel, Ball Simplification
+
+**Speed lines** (SpeedLines component)
+- Velocity-oriented streaks behind ball during flight
+- Spawns lines opposite to velocity vector with perpendicular spread
+- Intensity from screen-space speed × juice intensity, orange color
+- Gated behind `juiceFlags.speedLines`
+
+**Wind particles** (WindParticles component)
+- Directional dots flowing across screen in wind direction during flight
+- Single Graphics per-frame redraw (one draw call, N fills)
+- Gaussian-ish speed distribution, size variation, 12% large particle variants
+- Cross-screen alpha fade (bright upwind, dims downwind)
+- Graceful fade-out after flight ends; zero cost between throws
+- All visual config in `theme.windParticles`, only `WIND_FORCE_MAX` from constants
+
+**Juice flags system** (juiceFlags.ts)
+- `juiceOverride` — toggle + value for testing effects at fixed JI (bypasses streak)
+- `juiceFlags` — per-effect boolean toggles, checked at each effect's trigger point
+- All 11 juice effects wired: wind particles, speed lines, flight trail, flight weight, ball fade, impact rings, target reaction, camera FX, glitch, score pop, feedback text
+
+**Dev panel** (SettingsOverlay rewrite)
+- Separate SETTINGS and DEV tabs (DEV tab only when DEV_MODE)
+- Fixed 70% screen height, GeometryMask scroll with drag/wheel
+- Standardized button widths (85% panel), center-aligned
+- Category headers: General, Particles & Trail, Camera & Screen, HUD & Feedback
+- JI override toggle + slider (25% label, 12px gap, 75% track)
+
+**Ball visual simplification** (Projectile)
+- Stripped 4-layer ball (glow + base + shadow + highlight) back to flat orange circle
+- Removed unused `theme.ball` fields (highlight, shadow, glow, glowAlpha)
+- Clean slate for charge effect work
+
+**Cleanup**
+- Removed unused `OVERLAY_PANEL_H_PCT` constant
+- FlightAnimator update runs every frame (not just during flight) for wind particle fade-out
+- GameScene camera FX gated behind `juiceFlags.cameraFx`
+
+**Design session — energy discharge concept**
+- Ball charges during flight (glow expands), energy discharges through grid on landing
+- Lightning-walk paths from landing point along grid lines, each with head + trail
+- Channel rework: animated energy structure, pulses as ball approaches
+- Miss = unfocused burst (energy dissipates without flowing through grid)
+- Build sequence: ball charge → channel rework → grid discharge → miss dispersion → grid density

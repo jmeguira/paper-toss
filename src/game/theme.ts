@@ -39,11 +39,7 @@ export interface Theme {
 
   /** Projectile (the ball) */
   ball: {
-    base: number;           // flat fill (current), becomes body color in sphere step
-    highlight: number;      // upper-left highlight (sphere step)
-    shadow: number;         // lower-right shadow (sphere step)
-    glow: number;           // soft outer glow
-    glowAlpha: number;
+    base: number;           // flat fill color
   };
 
   /** Target rings */
@@ -327,10 +323,6 @@ export const defaultTheme: Theme = {
 
   ball: {
     base: ORANGE,
-    highlight: 0xffbb77,
-    shadow: 0x994422,
-    glow: ORANGE,
-    glowAlpha: 0.12,
   },
 
   target: {

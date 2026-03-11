@@ -570,3 +570,30 @@
 - `DIVE_EXPONENT` warps *where the ball is* at each timestep — slow start, fast finish
 - Ball fade uses un-warped linear progress so it starts fading at a consistent point regardless of dive acceleration
 - `evaluate(t, linearP)` takes both: `t` for position calculation, `linearP` for fade timing
+
+## Particle Systems & Dev Tooling (Session 9)
+
+### Single Graphics per-frame redraw pattern
+- One `Phaser.GameObjects.Graphics` object redrawn every frame: `clear()` then N `fillCircle()` calls
+- One draw call regardless of particle count — efficient for Canvas renderer
+- Each particle gets its own `fillStyle(color, alpha)` before drawing for independent transparency
+- Used by WindParticles (dots) and SpeedLines (streaks)
+
+### Gaussian-ish random distribution (Irwin-Hall)
+- `(Math.random() + Math.random() - 1) * spread` — sum of 2 uniforms, centered at 0
+- Approximates a bell curve: values cluster near center, extremes are rare
+- Good enough for visual variation without importing a proper normal distribution
+- Python equivalent: roughly `random.triangular(-spread, spread, 0)`
+
+### GeometryMask for scrollable clipping in Phaser
+- Phaser has no built-in scroll container. Solution: draw a mask shape, attach as GeometryMask
+- `scene.make.graphics()` (not `scene.add.graphics()`) — created but not added to display list
+- `container.setMask(new Phaser.Display.Masks.GeometryMask(scene, maskGfx))`
+- Content outside the mask rectangle is clipped. Scroll by moving the container's Y position
+- Must disable interactivity on items scrolled out of view (Phaser still registers hits on masked-out items)
+
+### Convention: theme.ts vs constants.ts
+- `theme.ts` = visual tuning (colors, alphas, radii, speeds that affect look)
+- `constants.ts` = mechanics/physics (forces, angles, radii that affect gameplay)
+- Wind particles: all visual config in theme, only `WIND_FORCE_MAX` in constants (it's used for normalization in gameplay code)
+- When in doubt: "would changing this value change the game's outcome?" Yes → constants. No → theme.

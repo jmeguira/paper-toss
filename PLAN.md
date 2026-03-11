@@ -148,7 +148,8 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 - ✅ Impact rings: expanding ripple from ball landing point + target rim
 - ✅ Target channel: conical funnel with dark backdrop, bottom exit ring, vortex depth rings, side lines
 - ✅ Ball fade-through: ball dissolves as it passes through target ring (basketball hoop feel)
-- Speed lines — maybe, need to see in practice
+- ✅ Speed lines: velocity-oriented streaks behind ball during flight, orange, juice-scaled
+- ✅ Wind particles: directional dots showing wind force during flight, speed/size variation
 
 **Visual — Color & Light**
 - ✅ Color flash/tint: target ring color-codes to tier, matches feedback zone
@@ -174,7 +175,14 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 - Existing arrow + number display stays
 - Wind indicator relocation — currently lives inside WallPanel, may move to buffer zone or court. Placement TBD
 
-**Next up — Target vortex + living target**
+**Next up — Ball charge + energy discharge**
+- Step 2: Ball visual rework + flight charge effect (glow expands/brightens during flight)
+- Step 3: Channel rework (animated energy structure)
+- Step 4: Grid discharge (lightning walk along grid lines on landing)
+- Step 5: Miss dispersion (unfocused energy burst)
+- Step 6: Grid density increase
+
+**Target vortex + living target**
 - Particle vortex inside target channel: small dots spawning at rim, spiraling inward/downward into dark void, shrinking + fading as they descend. Black hole gravity well aesthetic.
 - Pulsing vortex rings: existing depth rings oscillate alpha on a sine wave — constant heartbeat effect. Target feels alive and hungry.
 - Ground/wall pulse on landing: grid lines subtly pulse tier color on feedback (separate from target heartbeat).
@@ -185,7 +193,8 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 - Wall panel flash on landing — exploring
 - Vignette pulse — revisit if game moves to lives/HP model
 - Ambient sound vs soundtrack — undecided, affects ducking
-- Speed lines — need to see in practice
+- ✅ Speed lines — velocity streaks behind ball during flight
+- ✅ Wind particles — directional dots showing wind force
 
 ### Streak-driven difficulty
 - Replace difficulty tiers with progressive ramping based on streak
@@ -195,8 +204,14 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 - One mode, one leaderboard — streak is the identity
 - See DESIGN.md for full decision
 
+### Dev Panel ✅
+- Separate DEV tab in settings overlay (DEV_MODE only)
+- Per-effect juice toggles with categorized headers
+- JI override toggle + slider for testing at fixed intensity
+- Scrollable content with GeometryMask clipping
+
 ### Parked
-- Dev settings panel — live sliders for feel-based tuning
+- Dev settings panel — live sliders for per-value tuning (beyond JI override)
 - Skin system (paper toss easter egg, etc.)
 
 ### v2 parking lot
