@@ -509,3 +509,91 @@
 - Generate sounds in code instead of loading audio files — no asset files, infinitely tunable, tiny footprint.
 - Pitch variation prevents "heard this 400 times" fatigue without needing multiple recordings.
 - Rising pitch on streak: each consecutive hit slightly higher — turns the streak counter into an audible crescendo.
+
+## Juice Implementation (Session 8)
+
+### Logarithmic juice intensity curve
+- `juiceIntensity(streak) = min(1, log(1+streak) / log(1+ceiling))` — all effects scale by this 0–1 value
+- Logarithmic means early streaks ramp fast (0→1 is biggest jump), high streaks plateau
+- Ceiling of 5 means streak 5 is already at full juice — tested from 15, felt too gradual
+- Single multiplier drives everything: scale pops, camera effects, flight weight, impact rings
+
+### Phaser tween chains vs yoyo
+- `tweens.chain({ tweens: [...] })` runs tweens sequentially — each starts when the previous ends
+- Better than `yoyo: true` for asymmetric animations: fast punch (80ms, Quad.easeOut) + slow settle (200ms, Sine.easeInOut)
+- `yoyo` gives symmetric in/out which feels "bouncy" (double overshoot). Chain gives "pop then relax"
+- `tweens.killTweensOf(target)` before starting a new chain prevents stacking if events fire rapidly
+
+### Camera effects — zoom punch and shake
+- `cam.shake(duration, intensity)` — Phaser built-in. Intensity is fraction of screen (0.01 = 1% displacement)
+- Zoom punch via tween on `cam.zoom`: tween to `1 + offset`, yoyo back. Reset in `onComplete` for safety
+- Both are presentation-only — camera effects don't affect game object positions or hit detection
+
+### Graphics redraw pattern
+- Live Graphics objects need `clear()` before redrawing — otherwise shapes accumulate
+- Pattern: `clear() → fillStyle() → fillCircle() → lineStyle() → strokeCircle()`
+- Used for dynamic visuals: streak-scaled ball radius, target color flash on landing
+- Different from sprites which just change properties (tint, scale, position)
+
+### HSL color matching for palette consistency
+- When adding a new color (miss pink) to an existing palette, match the HSL saturation and lightness of existing colors
+- Teal (#44ddcc): H=170° S=69% L=57%. Pink (#DD459B): H=330° S=69% L=57% — same vibrancy, different hue
+- Prevents one color feeling "louder" or "quieter" than others in the same feedback tier
+
+### Scale multiplication for perspective-matched effects
+- Impact rings near the target need to match the target's perspective squash (ellipse, not circle)
+- `setScale(scaleX, scaleY * squashFactor)` makes the ring expand as an ellipse matching the target's visual shape
+- Same principle applies to any effect spawned at a projected position — use the local perspective scale
+
+### Phaser Graphics color system — hex numbers vs CSS strings
+- `fillStyle()`, `lineStyle()` etc. use `number` (0xRRGGBB) — Phaser's native Graphics format
+- `Phaser.GameObjects.Text` config uses `string` ("#RRGGBB") — CSS format
+- Define each color once as a hex number, derive CSS with `css()`: `const css = (hex: number) => '#${hex.toString(16).padStart(6, "0")}'`
+- Eliminates duplicate color definitions and keeps the palette as a single source of truth
+
+### Canvas 2D drawing order
+- Later draws cover earlier ones — no z-index within a single Graphics object
+- Used for the target channel: dark backdrop fills cover grid lines, top ring drawn last to sit on top of everything
+- To layer effects between backdrop and top ring, need either separate Graphics objects or per-frame full redraw
+
+### Phaser fillStyle alpha clamping
+- `fillStyle(color, alpha)` clamps alpha to 0–1. Setting shape alpha > 1 to "boost" relative to object alpha doesn't work
+- To have independent alphas on shapes within one Graphics, set object alpha to 1.0 and control each shape's alpha via fillStyle/lineStyle parameters
+- Used in flight trail: channel dots need higher alpha than body outline, both on same Graphics object
+
+### Ring buffer pattern for trails
+- Fixed-size pool that evicts oldest when at capacity: `while (this.ghosts.length >= maxCount) { shift + destroy }`
+- Like Python's `deque(maxlen=N)` but with manual cleanup (destroy Phaser objects, kill tweens)
+- Capacity can be dynamic (scaled by juice intensity) — just re-check the max each stamp
+
+### Linear vs warped flight progress
+- `DIVE_EXPONENT` warps *where the ball is* at each timestep — slow start, fast finish
+- Ball fade uses un-warped linear progress so it starts fading at a consistent point regardless of dive acceleration
+- `evaluate(t, linearP)` takes both: `t` for position calculation, `linearP` for fade timing
+
+## Particle Systems & Dev Tooling (Session 9)
+
+### Single Graphics per-frame redraw pattern
+- One `Phaser.GameObjects.Graphics` object redrawn every frame: `clear()` then N `fillCircle()` calls
+- One draw call regardless of particle count — efficient for Canvas renderer
+- Each particle gets its own `fillStyle(color, alpha)` before drawing for independent transparency
+- Used by WindParticles (dots) and SpeedLines (streaks)
+
+### Gaussian-ish random distribution (Irwin-Hall)
+- `(Math.random() + Math.random() - 1) * spread` — sum of 2 uniforms, centered at 0
+- Approximates a bell curve: values cluster near center, extremes are rare
+- Good enough for visual variation without importing a proper normal distribution
+- Python equivalent: roughly `random.triangular(-spread, spread, 0)`
+
+### GeometryMask for scrollable clipping in Phaser
+- Phaser has no built-in scroll container. Solution: draw a mask shape, attach as GeometryMask
+- `scene.make.graphics()` (not `scene.add.graphics()`) — created but not added to display list
+- `container.setMask(new Phaser.Display.Masks.GeometryMask(scene, maskGfx))`
+- Content outside the mask rectangle is clipped. Scroll by moving the container's Y position
+- Must disable interactivity on items scrolled out of view (Phaser still registers hits on masked-out items)
+
+### Convention: theme.ts vs constants.ts
+- `theme.ts` = visual tuning (colors, alphas, radii, speeds that affect look)
+- `constants.ts` = mechanics/physics (forces, angles, radii that affect gameplay)
+- Wind particles: all visual config in theme, only `WIND_FORCE_MAX` in constants (it's used for normalization in gameplay code)
+- When in doubt: "would changing this value change the game's outcome?" Yes → constants. No → theme.

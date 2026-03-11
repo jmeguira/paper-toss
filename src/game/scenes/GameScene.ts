@@ -15,8 +15,12 @@ import { DevOverlay } from "../composites/DevOverlay";
 import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
-import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo } from "../constants";
+import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo, juiceIntensity } from "../constants";
+import { spawnBallImpactRing } from "../components/ImpactRing";
+import { spawnGlitch } from "../components/GlitchFx";
+import { theme } from "../theme";
 import { log } from "../systems/logger";
+import { juiceFlags } from "../systems/juiceFlags";
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
@@ -55,21 +59,39 @@ export class GameScene extends Phaser.Scene {
     this.flight = new FlightAnimator(this, this.projectile);
     this.flight.onComplete = (result) => {
       const info = tierInfo(result.tier);
+      const streak = this.panel.getStreak();
+      this.panel.showFeedback(result.tier);
       if (info.scores) {
-        this.panel.hit();
+        this.panel.hit(result.tier);
+        const newStreak = this.panel.getStreak();
+        const isRecord = this.highScores.submit(this.difficulty.id, newStreak);
+        if (isRecord) this.panel.setBest(this.highScores.get(this.difficulty.id), result.tier);
       } else {
-        const isRecord = this.highScores.submit(this.difficulty.id, this.panel.getStreak());
+        const isRecord = this.highScores.submit(this.difficulty.id, streak);
         this.panel.miss();
         if (isRecord) this.panel.setBest(this.highScores.get(this.difficulty.id));
       }
 
+      this.landingCameraFx(result.tier, streak);
+      if (result.tier === "MISS" || result.tier === "NEAR_MISS") {
+        spawnGlitch(this, streak, result.tier === "MISS");
+      }
+      spawnBallImpactRing(
+        this,
+        this.projectile.sprite.x,
+        this.projectile.sprite.y,
+        result.tier,
+        streak,
+        theme.target.squash,
+      );
+      this.target.onLanding(result.tier, streak);
       log(`Landed: dist=${result.distance.toFixed(0)} ${info.label}`);
 
       // Brief pause, then reset with new wind
       this.landingTimer = this.time.delayedCall(LANDING_PAUSE_MS, () => {
         this.throwAngle.hide();
         const { width, height } = this.scale;
-        this.projectile.resetPosition(width, height);
+        this.projectile.resetPosition(width, height, this.panel.getStreak());
         this.wind.generate(this.difficulty.targetZ);
         this.panel.updateWind(this.wind.force, this.wind.maxWind(this.difficulty.targetZ));
         this.devOverlay.update(this.wind.force, this.difficulty.targetZ);
@@ -95,10 +117,8 @@ export class GameScene extends Phaser.Scene {
       this,
       navH,
       hudH,
-      this.difficulty.label,
       this.highScores.get(this.difficulty.id),
     );
-    this.panel.onDifficultyClick = () => this.cycleDifficulty();
 
     // Input systems
     this.swipeInput = new SwipeInput(this, this.projectile, this.throwAngle);
@@ -131,9 +151,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
-    if (this.flight.isFlying) {
-      this.flight.update(delta);
-    } else if (this.activeMode === "mechanical") {
+    // Always update flight — wind particles need to fade out after flight ends
+    this.flight.update(delta);
+
+    if (!this.flight.isFlying && this.activeMode === "mechanical") {
       this.mechInput.update(time, delta);
     }
   }
@@ -159,7 +180,7 @@ export class GameScene extends Phaser.Scene {
 
     this.disableActiveMode();
     this.throwAngle.show(params.angle);
-    this.flight.play(result);
+    this.flight.play(result, this.panel.getStreak());
   }
 
   private enableActiveMode(): void {
@@ -181,7 +202,6 @@ export class GameScene extends Phaser.Scene {
   private cycleDifficulty(): void {
     const idx = DIFFICULTIES.indexOf(this.difficulty);
     this.difficulty = DIFFICULTIES[(idx + 1) % DIFFICULTIES.length];
-    this.panel.setDifficulty(this.difficulty.label);
     this.panel.setBest(this.highScores.get(this.difficulty.id));
     this.target.setDistance(this.difficulty.targetZ);
     this.wind.generate(this.difficulty.targetZ);
@@ -201,6 +221,31 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.devOverlay.hide();
       this.angleBounds.hide();
+    }
+  }
+
+  /** Camera effects on landing — intensity scales with streak */
+  private landingCameraFx(tier: string, streak: number): void {
+    if (!juiceFlags.cameraFx) return;
+    const cam = this.cameras.main;
+    const ji = juiceIntensity(streak);
+
+    const fx = theme.cameraFx[tier];
+    if (!fx) return;
+
+    if (fx.zoomPunch > 0) {
+      this.tweens.add({
+        targets: cam,
+        zoom: 1 + fx.zoomPunch * ji,
+        duration: 80,
+        yoyo: true,
+        ease: "Sine.easeOut",
+        onComplete: () => { cam.zoom = 1; },
+      });
+    }
+
+    if (fx.shakeIntensity > 0) {
+      cam.shake(fx.shakeDuration, fx.shakeIntensity * ji);
     }
   }
 

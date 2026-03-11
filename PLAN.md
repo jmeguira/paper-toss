@@ -125,27 +125,34 @@ Steps 1–9 complete = core MVP with skill-depth. Step 11 = playtest/polish loop
 
 The full feedback layer. Proportional, honest responses — the gap between tiers is what makes the top feel special.
 
+All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, ceiling at 5 streaks.
+
 **Visual — Shape & Motion**
-- Scale pop on streak counter (increment) and high score (when beaten)
-- Target ring wobble on NEAR HIT / NEAR MISS — exploring
-- Tweened text in feedback zone (eases in, not snaps)
-- Anticipation scale: tiny shrink before launch, ball grows during flight for weight
+- ✅ Scale pop on streak counter (increment) and high score (when beaten)
+- ✅ Target NEAR_MISS color pulse (pink flash, no punch/ring)
+- ✅ Neutral palette unification (off-white for target ring, scores, HUD text at rest)
+- ✅ Score number color flash synced with feedback text timing
+- ✅ Tweened text in feedback zone (eases in, not snaps)
+- ✅ Flight weight: launch bump (1.12x decay) + mass accretion (1.1–1.8x juice-scaled)
+- ✅ Ball radius scales with juice intensity across throws
 
 **Visual — Screen-Level**
-- Screen shake on NEAR HIT / NEAR MISS only (ball grazed the ring) — capped intensity
-- Wall panel flash on landing (restricted to HUD, not full screen) — exploring
-- Chromatic aberration on NEAR MISS or MISS — glitchy error feel
-- Zoom punch on PERFECT only
+- ✅ Screen shake on NEAR HIT / NEAR MISS / MISS — tiered intensity
+- ✅ Theme palette consolidation: single-source color constants with `css()` converter
+- ✅ Glitch effect (chromatic aberration + scan-line fracture) on MISS/NEAR_MISS — juice-scaled
+- ✅ Zoom punch on PERFECT / HIT / NEAR HIT — stepped down per tier
 
 **Visual — Particles & Trails**
 - Particles tiered per landing: PERFECT full burst, HIT good, NEAR HIT kicks some up, MISS ball disintegrates/glitches out
-- Ghost trail: afterimages during flight to show the arc/curve
-- Impact rings: expanding ripple from landing point
-- Target channel: ball passes through visual channel on hits, channel responds per tier
-- Speed lines — maybe, need to see in practice
+- ✅ Ghost trail: squashed afterimage rings with channel dots, juice-scaled intensity/length
+- ✅ Impact rings: expanding ripple from ball landing point + target rim
+- ✅ Target channel: conical funnel with dark backdrop, bottom exit ring, vortex depth rings, side lines
+- ✅ Ball fade-through: ball dissolves as it passes through target ring (basketball hoop feel)
+- ✅ Speed lines: velocity-oriented streaks behind ball during flight, orange, juice-scaled
+- ✅ Wind particles: directional dots showing wind force during flight, speed/size variation
 
 **Visual — Color & Light**
-- Color flash/tint: target ring color-codes to tier, matches feedback zone
+- ✅ Color flash/tint: target ring color-codes to tier, matches feedback zone
 - Rim glow: target ring glows on approach/contact — exploring
 - Grid pulse: grid lines subtly pulse tier color on landing
 
@@ -168,10 +175,26 @@ The full feedback layer. Proportional, honest responses — the gap between tier
 - Existing arrow + number display stays
 - Wind indicator relocation — currently lives inside WallPanel, may move to buffer zone or court. Placement TBD
 
+**Next up — Ball charge + energy discharge**
+- Step 2: Ball visual rework + flight charge effect (glow expands/brightens during flight)
+- Step 3: Channel rework (animated energy structure)
+- Step 4: Grid discharge (lightning walk along grid lines on landing)
+- Step 5: Miss dispersion (unfocused energy burst)
+- Step 6: Grid density increase
+
+**Target vortex + living target**
+- Particle vortex inside target channel: small dots spawning at rim, spiraling inward/downward into dark void, shrinking + fading as they descend. Black hole gravity well aesthetic.
+- Pulsing vortex rings: existing depth rings oscillate alpha on a sine wave — constant heartbeat effect. Target feels alive and hungry.
+- Ground/wall pulse on landing: grid lines subtly pulse tier color on feedback (separate from target heartbeat).
+- Requires `Target.update(delta)` per-frame loop. Three-layer Graphics split (backdrop → vortex particles → top ring) or single Graphics with per-frame redraw.
+
 **Parked juice ideas**
+- Target ring wobble on NEAR HIT / NEAR MISS — exploring
+- Wall panel flash on landing — exploring
 - Vignette pulse — revisit if game moves to lives/HP model
 - Ambient sound vs soundtrack — undecided, affects ducking
-- Speed lines — need to see in practice
+- ✅ Speed lines — velocity streaks behind ball during flight
+- ✅ Wind particles — directional dots showing wind force
 
 ### Streak-driven difficulty
 - Replace difficulty tiers with progressive ramping based on streak
@@ -181,8 +204,14 @@ The full feedback layer. Proportional, honest responses — the gap between tier
 - One mode, one leaderboard — streak is the identity
 - See DESIGN.md for full decision
 
+### Dev Panel ✅
+- Separate DEV tab in settings overlay (DEV_MODE only)
+- Per-effect juice toggles with categorized headers
+- JI override toggle + slider for testing at fixed intensity
+- Scrollable content with GeometryMask clipping
+
 ### Parked
-- Dev settings panel — live sliders for feel-based tuning
+- Dev settings panel — live sliders for per-value tuning (beyond JI override)
 - Skin system (paper toss easter egg, etc.)
 
 ### v2 parking lot

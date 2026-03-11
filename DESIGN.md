@@ -159,6 +159,79 @@ Key distinctions:
 - Audio via procedural Web Audio API — PERFECT tone is always identical (crisp, unmistakable), all other tiers get pitch jitter
 - Rising pitch on streak — success tone climbs with consecutive hits
 
+### Juice Intensity System
+- `juiceIntensity(streak)` — logarithmic curve from 0–1, ceiling tunable (currently 5)
+- All visual effects multiply by this value: scale pops, camera effects, flight weight, impact rings
+- Early streaks ramp fast (biggest perceptual jump at 0→1), high streaks plateau
+- Single multiplier drives the entire feel — the game "wakes up" as the player's streak builds
+
+### Feedback Color Palette
+- `theme.juice` defines three semantic colors: `perfect` (gold #ffcc44), `good` (teal #44ddcc), `bad` (pink #DD459B)
+- HSL-matched: all three share similar saturation/lightness for palette cohesion
+- Used by feedback text, impact rings, target color flash — any tier-coded visual
+- Per-tier config in `theme.feedback` and `theme.cameraFx` for independent tuning
+
+### Landing Feedback Architecture
+- **Feedback text:** instant appear (no fade-in), punch scale on PERFECT only, timed hold + fade-out. Per-tier config in `theme.feedback`
+- **Camera effects:** zoom punch for scoring tiers (PERFECT > HIT > NEAR_HIT), screen shake for contact tiers (NEAR_HIT, NEAR_MISS, MISS). Config in `theme.cameraFx`
+- **Target reaction:** color flash synced with feedback hold duration, scale punch (two-stage tween), impact ring from rim. Only fires on NEAR_HIT or better
+- **Ball impact ring:** expanding circle at landing point, separate theme config from target ring
+- **Flight weight:** launch bump (1.12x, decays over 20% of flight) + mass accretion (grows toward landing, juice-scaled). Both cosmetic — multiply with perspective scale
+
+### Theme Palette Architecture
+- Every color defined once as a hex number constant at the top of `theme.ts`
+- `css()` helper derives CSS string format from hex: `const css = (hex: number) => '#${hex.toString(16).padStart(6, "0")}'`
+- Raw palette: GOLD, TEAL, PINK, NEUTRAL, ORANGE, GRID, VOID, DEEP, WIND_C, BLACK, PANEL + CSS-only button/text colors
+- Zero duplicate color values — change one constant, everything updates
+
+### Target Channel
+- 5-layer draw order: bottom exit ring → dark backdrop → vortex depth rings → side lines → top ring
+- Channel narrows toward base (spread: 0.6 of rim width), length extends 1.2 target radii (compensated for squash)
+- Dark void backdrop obscures ground plane and wall grid lines
+- Vortex rings interpolate size and alpha down the channel — conveys depth perspective
+- Ball fades through the target ring like a basketball hoop (starts at 92% flight progress)
+- Channel body effects are subtler than the target ring (lower stroke scale, lower alpha)
+- **Planned:** particle vortex (gravity well aesthetic), pulsing rings (heartbeat), per-frame animation
+
+### Glitch Effect
+- Fires on MISS (full) and NEAR_MISS (50% intensity), nothing at streak 0
+- Chromatic aberration: 3 full-screen RGB rects with horizontal offset
+- Scan-line fracture: staggered full-width slices with random height/position, jittered timing
+- WCAG safe: single flash under 3/second, low alpha (max 0.3), staggering reduces simultaneous coverage
+- Duration scales with juice: 140ms (base) → 260ms (ceiling)
+
+### Flight Trail
+- Ring buffer of squashed afterimage ellipses — stroke-only circles with bright channel dots at poles
+- Everything scales with juice intensity: alpha (30–100%), count, fade duration
+- Per-shape alpha via fillStyle (not object alpha) for independent body/channel dot brightness
+
+### Juice Flags & Dev Panel
+- `juiceFlags` — per-effect runtime boolean toggles, checked at each trigger point with early return
+- `juiceOverride` — when enabled, `juiceIntensity()` returns fixed value instead of computing from streak
+- Dev tab in settings overlay (DEV_MODE only) with categorized toggles and JI slider
+- All 11 effects independently toggleable: wind particles, speed lines, flight trail, flight weight, ball fade, impact rings, target reaction, camera FX, glitch, score pop, feedback text
+
+### Speed Lines
+- Velocity-oriented streaks behind ball during flight (SpeedLines component)
+- Spawned opposite to velocity vector with perpendicular spread
+- Orange color, intensity from screen-space speed × juice intensity
+- Per-line fade, hard cap on active count
+
+### Wind Particles
+- Directional dots showing wind force during flight (WindParticles component)
+- Speed distributed around wind-proportional base (gaussian-ish via Irwin-Hall)
+- Size variation + 12% large particle variants for visual interest
+- Cross-screen alpha fade (bright upwind, dims downwind)
+- Active only during flight, graceful fade-out after, zero cost between throws
+
+### Energy Discharge Concept (planned)
+- **Ball charge:** glow expands and brightens during flight as ball moves through the field
+- **Channel rework:** animated energy structure that pulses as ball approaches
+- **Grid discharge:** on scoring hit, energy flows from landing point along grid lines — lightning-walk paths with heads + trails
+- **Miss dispersion:** unfocused energy burst that dissipates without flowing through grid
+- Near miss = miss behavior (no energy flows through channel)
+- Each energy path has its own head and ghost trail that dissipates over time
+
 ## Open Decisions (for later)
 - Play area aspect ratio (9:16? 9:19.5?)
 - Obstacle design and placement

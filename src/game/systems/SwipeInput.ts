@@ -5,8 +5,6 @@ import { ThrowAngle } from "../components/ThrowAngle";
 import { log } from "./logger";
 import {
   BALL_PICKUP_RADIUS_PCT,
-  BALL_TOUCH_SCALE,
-  BALL_TOUCH_PULSE_MS,
   LAUNCH_ANGLE_MAX,
   SWIPE_MIN_SPEED,
   SWIPE_MAX_SAMPLES,
@@ -29,7 +27,6 @@ export class SwipeInput implements InputMode {
   private trail: TrailPoint[] = [];
   private tracking = false;
   private enabled = false;
-  private pulseTween: Phaser.Tweens.Tween | null = null;
 
   private swipeMode: SwipeModeType = "instant";
   private pendingAngle: number | null = null;
@@ -111,16 +108,6 @@ export class SwipeInput implements InputMode {
     this.trail = [];
     this.addPoint(pointer);
 
-    // Brief pulse feedback — ball does NOT follow finger
-    this.pulseTween?.stop();
-    this.pulseTween = this.scene.tweens.add({
-      targets: this.projectile.sprite,
-      scaleX: BALL_TOUCH_SCALE,
-      scaleY: BALL_TOUCH_SCALE,
-      duration: BALL_TOUCH_PULSE_MS,
-      yoyo: true,
-      ease: "Sine.easeInOut",
-    });
   }
 
   private onPointerMove(pointer: Phaser.Input.Pointer): void {
@@ -137,9 +124,6 @@ export class SwipeInput implements InputMode {
       pts.length >= 2 &&
       pts[pts.length - 1].y < pts[0].y &&
       this.computeSpeed() >= SWIPE_MIN_SPEED;
-
-    this.pulseTween?.stop();
-    this.projectile.sprite.setScale(1);
 
     if (this.swipeMode === "instant") {
       if (!isValidSwipe) return;

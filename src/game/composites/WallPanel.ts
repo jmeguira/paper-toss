@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { Depth, WALL_PANEL_W_PCT } from "../constants";
+import { Depth, LandingTier, WALL_PANEL_W_PCT } from "../constants";
 import { theme, typeScale } from "../theme";
 import { ScoreRow } from "../components/ScoreRow";
 import { WindDisplay } from "../components/WindDisplay";
@@ -19,18 +19,13 @@ const WIND_LABEL_OFFSET = 14;
  */
 export class WallPanel {
   private scoreRow: ScoreRow;
+  private feedbackZone: FeedbackZone;
   private windDisplay: WindDisplay;
-
-  // Delegate callbacks
-  set onDifficultyClick(fn: (() => void) | undefined) {
-    this.scoreRow.onDifficultyClick = fn;
-  }
 
   constructor(
     scene: Phaser.Scene,
     topY: number,
     panelHeight: number,
-    difficultyLabel: string,
     bestScore: number,
   ) {
     const { width, height } = scene.scale;
@@ -71,14 +66,14 @@ export class WallPanel {
     // --- Components ---
     this.scoreRow = new ScoreRow(
       scene, container,
-      innerLeft, centerX, innerRight, innerTop,
-      difficultyLabel, bestScore,
+      innerLeft, innerRight, innerTop,
+      bestScore,
     );
 
     const feedbackTop = innerTop + topRowH + topRowGap;
     const feedbackBottom = windY - windRowGap;
     const feedbackH = Math.max(0, feedbackBottom - feedbackTop);
-    new FeedbackZone(scene, container, innerLeft, feedbackTop, innerW, feedbackH);
+    this.feedbackZone = new FeedbackZone(scene, container, innerLeft, feedbackTop, innerW, feedbackH);
 
     this.windDisplay = new WindDisplay(
       scene, container,
@@ -89,10 +84,10 @@ export class WallPanel {
 
   // --- Public API (delegates to components) ---
 
-  hit(): void { this.scoreRow.hit(); }
+  showFeedback(tier: LandingTier): void { this.feedbackZone.show(tier, this.scoreRow.getStreak()); }
+  hit(tier: LandingTier): void { this.scoreRow.hit(tier); }
   miss(): void { this.scoreRow.miss(); }
   getStreak(): number { return this.scoreRow.getStreak(); }
-  setBest(score: number): void { this.scoreRow.setBest(score); }
-  setDifficulty(label: string): void { this.scoreRow.setDifficulty(label); }
+  setBest(score: number, tier?: LandingTier): void { this.scoreRow.setBest(score, tier); }
   updateWind(force: number, maxWind: number): void { this.windDisplay.update(force, maxWind); }
 }

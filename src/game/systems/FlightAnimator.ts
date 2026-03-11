@@ -1,5 +1,9 @@
 import { Projectile } from "../objects/Projectile";
 import { ShotResult } from "./ShotResolver";
+import { FlightTrail } from "../components/FlightTrail";
+import { SpeedLines } from "../components/SpeedLines";
+import { WindParticles } from "../components/WindParticles";
+import { juiceFlags } from "./juiceFlags";
 import {
   FOCAL_LENGTH,
   LAYOUT,
@@ -7,7 +11,9 @@ import {
   ARC_SCALE,
   DIVE_EXPONENT,
   TARGET_Y,
+  juiceIntensity,
 } from "../constants";
+import { theme } from "../theme";
 
 export class FlightAnimator {
   private scene: Phaser.Scene;
@@ -25,18 +31,26 @@ export class FlightAnimator {
   // Animation state
   private elapsed = 0;
   private flying = false;
+  private streak = 0;
+
 
   // The result we're animating — passed through to onComplete
   private result: ShotResult | null = null;
+  private trail: FlightTrail;
+  private speedLines: SpeedLines;
+  private windParticles: WindParticles;
 
   public onComplete: ((result: ShotResult) => void) | null = null;
 
   constructor(scene: Phaser.Scene, projectile: Projectile) {
     this.scene = scene;
     this.projectile = projectile;
+    this.trail = new FlightTrail(scene);
+    this.speedLines = new SpeedLines(scene);
+    this.windParticles = new WindParticles(scene);
   }
 
-  play(result: ShotResult): void {
+  play(result: ShotResult, streak = 0): void {
     const { wx0, wy0, vx0, vy0, vz, wind, duration } = result.path;
     this.wx0 = wx0;
     this.wy0 = wy0;
@@ -46,15 +60,22 @@ export class FlightAnimator {
     this.wind = wind;
     this.duration = duration;
     this.result = result;
+    this.streak = streak;
 
     this.elapsed = 0;
     this.flying = true;
+    this.trail.setStreak(streak);
+    this.speedLines.setStreak(streak);
+    this.windParticles.start(wind);
 
-    this.projectile.sprite.setScale(1);
     this.projectile.sprite.setVisible(true);
+    this.projectile.sprite.setScale(1);
   }
 
   update(delta: number): void {
+    // Wind particles update even while fading out after flight ends
+    this.windParticles.update(delta);
+
     if (!this.flying) return;
 
     this.elapsed += delta / 1000;
@@ -62,7 +83,8 @@ export class FlightAnimator {
     if (this.elapsed >= this.duration) {
       this.elapsed = this.duration;
       this.flying = false;
-      this.evaluate(this.duration);
+      this.evaluate(this.duration, 1);
+      this.windParticles.stop(); // stop spawning, existing particles drift off
       this.onComplete?.(this.result!);
       return;
     }
@@ -71,11 +93,12 @@ export class FlightAnimator {
     // Exponent > 1 = slow start, fast finish (hang then dive).
     const p = this.elapsed / this.duration;
     const warped = Math.pow(p, DIVE_EXPONENT) * this.duration;
-    this.evaluate(warped);
+    this.evaluate(warped, p);
   }
 
-  /** Evaluate the parametric path at time t and project to screen. */
-  private evaluate(t: number): void {
+  /** Evaluate the parametric path at time t and project to screen.
+   *  linearP is the un-warped 0–1 progress for fade timing. */
+  private evaluate(t: number, linearP: number): void {
     const wx = this.wx0 + this.vx0 * t + 0.5 * this.wind * t * t;
     const wyRaw = this.wy0 + this.vy0 * t - 0.5 * FLIGHT_GRAVITY * t * t;
     // Scale only the arc hump, not the endpoints.
@@ -88,18 +111,55 @@ export class FlightAnimator {
     const { width, height } = this.scene.scale;
     const vanishY = height * LAYOUT.VANISH_Y_PCT;
 
-    const scale = FOCAL_LENGTH / (FOCAL_LENGTH + wz);
-    const screenX = width / 2 + wx * scale;
-    const groundY = vanishY + (height - vanishY) * scale;
-    const screenY = groundY - wy * scale;
+    const perspScale = FOCAL_LENGTH / (FOCAL_LENGTH + wz);
+    const screenX = width / 2 + wx * perspScale;
+    const groundY = vanishY + (height - vanishY) * perspScale;
+    const screenY = groundY - wy * perspScale;
+
+    // Weight curve: launch bump decays out, accretion grows in.
+    // Both multiply on top of perspective scale. Never goes below 1.0.
+    let bump = 1;
+    let accrete = 1;
+
+    if (juiceFlags.flightWeight) {
+      const fw = theme.flightWeight;
+      const ji = juiceIntensity(this.streak);
+
+      // Launch bump: starts at launchBump, decays to 1.0 over first ~20% of flight
+      const bumpDecay = Math.max(0, 1 - p_t * 5); // 1→0 over p_t 0→0.2
+      bump = 1 + (fw.launchBump - 1) * bumpDecay;
+
+      // Accretion: grows from 1.0 toward landing scale over full flight
+      const landScale = fw.accreteBase +
+        (fw.accreteCeiling - fw.accreteBase) * ji;
+      accrete = 1 + (landScale - 1) * p_t;
+    }
 
     this.projectile.sprite.setPosition(screenX, screenY);
-    this.projectile.sprite.setScale(scale);
+    const finalScale = perspScale * bump * accrete;
+    this.projectile.sprite.setScale(finalScale);
+
+    // Ball fades out as it drops into the target — starts at fadeStart, gone by landing
+    if (juiceFlags.ballFade) {
+      const fadeStart = theme.flightWeight.fadeStart;
+      if (linearP >= fadeStart) {
+        const fadePct = (linearP - fadeStart) / (1 - fadeStart);
+        this.projectile.sprite.setAlpha(1 - fadePct);
+      } else {
+        this.projectile.sprite.setAlpha(1);
+      }
+    }
+
+    this.trail.stamp(screenX, screenY, perspScale);
+    this.speedLines.update(screenX, screenY, perspScale);
   }
 
   /** Abort the current flight without firing onComplete. */
   stop(): void {
     this.flying = false;
+    this.trail.clear();
+    this.speedLines.clear();
+    this.windParticles.clear();
   }
 
   get isFlying(): boolean {

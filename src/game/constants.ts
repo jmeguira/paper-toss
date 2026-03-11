@@ -58,8 +58,8 @@ export const TARGET_RADIUS = 260;
 export const LANDING_TIERS = [
   { id: "PERFECT", label: "PERFECT", pct: 0.1, scores: true },
   { id: "HIT", label: "HIT", pct: 0.7, scores: true },
-  { id: "NEAR_HIT", label: "NEAR HIT", pct: 1, scores: true },
-  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.3, scores: false },
+  { id: "NEAR_HIT", label: "HIT", pct: 1, scores: true },
+  { id: "NEAR_MISS", label: "MISS", pct: 1.3, scores: false },
   { id: "MISS", label: "MISS", pct: Infinity, scores: false },
 ] as const;
 export type LandingTier = (typeof LANDING_TIERS)[number]["id"];
@@ -84,20 +84,35 @@ export function tierInfo(tier: LandingTier) {
 })();
 
 export const LANDING_PAUSE_MS = 600;
+
+// ---------------------------------------------------------------------------
+// Juice intensity — logarithmic curve from streak count to 0–1 multiplier.
+// All juice effects scale by this value. Ceiling is tunable.
+// ---------------------------------------------------------------------------
+export const JUICE_STREAK_CEILING = 5;
+
+import { juiceOverride } from "./systems/juiceFlags";
+
+/** Returns 0–1 intensity based on current streak. Logarithmic curve.
+ *  When dev override is enabled, ignores streak and returns the fixed value. */
+export function juiceIntensity(streak: number): number {
+  if (juiceOverride.enabled) return juiceOverride.value;
+  if (streak <= 0) return 0;
+  return Math.min(1, Math.log(1 + streak) / Math.log(1 + JUICE_STREAK_CEILING));
+}
 export const MISS_BUFFER = 150; // clear-miss space beyond near-miss zone, both sides
 
 // ---------------------------------------------------------------------------
 // Wind
 // ---------------------------------------------------------------------------
 export const WIND_MIN = 250;
+export const WIND_FORCE_MAX = 2500; // approx max for normalization
 
 // ---------------------------------------------------------------------------
 // Ball
 // ---------------------------------------------------------------------------
-export const BALL_RADIUS = 50;
+export const BALL_RADIUS = 35;
 export const BALL_PICKUP_RADIUS_PCT = 0.15;
-export const BALL_TOUCH_SCALE = 1.08;
-export const BALL_TOUCH_PULSE_MS = 80;
 
 // ---------------------------------------------------------------------------
 // Input
@@ -139,5 +154,3 @@ export const enum Depth {
 // ---------------------------------------------------------------------------
 export const WALL_PANEL_W_PCT = 0.88; // HUD panel width
 export const DEV_BUTTON_GAP_PCT = 0.02; // gap between ball and dev buttons
-export const OVERLAY_PANEL_W_PCT = 0.8; // settings overlay width
-export const OVERLAY_PANEL_H_PCT = 0.4; // settings overlay height

@@ -1,6 +1,10 @@
 import Phaser from "phaser";
-import { BALL_REST_Y_PCT, BALL_RADIUS, Depth } from "../constants";
+import { BALL_REST_Y_PCT, BALL_RADIUS, Depth, juiceIntensity } from "../constants";
 import { theme } from "../theme";
+
+// Ball radius scales with juice intensity
+const RADIUS_BASE = BALL_RADIUS;
+const RADIUS_GROWTH = 10; // max additional radius at full juice
 
 export class Projectile {
   public sprite: Phaser.GameObjects.Graphics;
@@ -16,18 +20,27 @@ export class Projectile {
     this.restY = height * BALL_REST_Y_PCT;
 
     this.sprite = scene.add.graphics();
-    this.sprite.fillStyle(theme.ball.base);
-    this.sprite.fillCircle(0, 0, BALL_RADIUS);
+    this.drawBall(0);
     this.sprite.setPosition(this.restX, this.restY);
     this.sprite.setDepth(Depth.GAME);
   }
 
   /** Hard reset — no animation, used on resize or mode switch */
-  resetPosition(width: number, height: number): void {
+  resetPosition(width: number, height: number, streak = 0): void {
     this.restX = width / 2;
     this.restY = height * BALL_REST_Y_PCT;
     this.sprite.setPosition(this.restX, this.restY);
     this.sprite.setScale(1);
+    this.sprite.setAlpha(1);
     this.sprite.setVisible(true);
+    this.drawBall(streak);
+  }
+
+  private drawBall(streak: number): void {
+    const r = RADIUS_BASE + RADIUS_GROWTH * juiceIntensity(streak);
+    const g = this.sprite;
+    g.clear();
+    g.fillStyle(theme.ball.base);
+    g.fillCircle(0, 0, r);
   }
 }

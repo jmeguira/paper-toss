@@ -220,3 +220,144 @@
 - Naming consistency: `FORWARD_SPEED` → `FLIGHT_FORWARD_SPEED`, `PROJECTILE_RADIUS` → `BALL_RADIUS`, `PANEL_W_PCT` → `WALL_PANEL_W_PCT`
 - Moved `NAV_PAD_X_PCT` into `LAYOUT` object, `MISS_BUFFER` to target/scoring section
 - Removed vestigial `NavBar.bottom` property (layout derives from `LAYOUT.NAV_PCT`)
+
+## 2026-03-09
+
+### Juice Design Pass — Landing Feedback Layer
+First implementation pass through the juice catalog. All effects scale with a logarithmic juice intensity curve driven by streak count.
+
+**Juice intensity system**
+- `juiceIntensity(streak)` — logarithmic 0–1 curve, ceiling at 5 streaks
+- All visual effects multiply by this value — low streaks get subtle feedback, high streaks get full treatment
+- Centralized in `constants.ts`, used across all juice components
+
+**Tweened landing feedback text** (FeedbackZone)
+- Animated text replaces empty bordered rect placeholder
+- Per-tier color from theme (gold/teal/pink), sized to 85% of zone height
+- NEAR_HIT → "HIT", NEAR_MISS → "MISS" label mapping
+- Punch scale on PERFECT (1.5x, juice-scaled), instant appear + timed fade-out
+
+**Score pop animations** (ScoreRow)
+- Streak and best values get scale-pop tweens on change
+- Two-stage chain: fast punch (Quad.easeOut) + slow settle (Sine.easeInOut)
+- Pop intensity scales with juice intensity
+- Labels uppercased (STREAK:/BEST:), difficulty display removed
+
+**Camera effects** (GameScene)
+- Zoom punch on PERFECT/HIT/NEAR_HIT (stepped down per tier)
+- Screen shake on NEAR_HIT/NEAR_MISS/MISS (intensity varies)
+- All config in `theme.cameraFx` — per-tier ceilings scaled by juice intensity
+
+**Flight weight** (FlightAnimator)
+- Launch bump: 1.12x scale at launch, decays over first 20% of flight
+- Mass accretion: ball grows toward landing (1.1–1.8x, juice-scaled)
+- Ball radius scales with juice intensity across throws (Projectile)
+
+**Impact rings** (ImpactRing component)
+- Ball impact ring: expanding circle at landing point
+- Target impact ring: expanding from rim, perspective-squashed
+- Separate theme configs for ball vs target (independently tunable)
+- `tierColor()` helper shared with Target
+
+**Target landing reaction** (Target)
+- Color flash synced with feedback text hold duration
+- Scale punch (1.05–1.2x, juice-scaled) via two-stage tween chain
+- Spawns target impact ring at rim radius
+
+**Theme additions**
+- `juice` palette: gold/teal/pink in CSS string + hex number formats
+- `feedback` config: per-tier color, punchScale, holdMs, fadeMs
+- `cameraFx` config: per-tier zoom punch, shake intensity/duration
+- `impactRing` config: separate ball and target sub-configs
+
+**Cleanup**
+- Removed touch pulse on swipe pickup (SwipeInput)
+- Removed dead constants (`BALL_TOUCH_SCALE`, `BALL_TOUCH_PULSE_MS`)
+- Removed dead `currentZ` field from Target
+
+**Neutral palette + score flash** (ScoreRow, Target, theme)
+- Unified off-white neutral color (`NEUTRAL = 0xddd8cc`) across target ring resting state, HUD text, score numbers
+- Score numbers flash tier feedback color on scoring, synced with feedback text hold duration
+- Target NEAR_MISS gets color pulse (pink) but no punch or impact ring
+- `theme.juice.neutral`/`neutralHex` added to Theme interface
+
+**Theme palette consolidation** (theme.ts)
+- `css()` helper: define each color once as hex number, derive CSS strings
+- Raw palette constants at top of file: GOLD, TEAL, PINK, NEUTRAL, ORANGE, GRID, VOID, DEEP, etc.
+- All inline hex/CSS values replaced with constant references — zero duplicate color definitions
+
+**Glitch effect** (GlitchFx component)
+- Chromatic aberration: 3 RGB-offset full-screen rects
+- Staggered scan-line fracture: 12 full-width slices with random height/position, jittered timing
+- Fires on MISS (full intensity) and NEAR_MISS (50% intensity)
+- Nothing at streak 0 — scales with juice intensity. Duration 140–260ms
+- All constants in `theme.glitch`
+
+**Flight trail** (FlightTrail component, FlightAnimator)
+- Ring buffer of squashed afterimage ellipses during flight
+- Stroke-only circles with bright channel dots at top/bottom poles
+- Alpha, fade duration, and max count all scale with juice intensity (30–100%)
+- Per-shape alpha via fillStyle for independent body/channel dot brightness
+
+**Target channel** (Target)
+- 5-layer draw: bottom exit ring, opaque dark backdrop (obscures grid/wall), vortex depth rings, channel side lines, top target ring
+- Channel narrows toward base (spread: 0.6), length compensated for squash
+- Vortex rings: 5 concentric circles interpolating down the channel, fading deeper
+
+**Ball fade-through** (FlightAnimator)
+- Ball dissolves as it passes through target ring — starts at 92% linear flight progress
+- Uses un-warped linear progress (not dive-warped time) for consistent fade timing
+- `Projectile.resetPosition()` now restores alpha
+
+**Design discussions parked for next session**
+- Particle vortex inside target channel (gravity well black hole aesthetic)
+- Pulsing vortex rings as constant heartbeat (target feels alive)
+- Ground/wall lines pulse with landing feedback (separate from target heartbeat)
+- Three-layer Graphics split vs per-frame redraw for animated vortex
+
+## 2026-03-11
+
+### Speed Lines, Wind Particles, Dev Panel, Ball Simplification
+
+**Speed lines** (SpeedLines component)
+- Velocity-oriented streaks behind ball during flight
+- Spawns lines opposite to velocity vector with perpendicular spread
+- Intensity from screen-space speed × juice intensity, orange color
+- Gated behind `juiceFlags.speedLines`
+
+**Wind particles** (WindParticles component)
+- Directional dots flowing across screen in wind direction during flight
+- Single Graphics per-frame redraw (one draw call, N fills)
+- Gaussian-ish speed distribution, size variation, 12% large particle variants
+- Cross-screen alpha fade (bright upwind, dims downwind)
+- Graceful fade-out after flight ends; zero cost between throws
+- All visual config in `theme.windParticles`, only `WIND_FORCE_MAX` from constants
+
+**Juice flags system** (juiceFlags.ts)
+- `juiceOverride` — toggle + value for testing effects at fixed JI (bypasses streak)
+- `juiceFlags` — per-effect boolean toggles, checked at each effect's trigger point
+- All 11 juice effects wired: wind particles, speed lines, flight trail, flight weight, ball fade, impact rings, target reaction, camera FX, glitch, score pop, feedback text
+
+**Dev panel** (SettingsOverlay rewrite)
+- Separate SETTINGS and DEV tabs (DEV tab only when DEV_MODE)
+- Fixed 70% screen height, GeometryMask scroll with drag/wheel
+- Standardized button widths (85% panel), center-aligned
+- Category headers: General, Particles & Trail, Camera & Screen, HUD & Feedback
+- JI override toggle + slider (25% label, 12px gap, 75% track)
+
+**Ball visual simplification** (Projectile)
+- Stripped 4-layer ball (glow + base + shadow + highlight) back to flat orange circle
+- Removed unused `theme.ball` fields (highlight, shadow, glow, glowAlpha)
+- Clean slate for charge effect work
+
+**Cleanup**
+- Removed unused `OVERLAY_PANEL_H_PCT` constant
+- FlightAnimator update runs every frame (not just during flight) for wind particle fade-out
+- GameScene camera FX gated behind `juiceFlags.cameraFx`
+
+**Design session — energy discharge concept**
+- Ball charges during flight (glow expands), energy discharges through grid on landing
+- Lightning-walk paths from landing point along grid lines, each with head + trail
+- Channel rework: animated energy structure, pulses as ball approaches
+- Miss = unfocused burst (energy dissipates without flowing through grid)
+- Build sequence: ball charge → channel rework → grid discharge → miss dispersion → grid density
