@@ -20,6 +20,7 @@ import { spawnBallImpactRing } from "../components/ImpactRing";
 import { spawnGlitch } from "../components/GlitchFx";
 import { theme } from "../theme";
 import { log } from "../systems/logger";
+import { juiceFlags } from "../systems/juiceFlags";
 
 export class GameScene extends Phaser.Scene {
   private projectile!: Projectile;
@@ -150,9 +151,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
-    if (this.flight.isFlying) {
-      this.flight.update(delta);
-    } else if (this.activeMode === "mechanical") {
+    // Always update flight — wind particles need to fade out after flight ends
+    this.flight.update(delta);
+
+    if (!this.flight.isFlying && this.activeMode === "mechanical") {
       this.mechInput.update(time, delta);
     }
   }
@@ -224,6 +226,7 @@ export class GameScene extends Phaser.Scene {
 
   /** Camera effects on landing — intensity scales with streak */
   private landingCameraFx(tier: string, streak: number): void {
+    if (!juiceFlags.cameraFx) return;
     const cam = this.cameras.main;
     const ji = juiceIntensity(streak);
 

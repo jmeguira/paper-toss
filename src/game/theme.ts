@@ -65,6 +65,43 @@ export interface Theme {
     };
   };
 
+  /** Speed lines — velocity-oriented streaks behind ball during flight */
+  speedLines: {
+    color: number;
+    alpha: number;          // base alpha at full speed + full juice
+    width: number;          // stroke width
+    minSpeed: number;       // screen-px/frame below which no lines spawn
+    maxSpeed: number;       // speed at which intensity saturates
+    countMin: number;       // lines per frame at minimum
+    countMax: number;       // lines per frame at max speed + juice
+    lengthMin: number;      // line length at low speed (px, before scale)
+    lengthMax: number;      // line length at max speed
+    spreadRadius: number;   // max perpendicular offset from center (px, before scale)
+    spawnBehind: number;    // how far behind the ball lines originate (px, before scale)
+    fadeMs: number;         // per-line fade duration
+    maxActive: number;      // hard cap on live line objects
+  };
+
+  /** Wind particles — visible dots during flight showing wind direction */
+  windParticles: {
+    color: number;
+    speedMin: number;         // screen px/s drift at minimum wind
+    speedMax: number;         // screen px/s drift at maximum wind
+    speedSpread: number;      // ±fraction variation around base speed
+    countMin: number;
+    countMax: number;
+    radiusMin: number;
+    radiusMax: number;
+    alphaMin: number;
+    alphaMax: number;
+    largeChance: number;      // fraction that are chunky variants
+    largeRadiusMult: number;
+    largeAlphaMult: number;
+    spawnMargin: number;      // px past screen edge for spawn/despawn
+    fadeOutSpeed: number;     // 1/s fade rate after flight ends
+    crossFade: number;        // alpha drop across screen (0 = none, 1 = full)
+  };
+
   /** Flight trail — afterimage ghosts during flight */
   trail: {
     color: number;
@@ -314,16 +351,51 @@ export const defaultTheme: Theme = {
     },
   },
 
+  speedLines: {
+    color: ORANGE,
+    alpha: 0.7,
+    width: 2,
+    minSpeed: 2,          // lower threshold — lines appear sooner
+    maxSpeed: 20,         // saturates earlier for more intensity
+    countMin: 2,
+    countMax: 8,
+    lengthMin: 12,
+    lengthMax: 55,
+    spreadRadius: 35,
+    spawnBehind: 12,
+    fadeMs: 220,
+    maxActive: 120,
+  },
+
+  windParticles: {
+    color: GRID,
+    speedMin: 60,
+    speedMax: 280,
+    speedSpread: 0.35,
+    countMin: 60,
+    countMax: 180,
+    radiusMin: 1,
+    radiusMax: 2.5,
+    alphaMin: 0.3,
+    alphaMax: 0.65,
+    largeChance: 0.12,
+    largeRadiusMult: 1.8,
+    largeAlphaMult: 1.3,
+    spawnMargin: 50,
+    fadeOutSpeed: 2.5,
+    crossFade: 0.75,
+  },
+
   trail: {
-    color: TEAL,
-    alpha: 0.08,
-    strokeWidth: 2,
+    color: ORANGE,
+    alpha: 0.1,
+    strokeWidth: 1.5,
     count: 60,
-    sizePct: 1.0,
+    sizePct: 0.55,
     squash: 0.4,
-    fadeMs: 300,
-    channelDotRadius: 8,
-    channelAlpha: 1.0,
+    fadeMs: 250,
+    channelDotRadius: 5,
+    channelAlpha: 0.8,
   },
 
   angleBounds: {

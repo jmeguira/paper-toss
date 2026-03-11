@@ -1,6 +1,9 @@
 import { Projectile } from "../objects/Projectile";
 import { ShotResult } from "./ShotResolver";
 import { FlightTrail } from "../components/FlightTrail";
+import { SpeedLines } from "../components/SpeedLines";
+import { WindParticles } from "../components/WindParticles";
+import { juiceFlags } from "./juiceFlags";
 import {
   FOCAL_LENGTH,
   LAYOUT,
@@ -38,6 +41,8 @@ export class FlightAnimator {
   // The result we're animating — passed through to onComplete
   private result: ShotResult | null = null;
   private trail: FlightTrail;
+  private speedLines: SpeedLines;
+  private windParticles: WindParticles;
 
   public onComplete: ((result: ShotResult) => void) | null = null;
 
@@ -45,6 +50,8 @@ export class FlightAnimator {
     this.scene = scene;
     this.projectile = projectile;
     this.trail = new FlightTrail(scene);
+    this.speedLines = new SpeedLines(scene);
+    this.windParticles = new WindParticles(scene);
   }
 
   play(result: ShotResult, streak = 0): void {
@@ -62,12 +69,17 @@ export class FlightAnimator {
     this.elapsed = 0;
     this.flying = true;
     this.trail.setStreak(streak);
+    this.speedLines.setStreak(streak);
+    this.windParticles.start(wind);
 
     this.projectile.sprite.setVisible(true);
     this.projectile.sprite.setScale(1);
   }
 
   update(delta: number): void {
+    // Wind particles update even while fading out after flight ends
+    this.windParticles.update(delta);
+
     if (!this.flying) return;
 
     this.elapsed += delta / 1000;
@@ -76,6 +88,7 @@ export class FlightAnimator {
       this.elapsed = this.duration;
       this.flying = false;
       this.evaluate(this.duration, 1);
+      this.windParticles.stop(); // stop spawning, existing particles drift off
       this.onComplete?.(this.result!);
       return;
     }
@@ -109,37 +122,47 @@ export class FlightAnimator {
 
     // Weight curve: launch bump decays out, accretion grows in.
     // Both multiply on top of perspective scale. Never goes below 1.0.
-    const ji = juiceIntensity(this.streak);
+    let bump = 1;
+    let accrete = 1;
 
-    // Launch bump: starts at LAUNCH_BUMP, decays to 1.0 over first ~20% of flight
-    const bumpDecay = Math.max(0, 1 - p_t * 5); // 1→0 over p_t 0→0.2
-    const bump = 1 + (FlightAnimator.LAUNCH_BUMP - 1) * bumpDecay;
+    if (juiceFlags.flightWeight) {
+      const ji = juiceIntensity(this.streak);
 
-    // Accretion: grows from 1.0 toward landing scale over full flight
-    const landScale = FlightAnimator.ACCRETE_BASE +
-      (FlightAnimator.ACCRETE_CEILING - FlightAnimator.ACCRETE_BASE) * ji;
-    const accrete = 1 + (landScale - 1) * p_t;
+      // Launch bump: starts at LAUNCH_BUMP, decays to 1.0 over first ~20% of flight
+      const bumpDecay = Math.max(0, 1 - p_t * 5); // 1→0 over p_t 0→0.2
+      bump = 1 + (FlightAnimator.LAUNCH_BUMP - 1) * bumpDecay;
+
+      // Accretion: grows from 1.0 toward landing scale over full flight
+      const landScale = FlightAnimator.ACCRETE_BASE +
+        (FlightAnimator.ACCRETE_CEILING - FlightAnimator.ACCRETE_BASE) * ji;
+      accrete = 1 + (landScale - 1) * p_t;
+    }
 
     this.projectile.sprite.setPosition(screenX, screenY);
     const finalScale = perspScale * bump * accrete;
     this.projectile.sprite.setScale(finalScale);
 
     // Ball fades out as it drops into the target — starts at FADE_START, gone by landing
-    const fadeStart = FlightAnimator.FADE_START;
-    if (linearP >= fadeStart) {
-      const fadePct = (linearP - fadeStart) / (1 - fadeStart);
-      this.projectile.sprite.setAlpha(1 - fadePct);
-    } else {
-      this.projectile.sprite.setAlpha(1);
+    if (juiceFlags.ballFade) {
+      const fadeStart = FlightAnimator.FADE_START;
+      if (linearP >= fadeStart) {
+        const fadePct = (linearP - fadeStart) / (1 - fadeStart);
+        this.projectile.sprite.setAlpha(1 - fadePct);
+      } else {
+        this.projectile.sprite.setAlpha(1);
+      }
     }
 
     this.trail.stamp(screenX, screenY, perspScale);
+    this.speedLines.update(screenX, screenY, perspScale);
   }
 
   /** Abort the current flight without firing onComplete. */
   stop(): void {
     this.flying = false;
     this.trail.clear();
+    this.speedLines.clear();
+    this.windParticles.clear();
   }
 
   get isFlying(): boolean {

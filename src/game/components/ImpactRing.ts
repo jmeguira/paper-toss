@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { LandingTier, Depth, juiceIntensity } from "../constants";
 import { theme } from "../theme";
+import { juiceFlags } from "../systems/juiceFlags";
 
 /** Map landing tier to juice hex color */
 const TIER_COLOR: Record<string, number> = {
@@ -24,6 +25,7 @@ export function spawnBallImpactRing(
   streak: number,
   squashY = 1,
 ): void {
+  if (!juiceFlags.impactRings) return;
   const cfg = theme.impactRing.ball;
   spawnRing(scene, x, y, tier, streak, cfg, squashY, cfg.radius);
 }
@@ -38,6 +40,7 @@ export function spawnTargetImpactRing(
   squashY: number,
   rimRadius: number,
 ): void {
+  if (!juiceFlags.impactRings) return;
   const cfg = theme.impactRing.target;
   spawnRing(scene, x, y, tier, streak, cfg, squashY, rimRadius);
 }

@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { LandingTier, juiceIntensity } from "../constants";
 import { theme, typeScale } from "../theme";
+import { juiceFlags } from "../systems/juiceFlags";
 
 /**
  * Horizontal row: STREAK: n (left) | BEST: n (right).
@@ -55,9 +56,11 @@ export class ScoreRow {
   hit(tier: LandingTier): void {
     this.streak++;
     this.streakValue.setText(`${this.streak}`);
-    const peak = 1 + 0.15 * juiceIntensity(this.streak);
-    this.scalePop(this.streakValue, peak);
-    this.colorFlash(this.streakValue, tier);
+    if (juiceFlags.scorePop) {
+      const peak = 1 + 0.15 * juiceIntensity(this.streak);
+      this.scalePop(this.streakValue, peak);
+      this.colorFlash(this.streakValue, tier);
+    }
   }
 
   miss(): void {
@@ -71,7 +74,7 @@ export class ScoreRow {
 
   setBest(score: number, tier?: LandingTier): void {
     this.bestValue.setText(`${score}`);
-    if (tier) {
+    if (tier && juiceFlags.scorePop) {
       const peak = 1 + 0.2 * juiceIntensity(this.streak);
       this.scalePop(this.bestValue, peak);
       this.colorFlash(this.bestValue, tier);

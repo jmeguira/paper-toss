@@ -38,8 +38,9 @@ export class Projectile {
 
   private drawBall(streak: number): void {
     const r = RADIUS_BASE + RADIUS_GROWTH * juiceIntensity(streak);
-    this.sprite.clear();
-    this.sprite.fillStyle(theme.ball.base);
-    this.sprite.fillCircle(0, 0, r);
+    const g = this.sprite;
+    g.clear();
+    g.fillStyle(theme.ball.base);
+    g.fillCircle(0, 0, r);
   }
 }

@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { FOCAL_LENGTH, LAYOUT, TARGET_RADIUS, TARGET_Y, Depth, LandingTier, juiceIntensity } from "../constants";
 import { theme } from "../theme";
 import { spawnTargetImpactRing, tierColor } from "../components/ImpactRing";
+import { juiceFlags } from "../systems/juiceFlags";
 
 // Target reaction tuning
 const PUNCH_BASE = 1.05;
@@ -39,6 +40,7 @@ export class Target {
   /** React to a landing — color flash always (except MISS), punch + ring on NEAR_HIT or better. */
   onLanding(tier: LandingTier, streak: number): void {
     if (tier === "MISS") return;
+    if (!juiceFlags.targetReaction) return;
 
     const color = tierColor(tier);
 

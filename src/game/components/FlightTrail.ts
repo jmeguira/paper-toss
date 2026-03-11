@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { BALL_RADIUS, Depth, juiceIntensity } from "../constants";
 import { theme } from "../theme";
+import { juiceFlags } from "../systems/juiceFlags";
 
 /**
  * Ring-buffer trail of squashed afterimage ellipses during flight.
@@ -27,6 +28,8 @@ export class FlightTrail {
 
   /** Stamp a ghost at the ball's current screen position and scale. */
   stamp(x: number, y: number, scale: number): void {
+    if (!juiceFlags.flightTrail) return;
+
     const ji = juiceIntensity(this.streak);
     const t = theme.trail;
 

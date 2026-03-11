@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { LandingTier, juiceIntensity } from "../constants";
 import { theme } from "../theme";
+import { juiceFlags } from "../systems/juiceFlags";
 
 /** Display label — collapse near tiers into their parent */
 const FEEDBACK_LABEL: Record<LandingTier, string> = {
@@ -49,6 +50,8 @@ export class FeedbackZone {
   }
 
   show(tier: LandingTier, streak = 0): void {
+    if (!juiceFlags.feedbackText) return;
+
     // Kill any in-progress tweens/text
     if (this.text) {
       this.scene.tweens.killTweensOf(this.text);

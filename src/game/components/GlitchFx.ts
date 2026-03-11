@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { Depth, juiceIntensity } from "../constants";
 import { theme } from "../theme";
+import { juiceFlags } from "../systems/juiceFlags";
 
 /**
  * Glitch effect on miss — chromatic aberration (RGB-offset full-screen rects)
@@ -11,6 +12,7 @@ export function spawnGlitch(
   streak: number,
   strong: boolean,
 ): void {
+  if (!juiceFlags.glitch) return;
   const ji = juiceIntensity(streak);
   if (ji <= 0) return;
 
