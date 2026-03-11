@@ -13,6 +13,7 @@ import {
   TARGET_Y,
   juiceIntensity,
 } from "../constants";
+import { theme } from "../theme";
 
 export class FlightAnimator {
   private scene: Phaser.Scene;
@@ -32,11 +33,6 @@ export class FlightAnimator {
   private flying = false;
   private streak = 0;
 
-  // Flight weight scale — launch bump settles, then mass accretes toward landing
-  private static readonly LAUNCH_BUMP = 1.12;       // brief grow on launch
-  private static readonly ACCRETE_BASE = 1.1;       // min landing weight (streak 0)
-  private static readonly ACCRETE_CEILING = 1.8;    // max landing weight (full juice)
-  private static readonly FADE_START = 0.92;        // linear progress where ball starts fading (at the target ring)
 
   // The result we're animating — passed through to onComplete
   private result: ShotResult | null = null;
@@ -126,15 +122,16 @@ export class FlightAnimator {
     let accrete = 1;
 
     if (juiceFlags.flightWeight) {
+      const fw = theme.flightWeight;
       const ji = juiceIntensity(this.streak);
 
-      // Launch bump: starts at LAUNCH_BUMP, decays to 1.0 over first ~20% of flight
+      // Launch bump: starts at launchBump, decays to 1.0 over first ~20% of flight
       const bumpDecay = Math.max(0, 1 - p_t * 5); // 1→0 over p_t 0→0.2
-      bump = 1 + (FlightAnimator.LAUNCH_BUMP - 1) * bumpDecay;
+      bump = 1 + (fw.launchBump - 1) * bumpDecay;
 
       // Accretion: grows from 1.0 toward landing scale over full flight
-      const landScale = FlightAnimator.ACCRETE_BASE +
-        (FlightAnimator.ACCRETE_CEILING - FlightAnimator.ACCRETE_BASE) * ji;
+      const landScale = fw.accreteBase +
+        (fw.accreteCeiling - fw.accreteBase) * ji;
       accrete = 1 + (landScale - 1) * p_t;
     }
 
@@ -142,9 +139,9 @@ export class FlightAnimator {
     const finalScale = perspScale * bump * accrete;
     this.projectile.sprite.setScale(finalScale);
 
-    // Ball fades out as it drops into the target — starts at FADE_START, gone by landing
+    // Ball fades out as it drops into the target — starts at fadeStart, gone by landing
     if (juiceFlags.ballFade) {
-      const fadeStart = FlightAnimator.FADE_START;
+      const fadeStart = theme.flightWeight.fadeStart;
       if (linearP >= fadeStart) {
         const fadePct = (linearP - fadeStart) / (1 - fadeStart);
         this.projectile.sprite.setAlpha(1 - fadePct);

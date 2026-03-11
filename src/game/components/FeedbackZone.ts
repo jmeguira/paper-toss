@@ -1,16 +1,7 @@
 import Phaser from "phaser";
-import { LandingTier, juiceIntensity } from "../constants";
+import { LandingTier, tierInfo, juiceIntensity } from "../constants";
 import { theme } from "../theme";
 import { juiceFlags } from "../systems/juiceFlags";
-
-/** Display label — collapse near tiers into their parent */
-const FEEDBACK_LABEL: Record<LandingTier, string> = {
-  PERFECT: "PERFECT",
-  HIT: "HIT",
-  NEAR_HIT: "HIT",
-  NEAR_MISS: "MISS",
-  MISS: "MISS",
-};
 
 /**
  * Animated feedback text inside the WallPanel.
@@ -60,7 +51,7 @@ export class FeedbackZone {
     }
 
     const config = theme.feedback[tier];
-    const label = FEEDBACK_LABEL[tier];
+    const label = tierInfo(tier).label;
     const fontSize = Math.round(this.zoneH * 0.85);
 
     this.text = this.scene.add.text(this.centerX, this.centerY, label, {

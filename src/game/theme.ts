@@ -42,6 +42,14 @@ export interface Theme {
     base: number;           // flat fill color
   };
 
+  /** Flight visual effects — weight scaling and fade */
+  flightWeight: {
+    launchBump: number;       // brief scale grow on launch (1.0 = none)
+    accreteBase: number;      // min landing weight at streak 0
+    accreteCeiling: number;   // max landing weight at full juice
+    fadeStart: number;        // linear progress (0–1) where ball starts fading
+  };
+
   /** Target rings */
   target: {
     primary: number;        // ring stroke + fill
@@ -260,6 +268,23 @@ export interface Theme {
       color: string;        // perfect throw button text
       bg: string;
     };
+    settingsPanel: {
+      widthPct: number;       // fraction of screen width
+      heightPct: number;      // fraction of screen height
+      buttonWidthPct: number; // fraction of panel width
+      // Spacing as multipliers of caption font size
+      slotPadMult: number;    // padding added to caption for row slot height
+      tabBarPadMult: number;  // padding added to caption for tab bar height
+      innerPadMult: number;   // panel inner vertical padding
+      headerPadMult: number;  // extra space above category headers
+      tabGapMult: number;     // distance between tab button centers
+      slider: {
+        labelPct: number;     // label width as fraction of button width
+        gapMult: number;      // gap between label and track
+        trackHMult: number;   // track height
+        handleRMult: number;  // handle radius
+      };
+    };
   };
 }
 
@@ -323,6 +348,13 @@ export const defaultTheme: Theme = {
 
   ball: {
     base: ORANGE,
+  },
+
+  flightWeight: {
+    launchBump: 1.12,
+    accreteBase: 1.1,
+    accreteCeiling: 1.8,
+    fadeStart: 0.92,
   },
 
   target: {
@@ -530,6 +562,22 @@ export const defaultTheme: Theme = {
     devButton: {
       color: css(TEAL),
       bg: BTN_MUTED,
+    },
+    settingsPanel: {
+      widthPct: 0.8,
+      heightPct: 0.70,
+      buttonWidthPct: 0.85,
+      slotPadMult: 2.0,
+      tabBarPadMult: 2.55,
+      innerPadMult: 1.45,
+      headerPadMult: 0.9,
+      tabGapMult: 5.45,
+      slider: {
+        labelPct: 0.25,
+        gapMult: 1.1,
+        trackHMult: 0.36,
+        handleRMult: 0.9,
+      },
     },
   },
 };

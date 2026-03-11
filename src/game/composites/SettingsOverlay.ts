@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { InputModeType, SwipeModeType } from "../types";
-import { Depth, DEV_MODE, OVERLAY_PANEL_W_PCT } from "../constants";
+import { Depth, DEV_MODE } from "../constants";
 import { theme, typeScale } from "../theme";
 import { juiceFlags, juiceFlagLabels, juiceOverride } from "../systems/juiceFlags";
 
@@ -11,9 +11,6 @@ const SCROLL_ZONE = Depth.OVERLAY + 2;   // catches scroll drags that miss butto
 const CONTENT = Depth.OVERLAY + 3;        // buttons + headers live here
 const CHROME = Depth.OVERLAY + 4;         // tab bar, close btn (always on top)
 
-const PANEL_H_PCT = 0.70;     // fixed panel height
-const BUTTON_W_PCT = 0.85;    // button width as fraction of panel width
-const HEADER_PAD_TOP = 10;    // extra space above category headers
 
 type Tab = "settings" | "dev";
 
@@ -78,18 +75,19 @@ export class SettingsOverlay {
     this.scene = scene;
     this.currentMode = initialMode;
     const { width, height } = scene.scale;
+    const sp = theme.ui.settingsPanel;
     this.ts = typeScale(height);
+    const cap = this.ts.caption;
     this.cx = width / 2;
-    this.panelW = width * OVERLAY_PANEL_W_PCT;
-    this.panelH = Math.round(height * PANEL_H_PCT);
+    this.panelW = Math.round(width * sp.widthPct);
+    this.panelH = Math.round(height * sp.heightPct);
     this.panelTop = Math.round((height - this.panelH) / 2);
-    this.btnW = Math.round(this.panelW * BUTTON_W_PCT);
-    this.slotH = this.ts.caption + 22;
-    this.headerSlotH = this.slotH + HEADER_PAD_TOP;
+    this.btnW = Math.round(this.panelW * sp.buttonWidthPct);
+    this.slotH = Math.round(cap + cap * sp.slotPadMult);
+    this.headerSlotH = Math.round(this.slotH + cap * sp.headerPadMult);
 
-    // Tab bar height
-    const tabBarH = this.ts.caption + 28;
-    const padY = 16;
+    const tabBarH = Math.round(cap + cap * sp.tabBarPadMult);
+    const padY = Math.round(cap * sp.innerPadMult);
     this.contentTop = this.panelTop + padY + tabBarH;
     this.visibleH = this.panelH - padY - tabBarH - padY;
 
@@ -152,9 +150,9 @@ export class SettingsOverlay {
         .setInteractive({ useHandCursor: true });
       this.devTabBtn.on("pointerdown", () => this.switchTab("dev"));
 
-      const gap = 60;
-      this.settingsTabBtn.setX(this.cx - gap);
-      this.devTabBtn.setX(this.cx + gap);
+      const tabGap = Math.round(this.ts.caption * theme.ui.settingsPanel.tabGapMult);
+      this.settingsTabBtn.setX(this.cx - tabGap);
+      this.devTabBtn.setX(this.cx + tabGap);
     } else {
       this.settingsTabBtn.setX(this.cx);
     }
@@ -405,12 +403,14 @@ export class SettingsOverlay {
   // ---------------------------------------------------------------------------
 
   private buildJiSlider(): Phaser.GameObjects.Container {
+    const sl = theme.ui.settingsPanel.slider;
+    const cap = this.ts.caption;
     const innerW = this.btnW;
-    const labelW = innerW * 0.25;
-    const gap = 12;
+    const labelW = Math.round(innerW * sl.labelPct);
+    const gap = Math.round(cap * sl.gapMult);
     const trackW = innerW - labelW - gap;
-    const trackH = 4;
-    const handleR = 10;
+    const trackH = Math.round(cap * sl.trackHMult);
+    const handleR = Math.round(cap * sl.handleRMult);
     const leftX = -innerW / 2;
 
     const container = this.scene.add.container(this.cx, 0);

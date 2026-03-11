@@ -58,8 +58,8 @@ export const TARGET_RADIUS = 260;
 export const LANDING_TIERS = [
   { id: "PERFECT", label: "PERFECT", pct: 0.1, scores: true },
   { id: "HIT", label: "HIT", pct: 0.7, scores: true },
-  { id: "NEAR_HIT", label: "NEAR HIT", pct: 1, scores: true },
-  { id: "NEAR_MISS", label: "NEAR MISS", pct: 1.3, scores: false },
+  { id: "NEAR_HIT", label: "HIT", pct: 1, scores: true },
+  { id: "NEAR_MISS", label: "MISS", pct: 1.3, scores: false },
   { id: "MISS", label: "MISS", pct: Infinity, scores: false },
 ] as const;
 export type LandingTier = (typeof LANDING_TIERS)[number]["id"];
@@ -154,4 +154,3 @@ export const enum Depth {
 // ---------------------------------------------------------------------------
 export const WALL_PANEL_W_PCT = 0.88; // HUD panel width
 export const DEV_BUTTON_GAP_PCT = 0.02; // gap between ball and dev buttons
-export const OVERLAY_PANEL_W_PCT = 0.8; // settings overlay width
