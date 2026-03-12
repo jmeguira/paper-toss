@@ -46,21 +46,15 @@ export class FlightTrail {
     }
 
     const r = BALL_RADIUS * t.sizePct;
-    const channelR = t.channelDotRadius;
 
     const gfx = this.scene.add.graphics();
     gfx.setDepth(Depth.GAME - 1);
     gfx.setPosition(x, y);
     gfx.setScale(scale, scale * t.squash);
 
-    // Outline only — no fill
-    gfx.lineStyle(t.strokeWidth, t.color, t.alpha * alphaScale);
-    gfx.strokeCircle(0, 0, r);
-
-    // Channel dots at top/bottom poles — brighter
-    gfx.fillStyle(t.color, t.channelAlpha * alphaScale);
-    gfx.fillCircle(0, -r, channelR);
-    gfx.fillCircle(0, r, channelR);
+    // Soft filled afterimage
+    gfx.fillStyle(t.color, t.alpha * alphaScale);
+    gfx.fillCircle(0, 0, r);
 
     this.ghosts.push(gfx);
 
