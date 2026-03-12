@@ -361,3 +361,42 @@ First implementation pass through the juice catalog. All effects scale with a lo
 - Channel rework: animated energy structure, pulses as ball approaches
 - Miss = unfocused burst (energy dissipates without flowing through grid)
 - Build sequence: ball charge → channel rework → grid discharge → miss dispersion → grid density
+
+## 2026-03-12
+
+### Trail Rework + Dev Panel Sliders
+
+**Flight trail visual rework** (FlightTrail, theme)
+- Switched from stroke-only ellipses to filled afterimages — soft glowing circles instead of wire rings
+- Channel dots at top/bottom poles removed (indistinguishable from speed lines)
+- Ghost size 0.55 → 0.8 (closer to ball size, reads as true afterimage)
+- Removed dead theme fields: `strokeWidth`, `channelDotRadius`, `channelAlpha`
+
+**Dev range registry** (devRanges.ts — new)
+- `DevRange` interface: `{ min, max, default, get, set }` — bounds + live get/set closures over theme fields
+- `r()` helper creates closures over a theme object + key — mutates theme values at runtime without changing the Theme interface
+- Trail ranges: Size (0.1–1.5), Alpha (0–0.5), Fade (50–800ms), Squash (0.1–1.0)
+- Speed line ranges: Alpha (0–1), Width (0.5–5), Len Min/Max, Fade, Spread
+- Infinitely extensible — add a range for any theme value with one line
+
+**Dev panel overhaul** (SettingsOverlay rewrite)
+- Collapsible categories: `▸`/`▾` headers toggle visibility, all start collapsed
+- Generic `addSlider` method — reusable for any `DevRange`, same visual style as JI slider
+- JI slider refactored from bespoke code to generic slider with `DevRange`-like get/set
+- Six categories: General, Particles & Trail, Camera & Screen, HUD & Feedback, Trail Tuning, Speed Lines Tuning
+- Flag toggles duplicated in tuning categories (e.g. "Flight Trail: On/Off" in both Particles & Trail and Trail Tuning) — kept in sync via shared `flagBtns` array
+- Scratchpad approach: sliders mutate theme at runtime, values reset on reload. No persistence yet
+
+**Design session — ball charge effect**
+- Glow expands/brightens during flight, juice-scaled. Projectile gets `drawCharged(progress, streak)` per frame
+- FlightAnimator passes `linearP` for steady charge ramp regardless of dive time-warp
+- Theme config: `theme.ball.charge` block (glowColor, glowRadius range, glowAlpha range, rampStart)
+- New `ballCharge` juice flag for independent toggling
+- Interplay: ball fade applies to whole Graphics (glow fades too), flight weight scales sprite (glow scales too)
+- Not built yet — trail differentiation and dev sliders were prerequisite work
+
+**Parked: settings persistence**
+- localStorage for dev/user tuned values that survive reload
+- Needs "Reset to defaults" per category
+- Risk: users can break game via manual localStorage edits
+- Punted — scratchpad approach is sufficient for dev iteration

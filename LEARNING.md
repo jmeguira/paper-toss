@@ -597,3 +597,11 @@
 - `constants.ts` = mechanics/physics (forces, angles, radii that affect gameplay)
 - Wind particles: all visual config in theme, only `WIND_FORCE_MAX` in constants (it's used for normalization in gameplay code)
 - When in doubt: "would changing this value change the game's outcome?" Yes → constants. No → theme.
+
+### Get/set closures for runtime theme mutation (devRanges)
+- `DevRange` wraps a theme field with `get: () => obj[key]`, `set: (v) => { obj[key] = v }`
+- The closure captures the theme sub-object and key string — reads/writes the live value
+- Theme interface stays unchanged; every consumer keeps reading `theme.trail.alpha` as a plain number
+- `(obj as any)` cast lives inside the setter closure only — the rest of the codebase never sees it
+- Python equivalent: like a `property()` descriptor wrapping a dict key, or `operator.attrgetter/attrsetter`
+- Pattern is infinitely extensible: `r(theme.speedLines, "alpha", 0, 1)` = one line per tunable

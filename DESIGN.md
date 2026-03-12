@@ -201,15 +201,19 @@ Key distinctions:
 - Duration scales with juice: 140ms (base) → 260ms (ceiling)
 
 ### Flight Trail
-- Ring buffer of squashed afterimage ellipses — stroke-only circles with bright channel dots at poles
+- Ring buffer of squashed filled afterimage circles — soft glowing discs at 80% of ball radius
 - Everything scales with juice intensity: alpha (30–100%), count, fade duration
-- Per-shape alpha via fillStyle (not object alpha) for independent body/channel dot brightness
+- Channel dots removed (visually indistinguishable from speed lines)
+- Trail = "where the ball was" (positional history, soft fills). Speed lines = "how fast" (velocity indicator, sharp strokes). Shape difference is the primary differentiator; color divergence comes with ball charge effect
 
 ### Juice Flags & Dev Panel
 - `juiceFlags` — per-effect runtime boolean toggles, checked at each trigger point with early return
 - `juiceOverride` — when enabled, `juiceIntensity()` returns fixed value instead of computing from streak
 - Dev tab in settings overlay (DEV_MODE only) with categorized toggles and JI slider
 - All 11 effects independently toggleable: wind particles, speed lines, flight trail, flight weight, ball fade, impact rings, target reaction, camera FX, glitch, score pop, feedback text
+- **Collapsible categories:** `▸`/`▾` header toggles, all start collapsed. Reusable `DevCategory` structure with header + rows + expanded state
+- **Generic slider (`DevRange`):** `{ min, max, default, get, set }` — get/set closures over theme object fields. Theme interface unchanged; consumers keep reading plain numbers. `devRanges.ts` defines ranges, `devRangeLabels` provides display names. Adding a new slider = one `r(obj, key, min, max)` call
+- **Scratchpad approach:** sliders mutate theme values at runtime. Changes are lost on reload. No localStorage persistence yet — avoids users breaking the game via manual edits. Settings persistence is a future TODO with "Reset to defaults" per category
 
 ### Speed Lines
 - Velocity-oriented streaks behind ball during flight (SpeedLines component)
