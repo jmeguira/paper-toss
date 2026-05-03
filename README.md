@@ -6,7 +6,7 @@ A mobile-first projectile throwing game built around a single skill: feel the th
 
 > Best on a touch device or mobile-emulated browser (Chrome DevTools → device toolbar). Desktop mouse works for testing but the gesture is built for thumbs.
 
-> **Note:** the colored arc zones and `P` / `H` / `NH` / `NM` buttons visible in the demo are a dev overlay — a visualization of the landing-tier math and shortcut buttons that fire pre-aimed throws into each tier. They're not part of the intended game UI; they're left on in the deployed build to expose the zone geometry. Toggle off via `DEV_MODE` in `src/game/constants.ts`.
+> **Note:** the colored arc zones and `P` / `H` / `NH` / `NM` buttons visible in the demo are a dev overlay — a visualization of the landing-tier math and shortcut buttons that fire pre-aimed throws into each tier. They're not part of the intended game UI; they're left on in the deployed build to expose the zone geometry. Tap the hamburger (☰) top-right and toggle **Dev Overlay: Off** to hide them.
 
 <!-- TODO: drop a gameplay GIF here once recorded -->
 
