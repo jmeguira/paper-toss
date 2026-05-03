@@ -15,7 +15,7 @@ import { DevOverlay } from "../composites/DevOverlay";
 import { SettingsOverlay } from "../composites/SettingsOverlay";
 import { resolveShot } from "../systems/ShotResolver";
 import { HighScoreStore } from "../systems/HighScoreStore";
-import { LANDING_PAUSE_MS, DIFFICULTIES, Depth, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo, juiceIntensity } from "../constants";
+import { LANDING_PAUSE_MS, DIFFICULTIES, DifficultyId, DEFAULT_DIFFICULTY, BALL_RADIUS, DEV_BUTTON_GAP_PCT, LAYOUT, tierInfo, juiceIntensity } from "../constants";
 import { spawnBallImpactRing } from "../components/ImpactRing";
 import { spawnGlitch } from "../components/GlitchFx";
 import { theme } from "../theme";
