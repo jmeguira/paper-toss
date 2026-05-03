@@ -1,5 +1,7 @@
 # Progress Log
 
+> Build log for Paper Toss — what got done each session, what shifted, what got parked. Appended at PR time per the workflow in `CLAUDE.md`. Reverse-chronological is not enforced; entries are dated and added in order.
+
 ## 2026-03-02
 
 ### Step 1: Scaffold ✅
@@ -361,3 +363,24 @@ First implementation pass through the juice catalog. All effects scale with a lo
 - Channel rework: animated energy structure, pulses as ball approaches
 - Miss = unfocused burst (energy dissipates without flowing through grid)
 - Build sequence: ball charge → channel rework → grid discharge → miss dispersion → grid density
+
+## 2026-05-03
+
+### YC Presentation Pass — Public Repo, GH Pages Deploy, README Rewrite
+
+**GitHub Actions Pages deploy** (`.github/workflows/deploy.yml`)
+- Builds on push to `main` (and manual `workflow_dispatch`), publishes `dist/` via `actions/deploy-pages`
+- Uses Node version from `.nvmrc` with npm cache for faster CI
+- `enablement: true` on `actions/configure-pages` lets the workflow provision Pages itself on first run
+- One snag: initial run failed with "Resource not accessible by integration" — first-time Pages site creation needs higher privilege than `GITHUB_TOKEN` gets, so Pages had to be flipped to "GitHub Actions" source manually in repo settings once. After that, the workflow is fully self-managing.
+
+**Dependency audit cleanup**
+- `npm update` within existing semver ranges cleared all 5 npm audit advisories (2 moderate, 3 high)
+- All 5 were dev/transitive deps — vite dev server CVEs, postcss XSS, transitive globbing libs. None ship to production.
+
+**Repo polish for click-through**
+- README rewritten: leads with live demo link, then how-to-play, "Built with AI" callout linking the workflow docs as artifacts, tech stack, project structure, local dev. Sized to be skimmable in 60 seconds.
+- One-line front-matter headers added to `CLAUDE.md`, `JOURNAL.md`, `LEARNING.md` so a cold reader knows what each file is for.
+- Workflow docs (`CLAUDE.md`, `PLAN.md`, `DESIGN.md`, `JOURNAL.md`, `LEARNING.md`) intentionally kept visible — the AI collaboration is the artifact, not something to hide.
+
+**Live demo:** https://jmeguira.github.io/paper-toss/
