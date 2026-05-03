@@ -19,18 +19,6 @@ A mobile-first projectile throwing game built around a single skill: feel the th
 
 There is no difficulty selector. The only score that matters is your streak — and as it climbs, the game wakes up: feedback effects intensify, the ball gains visual weight, the target reacts harder. Miss, and you start over.
 
-## Built with AI
-
-This repo is an artifact of a long collaboration with Claude (Anthropic). Every design decision, build step, and dead-end is recorded in the markdown files at the root — not as polish, but as the actual working notes from the sessions:
-
-- [`CLAUDE.md`](./CLAUDE.md) — the assistant's persona, workflow rules, and conventions for this project
-- [`PLAN.md`](./PLAN.md) — implementation roadmap, current progress, parked ideas
-- [`DESIGN.md`](./DESIGN.md) — confirmed design decisions and the reasoning behind them
-- [`JOURNAL.md`](./JOURNAL.md) — what was built, when, and what shifted along the way
-- [`LEARNING.md`](./LEARNING.md) — concepts and Q&A from a Python developer learning TypeScript and Phaser in real time
-
-The aesthetic principle running through it: AI handles syntax and scaffolding; the human drives every decision about what to build, why, and when to stop.
-
 ## Tech stack
 
 - **[Phaser 3](https://phaser.io/)** — 2D game framework (Canvas renderer, not WebGL — cleaner anti-aliased curves)
@@ -70,3 +58,7 @@ For mobile-viewport testing, use Chrome DevTools' device toolbar (Cmd+Shift+M) �
 ## Status
 
 MVP complete. Currently in a "v1 ship" pass — visual juice, audio, haptics, and a streak-driven difficulty rework. Power and spin mechanics are parked for v2. See `PLAN.md` for the live progress board.
+
+## Process & docs
+
+Built with AI assistance. Working notes from each session are kept in the repo as artifacts: [`PLAN.md`](./PLAN.md), [`DESIGN.md`](./DESIGN.md), [`JOURNAL.md`](./JOURNAL.md), [`LEARNING.md`](./LEARNING.md), [`CLAUDE.md`](./CLAUDE.md).

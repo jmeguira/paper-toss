@@ -366,7 +366,7 @@ First implementation pass through the juice catalog. All effects scale with a lo
 
 ## 2026-05-03
 
-### YC Presentation Pass — Public Repo, GH Pages Deploy, README Rewrite
+### Public Repo, GH Pages Deploy, README Rewrite
 
 **GitHub Actions Pages deploy** (`.github/workflows/deploy.yml`)
 - Builds on push to `main` (and manual `workflow_dispatch`), publishes `dist/` via `actions/deploy-pages`
@@ -379,8 +379,8 @@ First implementation pass through the juice catalog. All effects scale with a lo
 - All 5 were dev/transitive deps — vite dev server CVEs, postcss XSS, transitive globbing libs. None ship to production.
 
 **Repo polish for click-through**
-- README rewritten: leads with live demo link, then how-to-play, "Built with AI" callout linking the workflow docs as artifacts, tech stack, project structure, local dev. Sized to be skimmable in 60 seconds.
+- README rewritten: leads with live demo link, how-to-play, tech stack, project structure, local dev. Workflow docs linked at the bottom under "Process & docs" — visible but not the headline.
 - One-line front-matter headers added to `CLAUDE.md`, `JOURNAL.md`, `LEARNING.md` so a cold reader knows what each file is for.
-- Workflow docs (`CLAUDE.md`, `PLAN.md`, `DESIGN.md`, `JOURNAL.md`, `LEARNING.md`) intentionally kept visible — the AI collaboration is the artifact, not something to hide.
+- Earlier draft put a full "Built with AI" section near the top with five doc bullets and a closing aphorism — pulled back on second read; the README now leads with the game, the process is a footnote.
 
 **Live demo:** https://jmeguira.github.io/paper-toss/
