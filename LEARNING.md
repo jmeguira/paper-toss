@@ -1,5 +1,7 @@
 # Learning Notes
 
+> Concepts, questions, and resolutions from the build process — written from the perspective of a Python developer learning TypeScript, Phaser, and the JS/Vite toolchain in real time. Useful as a window into how decisions were reasoned through, not as a tutorial.
+
 ## Project Tooling
 
 ### package.json

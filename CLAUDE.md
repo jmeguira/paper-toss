@@ -1,5 +1,7 @@
 # Project Instructions
 
+> Persona, workflow rules, and conventions loaded by Claude Code at the start of every session. This is the instruction file that drives the AI assistant on this project — what to read on boot, how to work with the user, how the git/PR workflow runs.
+
 ## Session Boot
 On startup, read these files to establish context:
 - `PLAN.md` — full file (it's the roadmap, stays compact)
