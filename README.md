@@ -8,7 +8,7 @@ A mobile-first projectile throwing game built around a single skill: feel the th
 
 > **Note:** the colored arc zones and `P` / `H` / `NH` / `NM` buttons visible in the demo are a dev overlay — a visualization of the landing-tier math and shortcut buttons that fire pre-aimed throws into each tier. They're not part of the intended game UI; they're left on in the deployed build to expose the zone geometry. Tap the hamburger (☰) top-right and toggle **Dev Overlay: Off** to hide them.
 
-<!-- TODO: drop a gameplay GIF here once recorded -->
+![demo](https://github.com/user-attachments/assets/d3c5f28e-4dae-4bc1-96f9-91634a232f7c)
 
 ## How it plays
 
