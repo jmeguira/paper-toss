@@ -75,6 +75,7 @@ export class SettingsOverlay {
 
   // Mask for content clipping
   private maskGfx!: Phaser.GameObjects.Graphics;
+  private _mask?: Phaser.Display.Masks.GeometryMask;
 
   onModeChange: ((mode: InputModeType) => void) | null = null;
   onSwipeModeChange: ((mode: SwipeModeType) => void) | null = null;
@@ -184,7 +185,7 @@ export class SettingsOverlay {
     this.settingsContainer?.setMask(mask);
     this.devContainer?.setMask(mask);
     // Store for later application
-    (this as any)._mask = mask;
+    this._mask = mask;
   }
 
   // ---------------------------------------------------------------------------
@@ -243,7 +244,7 @@ export class SettingsOverlay {
 
   private updateRowsInteractivity(rows: Row[]): void {
     for (const row of rows) {
-      const worldY = (row.obj as any).y - this.scrollY;
+      const worldY = row.obj.y - this.scrollY;
       const visible = worldY > -row.height && worldY < this.visibleH + row.height;
       if (row.obj instanceof Phaser.GameObjects.Text) {
         row.obj.setActive(visible);
@@ -262,7 +263,7 @@ export class SettingsOverlay {
 
   private buildSettingsTab(): void {
     const c = this.settingsContainer;
-    c.setMask((this as any)._mask);
+    if (this._mask) c.setMask(this._mask);
 
     this.addHeader(c, this.settingsRows, "Input");
     const modeBtn = this.addToggle(c, this.settingsRows, this.modeLabel());
@@ -306,7 +307,7 @@ export class SettingsOverlay {
 
   private buildDevTab(): void {
     const c = this.devContainer;
-    c.setMask((this as any)._mask);
+    if (this._mask) c.setMask(this._mask);
 
     // --- General ---
     this.startCategory(c, "General");

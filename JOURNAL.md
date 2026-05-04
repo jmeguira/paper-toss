@@ -1,5 +1,7 @@
 # Progress Log
 
+> Build log for Paper Toss — what got done each session, what shifted, what got parked. Appended at PR time per the workflow in `CLAUDE.md`. Reverse-chronological is not enforced; entries are dated and added in order.
+
 ## 2026-03-02
 
 ### Step 1: Scaffold ✅
@@ -400,3 +402,24 @@ First implementation pass through the juice catalog. All effects scale with a lo
 - Needs "Reset to defaults" per category
 - Risk: users can break game via manual localStorage edits
 - Punted — scratchpad approach is sufficient for dev iteration
+
+## 2026-05-03
+
+### Public Repo, GH Pages Deploy, README Rewrite
+
+**GitHub Actions Pages deploy** (`.github/workflows/deploy.yml`)
+- Builds on push to `main` (and manual `workflow_dispatch`), publishes `dist/` via `actions/deploy-pages`
+- Uses Node version from `.nvmrc` with npm cache for faster CI
+- `enablement: true` on `actions/configure-pages` lets the workflow provision Pages itself on first run
+- One snag: initial run failed with "Resource not accessible by integration" — first-time Pages site creation needs higher privilege than `GITHUB_TOKEN` gets, so Pages had to be flipped to "GitHub Actions" source manually in repo settings once. After that, the workflow is fully self-managing.
+
+**Dependency audit cleanup**
+- `npm update` within existing semver ranges cleared all 5 npm audit advisories (2 moderate, 3 high)
+- All 5 were dev/transitive deps — vite dev server CVEs, postcss XSS, transitive globbing libs. None ship to production.
+
+**Repo polish for click-through**
+- README rewritten: leads with live demo link, how-to-play, tech stack, project structure, local dev. Workflow docs linked at the bottom under "Process & docs" — visible but not the headline.
+- One-line front-matter headers added to `CLAUDE.md`, `JOURNAL.md`, `LEARNING.md` so a cold reader knows what each file is for.
+- Earlier draft put a full "Built with AI" section near the top with five doc bullets and a closing aphorism — pulled back on second read; the README now leads with the game, the process is a footnote.
+
+**Live demo:** https://jmeguira.github.io/paper-toss/

@@ -8,12 +8,12 @@ export interface DevRange {
   set: (v: number) => void;
 }
 
-function r(obj: Record<string, any>, key: string, min: number, max: number): DevRange {
+function r(obj: Record<string, number>, key: string, min: number, max: number): DevRange {
   return {
     min,
     max,
-    default: obj[key] as number,
-    get: () => obj[key] as number,
+    default: obj[key],
+    get: () => obj[key],
     set: (v: number) => { obj[key] = v; },
   };
 }
