@@ -3,6 +3,7 @@ import { InputModeType, SwipeModeType } from "../types";
 import { Depth, DEV_MODE } from "../constants";
 import { theme, typeScale } from "../theme";
 import { juiceFlags, juiceFlagLabels, juiceOverride } from "../systems/juiceFlags";
+import { devRanges, devRangeLabels, type DevRange } from "../systems/devRanges";
 
 // Sub-layers within the OVERLAY tier
 const BG = Depth.OVERLAY;
@@ -17,7 +18,16 @@ type Tab = "settings" | "dev";
 /** A positioned row inside a scroll container — text, button, or slider. */
 interface Row {
   obj: Phaser.GameObjects.Text | Phaser.GameObjects.Container;
-  height: number;   // slot height for this row
+  height: number;
+}
+
+/** A collapsible group of rows in the dev tab. */
+interface DevCategory {
+  header: Phaser.GameObjects.Text;
+  headerHeight: number;
+  label: string;
+  rows: Row[];
+  expanded: boolean;
 }
 
 export class SettingsOverlay {
@@ -29,11 +39,15 @@ export class SettingsOverlay {
   private devTabBtn: Phaser.GameObjects.Text | null = null;
   private activeTab: Tab = "settings";
 
-  // Per-tab scroll containers + rows
+  // Settings tab — flat rows
   private settingsContainer!: Phaser.GameObjects.Container;
-  private devContainer!: Phaser.GameObjects.Container;
   private settingsRows: Row[] = [];
-  private devRows: Row[] = [];
+
+  // Dev tab — category-based
+  private devContainer!: Phaser.GameObjects.Container;
+  private devCategories: DevCategory[] = [];
+  private currentCategory: DevCategory | null = null;
+
   private scrollZone!: Phaser.GameObjects.Rectangle;
 
   // Scroll state
@@ -46,11 +60,7 @@ export class SettingsOverlay {
   private currentSwipeMode: SwipeModeType = "instant";
   private devEnabled = true;
   private flagBtns: { key: keyof typeof juiceFlags; btn: Phaser.GameObjects.Text }[] = [];
-  private jiSliderLabel!: Phaser.GameObjects.Text;
-  private jiSliderHandle!: Phaser.GameObjects.Graphics;
-  private jiSliderTrackX = 0;
-  private jiSliderTrackW = 0;
-  private jiSliderContainer!: Phaser.GameObjects.Container;
+  private jiSliderContainer: Phaser.GameObjects.Container | null = null;
 
   // Layout cache
   private cx: number;
@@ -220,9 +230,19 @@ export class SettingsOverlay {
     this.updateInteractivity();
   }
 
-  /** Disable input on rows scrolled out of the visible area. */
   private updateInteractivity(): void {
-    const rows = this.activeTab === "settings" ? this.settingsRows : this.devRows;
+    if (this.activeTab === "settings") {
+      this.updateRowsInteractivity(this.settingsRows);
+    } else {
+      for (const cat of this.devCategories) {
+        if (cat.expanded) {
+          this.updateRowsInteractivity(cat.rows);
+        }
+      }
+    }
+  }
+
+  private updateRowsInteractivity(rows: Row[]): void {
     for (const row of rows) {
       const worldY = row.obj.y - this.scrollY;
       const visible = worldY > -row.height && worldY < this.visibleH + row.height;
@@ -230,7 +250,6 @@ export class SettingsOverlay {
         row.obj.setActive(visible);
       } else if (row.obj instanceof Phaser.GameObjects.Container) {
         row.obj.setActive(visible);
-        // Also toggle children interactivity
         row.obj.iterate((child: Phaser.GameObjects.GameObject) => {
           child.setActive(visible);
         });
@@ -283,7 +302,7 @@ export class SettingsOverlay {
   }
 
   // ---------------------------------------------------------------------------
-  // Dev tab
+  // Dev tab — collapsible categories
   // ---------------------------------------------------------------------------
 
   private buildDevTab(): void {
@@ -291,51 +310,236 @@ export class SettingsOverlay {
     if (this._mask) c.setMask(this._mask);
 
     // --- General ---
-    this.addHeader(c, this.devRows, "General");
+    this.startCategory(c, "General");
 
-    const devBtn = this.addToggle(c, this.devRows, this.devLabel());
+    const devBtn = this.addToggle(c, this.currentCategory!.rows, this.devLabel());
     devBtn.on("pointerdown", () => {
       this.devEnabled = !this.devEnabled;
       devBtn.setText(this.devLabel());
       this.onDevToggle?.(this.devEnabled);
     });
 
-    const jiBtn = this.addToggle(c, this.devRows, this.jiOverrideLabel());
+    const jiBtn = this.addToggle(c, this.currentCategory!.rows, this.jiOverrideLabel());
     jiBtn.on("pointerdown", () => {
       juiceOverride.enabled = !juiceOverride.enabled;
       jiBtn.setText(this.jiOverrideLabel());
-      this.updateSliderVisuals();
+      this.jiSliderContainer?.setAlpha(juiceOverride.enabled ? 1 : 0.35);
     });
 
-    this.jiSliderContainer = this.buildJiSlider();
-    c.add(this.jiSliderContainer);
-    this.devRows.push({ obj: this.jiSliderContainer, height: this.slotH });
+    this.jiSliderContainer = this.addSlider(c, "JI", {
+      min: 0, max: 1, default: 1.0,
+      get: () => juiceOverride.value,
+      set: (v) => { juiceOverride.value = v; },
+    });
 
     // --- Particles & Trail ---
-    this.addHeader(c, this.devRows, "Particles & Trail");
-    this.addFlagToggle(c, "windParticles");
-    this.addFlagToggle(c, "speedLines");
-    this.addFlagToggle(c, "flightTrail");
-    this.addFlagToggle(c, "impactRings");
+    this.startCategory(c, "Particles & Trail");
+    this.addCatFlagToggle(c, "windParticles");
+    this.addCatFlagToggle(c, "speedLines");
+    this.addCatFlagToggle(c, "flightTrail");
+    this.addCatFlagToggle(c, "impactRings");
 
     // --- Camera & Screen ---
-    this.addHeader(c, this.devRows, "Camera & Screen");
-    this.addFlagToggle(c, "cameraFx");
-    this.addFlagToggle(c, "glitch");
-    this.addFlagToggle(c, "flightWeight");
-    this.addFlagToggle(c, "ballFade");
+    this.startCategory(c, "Camera & Screen");
+    this.addCatFlagToggle(c, "cameraFx");
+    this.addCatFlagToggle(c, "glitch");
+    this.addCatFlagToggle(c, "flightWeight");
+    this.addCatFlagToggle(c, "ballFade");
 
     // --- HUD & Feedback ---
-    this.addHeader(c, this.devRows, "HUD & Feedback");
-    this.addFlagToggle(c, "scorePop");
-    this.addFlagToggle(c, "feedbackText");
-    this.addFlagToggle(c, "targetReaction");
+    this.startCategory(c, "HUD & Feedback");
+    this.addCatFlagToggle(c, "scorePop");
+    this.addCatFlagToggle(c, "feedbackText");
+    this.addCatFlagToggle(c, "targetReaction");
 
-    this.layoutRows(this.devRows);
+    // --- Trail Tuning (sliders) ---
+    this.startCategory(c, "Trail Tuning");
+    this.addCatFlagToggle(c, "flightTrail");
+    this.addRangeSliders(c, "trail");
+
+    // --- Speed Lines Tuning (sliders) ---
+    this.startCategory(c, "Speed Lines Tuning");
+    this.addCatFlagToggle(c, "speedLines");
+    this.addRangeSliders(c, "speedLines");
+
+    this.layoutDevContent();
   }
 
   // ---------------------------------------------------------------------------
-  // Row builders
+  // Category management
+  // ---------------------------------------------------------------------------
+
+  private startCategory(container: Phaser.GameObjects.Container, label: string): void {
+    const leftX = this.cx - this.btnW / 2;
+    const header = this.scene.add
+      .text(leftX, 0, `▸ ${label}`, {
+        fontFamily: theme.ui.fontFamily,
+        fontSize: `${this.ts.caption}px`,
+        color: theme.ui.text.dim,
+      })
+      .setOrigin(0, 0.5).setDepth(CONTENT)
+      .setInteractive({ useHandCursor: true });
+
+    const cat: DevCategory = {
+      header,
+      headerHeight: this.headerSlotH,
+      label,
+      rows: [],
+      expanded: false,
+    };
+
+    header.on("pointerdown", () => this.toggleCategory(cat));
+    container.add(header);
+    this.devCategories.push(cat);
+    this.currentCategory = cat;
+  }
+
+  private toggleCategory(cat: DevCategory): void {
+    cat.expanded = !cat.expanded;
+    cat.header.setText(`${cat.expanded ? "▾" : "▸"} ${cat.label}`);
+    this.layoutDevContent();
+  }
+
+  private addCatFlagToggle(
+    container: Phaser.GameObjects.Container,
+    key: keyof typeof juiceFlags,
+  ): void {
+    const btn = this.addToggle(container, this.currentCategory!.rows, this.flagLabel(key));
+    btn.on("pointerdown", () => {
+      juiceFlags[key] = !juiceFlags[key];
+      // Sync all buttons for this flag (may appear in multiple categories)
+      for (const fb of this.flagBtns) {
+        if (fb.key === key) fb.btn.setText(this.flagLabel(key));
+      }
+    });
+    this.flagBtns.push({ key, btn });
+  }
+
+  private addRangeSliders(container: Phaser.GameObjects.Container, group: string): void {
+    const ranges = devRanges[group];
+    const labels = devRangeLabels[group];
+    for (const key of Object.keys(ranges)) {
+      this.addSlider(container, labels[key], ranges[key]);
+    }
+  }
+
+  /** Position all dev rows based on category expand/collapse state. */
+  private layoutDevContent(): void {
+    let y = 0;
+    for (const cat of this.devCategories) {
+      // Header — always visible
+      y += cat.headerHeight / 2;
+      cat.header.setY(this.contentTop + y);
+      cat.header.setVisible(true);
+      y += cat.headerHeight / 2;
+
+      // Content rows — only if expanded
+      for (const row of cat.rows) {
+        if (cat.expanded) {
+          y += row.height / 2;
+          row.obj.setY(this.contentTop + y);
+          y += row.height / 2;
+          row.obj.setVisible(true);
+        } else {
+          row.obj.setVisible(false);
+          if (row.obj instanceof Phaser.GameObjects.Text) {
+            row.obj.setActive(false);
+          } else if (row.obj instanceof Phaser.GameObjects.Container) {
+            row.obj.setActive(false);
+            row.obj.iterate((child: Phaser.GameObjects.GameObject) => child.setActive(false));
+          }
+        }
+      }
+    }
+
+    this.maxScroll = Math.max(0, y - this.visibleH);
+    this.setScroll(Math.min(this.scrollY, this.maxScroll));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Generic slider — reusable for any DevRange
+  // ---------------------------------------------------------------------------
+
+  private addSlider(
+    container: Phaser.GameObjects.Container,
+    name: string,
+    range: DevRange,
+  ): Phaser.GameObjects.Container {
+    const sl = theme.ui.settingsPanel.slider;
+    const cap = this.ts.caption;
+    const innerW = this.btnW;
+    const labelW = Math.round(innerW * sl.labelPct);
+    const gap = Math.round(cap * sl.gapMult);
+    const trackW = innerW - labelW - gap;
+    const trackH = Math.round(cap * sl.trackHMult);
+    const handleR = Math.round(cap * sl.handleRMult);
+    const leftX = -innerW / 2;
+
+    const sc = this.scene.add.container(this.cx, 0).setDepth(CONTENT);
+
+    // Value label (left portion)
+    const label = this.scene.add
+      .text(leftX, 0, `${name} ${this.fmtValue(range.get(), range)}`, {
+        fontFamily: theme.ui.fontFamily,
+        fontSize: `${this.ts.caption}px`,
+        color: theme.ui.text.primary,
+      })
+      .setOrigin(0, 0.5);
+    sc.add(label);
+
+    // Track (right portion)
+    const trackX = leftX + labelW + gap;
+
+    const track = this.scene.add.graphics();
+    track.fillStyle(theme.ui.panel.bg, 1);
+    track.lineStyle(1, theme.juice.neutralHex, 0.3);
+    track.fillRoundedRect(trackX, -trackH / 2, trackW, trackH, 2);
+    track.strokeRoundedRect(trackX, -trackH / 2, trackW, trackH, 2);
+    sc.add(track);
+
+    // Handle — positioned from current value
+    const valuePct = (range.get() - range.min) / (range.max - range.min);
+    const handle = this.scene.add.graphics();
+    handle.fillStyle(theme.juice.goodHex, 1);
+    handle.fillCircle(0, 0, handleR);
+    handle.setPosition(trackX + valuePct * trackW, 0);
+    sc.add(handle);
+
+    // Update helper — maps X position to value, updates handle + label
+    const setFromX = (x: number) => {
+      const clamped = Phaser.Math.Clamp(x, trackX, trackX + trackW);
+      handle.setX(clamped);
+      const pct = (clamped - trackX) / trackW;
+      const val = range.min + pct * (range.max - range.min);
+      range.set(val);
+      label.setText(`${name} ${this.fmtValue(val, range)}`);
+    };
+
+    // Hit zone for drag + tap
+    const hitZone = this.scene.add
+      .rectangle(trackX + trackW / 2, 0, trackW + handleR * 2, handleR * 4, 0x000000, 0)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true, draggable: true });
+    sc.add(hitZone);
+    this.scene.input.setDraggable(hitZone);
+
+    hitZone.on("drag", (_pointer: Phaser.Input.Pointer, dragX: number) => {
+      setFromX(dragX);
+    });
+
+    hitZone.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      const localX = pointer.x - this.cx;
+      setFromX(localX);
+    });
+
+    container.add(sc);
+    this.currentCategory!.rows.push({ obj: sc, height: this.slotH });
+
+    return sc;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shared row builders (used by settings tab and dev tab)
   // ---------------------------------------------------------------------------
 
   private addHeader(
@@ -377,19 +581,7 @@ export class SettingsOverlay {
     return btn;
   }
 
-  private addFlagToggle(
-    container: Phaser.GameObjects.Container,
-    key: keyof typeof juiceFlags,
-  ): void {
-    const btn = this.addToggle(container, this.devRows, this.flagLabel(key));
-    btn.on("pointerdown", () => {
-      juiceFlags[key] = !juiceFlags[key];
-      btn.setText(this.flagLabel(key));
-    });
-    this.flagBtns.push({ key, btn });
-  }
-
-  /** Position all rows sequentially within their container. */
+  /** Position all rows sequentially within their container (settings tab). */
   private layoutRows(rows: Row[]): void {
     let y = 0;
     for (const row of rows) {
@@ -397,84 +589,6 @@ export class SettingsOverlay {
       row.obj.setY(this.contentTop + y);
       y += row.height / 2;
     }
-  }
-
-  // ---------------------------------------------------------------------------
-  // JI slider
-  // ---------------------------------------------------------------------------
-
-  private buildJiSlider(): Phaser.GameObjects.Container {
-    const sl = theme.ui.settingsPanel.slider;
-    const cap = this.ts.caption;
-    const innerW = this.btnW;
-    const labelW = Math.round(innerW * sl.labelPct);
-    const gap = Math.round(cap * sl.gapMult);
-    const trackW = innerW - labelW - gap;
-    const trackH = Math.round(cap * sl.trackHMult);
-    const handleR = Math.round(cap * sl.handleRMult);
-    const leftX = -innerW / 2;
-
-    const container = this.scene.add.container(this.cx, 0);
-    container.setDepth(CONTENT);
-
-    // Value label (left portion)
-    this.jiSliderLabel = this.scene.add
-      .text(leftX, 0, this.jiValueLabel(), {
-        fontFamily: theme.ui.fontFamily,
-        fontSize: `${this.ts.caption}px`,
-        color: theme.ui.text.primary,
-      })
-      .setOrigin(0, 0.5);
-    container.add(this.jiSliderLabel);
-
-    // Track (right portion)
-    const trackX = leftX + labelW + gap;
-    this.jiSliderTrackX = trackX;
-    this.jiSliderTrackW = trackW;
-
-    const track = this.scene.add.graphics();
-    track.fillStyle(theme.ui.panel.bg, 1);
-    track.lineStyle(1, theme.juice.neutralHex, 0.3);
-    track.fillRoundedRect(trackX, -trackH / 2, trackW, trackH, 2);
-    track.strokeRoundedRect(trackX, -trackH / 2, trackW, trackH, 2);
-    container.add(track);
-
-    // Handle
-    const handleX = trackX + juiceOverride.value * trackW;
-    this.jiSliderHandle = this.scene.add.graphics();
-    this.jiSliderHandle.fillStyle(theme.juice.goodHex, 1);
-    this.jiSliderHandle.fillCircle(0, 0, handleR);
-    this.jiSliderHandle.setPosition(handleX, 0);
-    container.add(this.jiSliderHandle);
-
-    // Hit zone for drag + tap
-    const hitZone = this.scene.add
-      .rectangle(trackX + trackW / 2, 0, trackW + handleR * 2, handleR * 4, 0x000000, 0)
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true, draggable: true });
-    container.add(hitZone);
-    this.scene.input.setDraggable(hitZone);
-
-    hitZone.on("drag", (_pointer: Phaser.Input.Pointer, dragX: number) => {
-      this.setJiFromX(Phaser.Math.Clamp(dragX, trackX, trackX + trackW));
-    });
-
-    hitZone.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      const localX = pointer.x - this.cx;
-      this.setJiFromX(Phaser.Math.Clamp(localX, trackX, trackX + trackW));
-    });
-
-    return container;
-  }
-
-  private setJiFromX(x: number): void {
-    this.jiSliderHandle.setX(x);
-    juiceOverride.value = (x - this.jiSliderTrackX) / this.jiSliderTrackW;
-    this.jiSliderLabel.setText(this.jiValueLabel());
-  }
-
-  private updateSliderVisuals(): void {
-    this.jiSliderContainer.setAlpha(juiceOverride.enabled ? 1 : 0.35);
   }
 
   // ---------------------------------------------------------------------------
@@ -507,14 +621,16 @@ export class SettingsOverlay {
 
     // Update labels
     for (const { key, btn } of this.flagBtns) btn.setText(this.flagLabel(key));
-    if (!isSettings) this.updateSliderVisuals();
 
-    // Reset scroll
-    const rows = isSettings ? this.settingsRows : this.devRows;
-    const contentH = rows.reduce((sum, r) => sum + r.height, 0);
-    this.maxScroll = Math.max(0, contentH - this.visibleH);
+    if (isSettings) {
+      const contentH = this.settingsRows.reduce((sum, r) => sum + r.height, 0);
+      this.maxScroll = Math.max(0, contentH - this.visibleH);
+    } else {
+      this.jiSliderContainer?.setAlpha(juiceOverride.enabled ? 1 : 0.35);
+      this.layoutDevContent();
+    }
+
     this.setScroll(0);
-
     this.scrollZone.setVisible(true).setActive(true);
   }
 
@@ -547,11 +663,12 @@ export class SettingsOverlay {
     return `JI Override: ${juiceOverride.enabled ? "On" : "Off"}`;
   }
 
-  private jiValueLabel(): string {
-    return `JI ${juiceOverride.value.toFixed(2)}`;
-  }
-
   private flagLabel(key: keyof typeof juiceFlags): string {
     return `${juiceFlagLabels[key]}: ${juiceFlags[key] ? "On" : "Off"}`;
+  }
+
+  private fmtValue(v: number, range: DevRange): string {
+    const span = range.max - range.min;
+    return span >= 10 ? Math.round(v).toString() : v.toFixed(2);
   }
 }

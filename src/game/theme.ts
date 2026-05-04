@@ -109,14 +109,11 @@ export interface Theme {
   /** Flight trail — afterimage ghosts during flight */
   trail: {
     color: number;
-    alpha: number;          // ghost outline alpha
-    strokeWidth: number;    // outline thickness
+    alpha: number;          // ghost fill alpha
     count: number;          // ring buffer size
     sizePct: number;        // ghost radius as fraction of BALL_RADIUS
     squash: number;         // Y scale multiplier (<1 = ellipse)
     fadeMs: number;         // per-ghost fade duration
-    channelDotRadius: number; // bright dot size at top/bottom poles
-    channelAlpha: number;     // alpha for channel dots
   };
 
   /** Angle bounds cone lines */
@@ -413,13 +410,10 @@ export const defaultTheme: Theme = {
   trail: {
     color: ORANGE,
     alpha: 0.1,
-    strokeWidth: 1.5,
     count: 60,
-    sizePct: 0.55,
+    sizePct: 0.8,
     squash: 0.4,
     fadeMs: 250,
-    channelDotRadius: 5,
-    channelAlpha: 0.8,
   },
 
   angleBounds: {

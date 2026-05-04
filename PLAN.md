@@ -144,7 +144,7 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 
 **Visual — Particles & Trails**
 - Particles tiered per landing: PERFECT full burst, HIT good, NEAR HIT kicks some up, MISS ball disintegrates/glitches out
-- ✅ Ghost trail: squashed afterimage rings with channel dots, juice-scaled intensity/length
+- ✅ Ghost trail: filled afterimage circles (was stroke + channel dots), juice-scaled intensity/length
 - ✅ Impact rings: expanding ripple from ball landing point + target rim
 - ✅ Target channel: conical funnel with dark backdrop, bottom exit ring, vortex depth rings, side lines
 - ✅ Ball fade-through: ball dissolves as it passes through target ring (basketball hoop feel)
@@ -176,7 +176,7 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 - Wind indicator relocation — currently lives inside WallPanel, may move to buffer zone or court. Placement TBD
 
 **Next up — Ball charge + energy discharge**
-- Step 2: Ball visual rework + flight charge effect (glow expands/brightens during flight)
+- Step 2: Ball visual rework + flight charge effect (glow expands/brightens during flight) — designed, not built
 - Step 3: Channel rework (animated energy structure)
 - Step 4: Grid discharge (lightning walk along grid lines on landing)
 - Step 5: Miss dispersion (unfocused energy burst)
@@ -209,6 +209,11 @@ All effects scale with `juiceIntensity(streak)` — logarithmic 0–1 curve, cei
 - Per-effect juice toggles with categorized headers
 - JI override toggle + slider for testing at fixed intensity
 - Scrollable content with GeometryMask clipping
+- ✅ Collapsible categories (▸/▾ toggle, all start collapsed)
+- ✅ Generic slider infrastructure (`DevRange` get/set closures over theme values)
+- ✅ Trail tuning sliders: size, alpha, fade, squash
+- ✅ Speed line tuning sliders: alpha, width, len min/max, fade, spread
+- ✅ Flag toggle sync across duplicate entries in multiple categories
 
 ### Parked
 - Dev settings panel — live sliders for per-value tuning (beyond JI override)
